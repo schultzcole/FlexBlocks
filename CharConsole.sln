@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground", "Playground\Playground.csproj", "{16E127D5-818C-45F0-9301-17C6A8E93D8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CharConsole", "CharConsole\CharConsole.csproj", "{64804BD7-5E87-4702-AB21-053EFC5E0190}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{16E127D5-818C-45F0-9301-17C6A8E93D8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16E127D5-818C-45F0-9301-17C6A8E93D8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16E127D5-818C-45F0-9301-17C6A8E93D8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16E127D5-818C-45F0-9301-17C6A8E93D8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64804BD7-5E87-4702-AB21-053EFC5E0190}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64804BD7-5E87-4702-AB21-053EFC5E0190}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64804BD7-5E87-4702-AB21-053EFC5E0190}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64804BD7-5E87-4702-AB21-053EFC5E0190}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
