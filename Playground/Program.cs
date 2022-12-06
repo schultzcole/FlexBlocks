@@ -20,9 +20,10 @@ internal class Program
         Console.Clear();
         Console.CursorVisible = false;
 
-        var width = Console.BufferWidth;
-        var height = Console.BufferHeight;
-        Span<char> buffer1d = stackalloc char[width * height];
+        var width = Math.Min(Console.BufferWidth, Console.WindowWidth);
+        var height = Math.Min(Console.BufferHeight, Console.WindowHeight);
+        var bufferSize = width * height;
+        Span<char> buffer1d = new char[bufferSize];
         buffer1d.Fill(' ');
         Span2D<char> buffer = Span2D<char>.DangerousCreate(ref buffer1d.DangerousGetReference(), height, width, 0);
 
@@ -43,11 +44,9 @@ internal class Program
         {
             block.Render(buffer);
 
-            for (var row = 0; row < buffer.Height; row++)
-            {
-                Console.SetCursorPosition(0, row);
-                Console.Out.Write(buffer.GetRowSpan(row));
-            }
+            Console.SetCursorPosition(0, 0);
+            Console.Out.Write(buffer1d);
+            Console.SetCursorPosition(0, 0);
 
             Thread.Sleep(50);
         }
