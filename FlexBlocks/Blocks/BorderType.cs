@@ -1,4 +1,4 @@
-﻿namespace CharConsole.Blocks;
+﻿namespace FlexBlocks.Blocks;
 
 public enum BorderType { None, Block, Square, Rounded, Debug }
 

@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
 
-namespace CharConsole.Blocks;
+namespace FlexBlocks.Blocks;
 
 public class BorderBlock : SizedBlock
 {

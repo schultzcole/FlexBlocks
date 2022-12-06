@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CharConsole\CharConsole.csproj" />
+      <ProjectReference Include="..\FlexBlocks\FlexBlocks.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace CharConsole.Blocks;
+namespace FlexBlocks.Blocks;
 
 public enum Sizing
 {

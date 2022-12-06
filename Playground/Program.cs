@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using CharConsole.Blocks;
+using FlexBlocks.Blocks;
 using CommunityToolkit.HighPerformance;
 
 namespace Playground;
@@ -29,10 +29,11 @@ internal class Program
 
         var block = new BorderBlock
         {
-            BorderType = BorderType.Rounded,
-            Padding = new Padding(4, 8),
-            HorizontalSizing = Sizing.Content,
+            BorderType = BorderType.Square,
+            // Padding = new Padding(0, 1),
+            // HorizontalSizing = Sizing.Content,
             HorizontalContentAlignment = Alignment.End,
+            VerticalContentAlignment = Alignment.End,
             Content = new RandomStringBlock
             {
                 Width = 80,
@@ -47,6 +48,7 @@ internal class Program
             Console.SetCursorPosition(0, 0);
             Console.Out.Write(buffer1d);
             Console.SetCursorPosition(0, 0);
+            // break;
 
             Thread.Sleep(50);
         }

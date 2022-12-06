@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
 
-namespace CharConsole.Blocks;
+namespace FlexBlocks.Blocks;
 
 /// Base class of UI components
 public abstract class UiBlock

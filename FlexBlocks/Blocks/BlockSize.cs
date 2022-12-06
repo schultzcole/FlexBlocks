@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
 
-namespace CharConsole.Blocks;
+namespace FlexBlocks.Blocks;
 
 /// Represents the size of a block
 /// <param name="Width">How many horizontal characters this block takes up.</param>

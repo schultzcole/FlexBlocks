@@ -1,4 +1,4 @@
-﻿namespace CharConsole.Blocks;
+﻿namespace FlexBlocks.Blocks;
 
 public record Padding(int Top, int Right, int Bottom, int Left)
 {
