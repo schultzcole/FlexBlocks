@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground", "Playground\Playground.csproj", "{16E127D5-818C-45F0-9301-17C6A8E93D8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground", "src\Playground\Playground.csproj", "{16E127D5-818C-45F0-9301-17C6A8E93D8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlexBlocks", "FlexBlocks\FlexBlocks.csproj", "{64804BD7-5E87-4702-AB21-053EFC5E0190}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlexBlocks", "src\FlexBlocks\FlexBlocks.csproj", "{64804BD7-5E87-4702-AB21-053EFC5E0190}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
