@@ -5,7 +5,7 @@ namespace FlexBlocks.Blocks;
 /// Represents the size of a block
 /// <param name="Width">How many horizontal characters this block takes up.</param>
 /// <param name="Height">How many vertical characters this block takes up.</param>
-public record struct BlockSize(
+public readonly record struct BlockSize(
     int Width,
     int Height
 )
