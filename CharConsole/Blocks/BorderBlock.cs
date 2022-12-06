@@ -4,14 +4,16 @@ namespace CharConsole.Blocks;
 
 public class BorderBlock : SizedBlock
 {
+    /// The type of border to render for this block
     public BorderType BorderType { get; set; }
 
+    /// What padding, if any should exist between the border and the content
     public Padding? Padding { get; set; }
 
     public Padding EffectivePadding =>
-        Padding is not null
-            ? (BorderType != BorderType.None) ? Padding.Dilate(1) : Padding with { }
-            : new Padding(0);
+        (BorderType == BorderType.None)
+            ? Padding?.Copy() ?? Padding.Zero
+            : Padding?.Expand(1) ?? Padding.One;
 
     protected override BlockSize CalcMaxContentSize(BlockSize maxSize) => CalcMaxContentSize(maxSize, EffectivePadding);
 
@@ -23,33 +25,7 @@ public class BorderBlock : SizedBlock
 
     public override void Render(Span2D<char> buffer)
     {
-        if (BorderType != BorderType.None)
-        {
-            var lastRow = buffer.Height - 1;
-            var lastCol = buffer.Width - 1;
-
-            buffer[0, 0] = BorderType.TopLeft();
-            buffer[0, lastCol] = BorderType.TopRight();
-            buffer[lastRow, 0] = BorderType.BottomLeft();
-            buffer[lastRow, lastCol] = BorderType.BottomRight();
-
-            var t = BorderType.Top();
-            var b = BorderType.Bottom();
-            var l = BorderType.Left();
-            var r = BorderType.Right();
-
-            for (int col = 1; col < lastCol; col++)
-            {
-                buffer[0, col] = t;
-                buffer[lastRow, col] = b;
-            }
-
-            for (int row = 1; row < lastRow; row++)
-            {
-                buffer[row, 0] = l;
-                buffer[row, lastCol] = r;
-            }
-        }
+        RenderBorder(buffer);
 
         if (Content is null) return;
 
@@ -64,5 +40,35 @@ public class BorderBlock : SizedBlock
         );
 
         RenderContent(contentBuffer);
+    }
+
+    private void RenderBorder(Span2D<char> buffer)
+    {
+        if (BorderType == BorderType.None) return;
+
+        var lastRow = buffer.Height - 1;
+        var lastCol = buffer.Width - 1;
+
+        buffer[0, 0] = BorderType.TopLeft();
+        buffer[0, lastCol] = BorderType.TopRight();
+        buffer[lastRow, 0] = BorderType.BottomLeft();
+        buffer[lastRow, lastCol] = BorderType.BottomRight();
+
+        var t = BorderType.Top();
+        var b = BorderType.Bottom();
+        var l = BorderType.Left();
+        var r = BorderType.Right();
+
+        for (int col = 1; col < lastCol; col++)
+        {
+            buffer[0, col] = t;
+            buffer[lastRow, col] = b;
+        }
+
+        for (int row = 1; row < lastRow; row++)
+        {
+            buffer[row, 0] = l;
+            buffer[row, lastCol] = r;
+        }
     }
 }
