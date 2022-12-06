@@ -14,11 +14,11 @@ public abstract class ContentBlock : UiBlock
 
     protected virtual BlockSize CalcMaxContentSize(BlockSize maxSize) => maxSize;
 
-    protected virtual void RenderContent(Span2D<char> buffer)
+    protected virtual void RenderContent(Span2D<char> contentBuffer)
     {
         if (Content is null) return;
 
-        var alignedBuffer = CalcAlignedContentBuffer(buffer);
+        var alignedBuffer = CalcAlignedContentBuffer(contentBuffer);
         Content.Render(alignedBuffer);
     }
 
@@ -51,7 +51,7 @@ public abstract class ContentBlock : UiBlock
                 var margin = (maxSize - sanitizedSize) / 2;
                 // if there would be uneven margins, let the content be 1 unit larger
                 return (margin, sanitizedSize + margin % 2);
-            case Alignment.End: return (maxSize - sanitizedSize, maxSize);
+            case Alignment.End: return (maxSize - sanitizedSize, sanitizedSize);
             default: throw new ArgumentOutOfRangeException(nameof(alignment), alignment, "Unknown alignment type");
         }
     }
