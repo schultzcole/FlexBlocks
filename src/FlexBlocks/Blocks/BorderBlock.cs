@@ -5,13 +5,13 @@ namespace FlexBlocks.Blocks;
 public class BorderBlock : SizedBlock
 {
     /// The type of border to render for this block
-    public BorderType BorderType { get; set; }
+    public Border? Border { get; set; }
 
     /// What padding, if any should exist between the border and the content
     public Padding? Padding { get; set; }
 
     public Padding EffectivePadding =>
-        (BorderType == BorderType.None)
+        (Border is null)
             ? Padding?.Copy() ?? Padding.Zero
             : Padding?.Expand(1) ?? Padding.One;
 
@@ -44,20 +44,20 @@ public class BorderBlock : SizedBlock
 
     private void RenderBorder(Span2D<char> buffer)
     {
-        if (BorderType == BorderType.None) return;
+        if (Border is null) return;
 
         var lastRow = buffer.Height - 1;
         var lastCol = buffer.Width - 1;
 
-        buffer[0, 0] = BorderType.TopLeft();
-        buffer[0, lastCol] = BorderType.TopRight();
-        buffer[lastRow, 0] = BorderType.BottomLeft();
-        buffer[lastRow, lastCol] = BorderType.BottomRight();
+        buffer[0, 0] = Border.TopLeft;
+        buffer[0, lastCol] = Border.TopRight;
+        buffer[lastRow, 0] = Border.BottomLeft;
+        buffer[lastRow, lastCol] = Border.BottomRight;
 
-        var t = BorderType.Top();
-        var b = BorderType.Bottom();
-        var l = BorderType.Left();
-        var r = BorderType.Right();
+        var t = Border.Top;
+        var b = Border.Bottom;
+        var l = Border.Left;
+        var r = Border.Right;
 
         for (int col = 1; col < lastCol; col++)
         {

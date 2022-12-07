@@ -1,103 +1,60 @@
 ﻿namespace FlexBlocks.Blocks;
 
-public enum BorderType { None, Block, Square, Rounded, Debug }
-
-internal static class BorderTypeExtensions
+/// Defines a set of characters to use for each corner and side of a border
+public record Border(
+    char TopLeft,
+    char Top,
+    char TopRight,
+    char Right,
+    char BottomRight,
+    char Bottom,
+    char BottomLeft,
+    char Left)
 {
-    public static char TopLeft(this BorderType borderType)
-    {
-        return borderType switch
-        {
-            BorderType.None    => '\0',
-            BorderType.Block   => '\u2588',
-            BorderType.Square  => '\u250c',
-            BorderType.Rounded => '\u256d',
-            BorderType.Debug   => '/',
-            _                  => throw new ArgumentOutOfRangeException(nameof(borderType), borderType, null)
-        };
-    }
-    public static char Top(this BorderType borderType)
-    {
-        return borderType switch
-        {
-            BorderType.None    => '\0',
-            BorderType.Block   => '\u2588',
-            BorderType.Square  => '\u2500',
-            BorderType.Rounded => '\u2500',
-            BorderType.Debug   => 'T',
-            _                  => throw new ArgumentOutOfRangeException(nameof(borderType), borderType, null)
-        };
-    }
-    public static char TopRight(this BorderType borderType)
-    {
-        return borderType switch
-        {
-            BorderType.None    => '\0',
-            BorderType.Block   => '\u2588',
-            BorderType.Square  => '\u2510',
-            BorderType.Rounded => '\u256e',
-            BorderType.Debug   => '\\',
-            _                  => throw new ArgumentOutOfRangeException(nameof(borderType), borderType, null)
-        };
-    }
-    public static char Right(this BorderType borderType)
-    {
-        return borderType switch
-        {
-            BorderType.None    => '\0',
-            BorderType.Block   => '\u2588',
-            BorderType.Square  => '\u2502',
-            BorderType.Rounded => '\u2502',
-            BorderType.Debug   => 'R',
-            _                  => throw new ArgumentOutOfRangeException(nameof(borderType), borderType, null)
-        };
-    }
-    public static char BottomRight(this BorderType borderType)
-    {
-        return borderType switch
-        {
-            BorderType.None    => '\0',
-            BorderType.Block   => '\u2588',
-            BorderType.Square  => '\u2518',
-            BorderType.Rounded => '\u256f',
-            BorderType.Debug   => '/',
-            _                  => throw new ArgumentOutOfRangeException(nameof(borderType), borderType, null)
-        };
-    }
-    public static char Bottom(this BorderType borderType)
-    {
-        return borderType switch
-        {
-            BorderType.None    => '\0',
-            BorderType.Block   => '\u2588',
-            BorderType.Square  => '\u2500',
-            BorderType.Rounded => '\u2500',
-            BorderType.Debug   => 'B',
-            _                  => throw new ArgumentOutOfRangeException(nameof(borderType), borderType, null)
-        };
-    }
-    public static char BottomLeft(this BorderType borderType)
-    {
-        return borderType switch
-        {
-            BorderType.None    => '\0',
-            BorderType.Block   => '\u2588',
-            BorderType.Square  => '\u2514',
-            BorderType.Rounded => '\u2570',
-            BorderType.Debug   => '\\',
-            _                  => throw new ArgumentOutOfRangeException(nameof(borderType), borderType, null)
-        };
-    }
-    public static char Left(this BorderType borderType)
-    {
-        return borderType switch
-        {
-            BorderType.None    => '\0',
-            BorderType.Block   => '\u2588',
-            BorderType.Square  => '\u2502',
-            BorderType.Rounded => '\u2502',
-            BorderType.Debug   => 'L',
-            _                  => throw new ArgumentOutOfRangeException(nameof(borderType), borderType, null)
-        };
-    }
+    /// Creates a new Border where every side and corner uses the same character.
+    public Border(char all)
+        : this(all, all, all, all, all, all, all, all) { }
+
+    /// Creates a new Border where the corners are blank and the horizontal and vertical sides use the given characters.
+    public Border(char horizontal, char vertical)
+        : this(' ', horizontal, ' ', vertical, ' ', horizontal, ' ', vertical) { }
+
+    /// Creates a new Border where each corner has a unique character and the horizontal and vertical sides use the given characters.
+    public Border(char topLeft, char topRight, char bottomRight, char bottomLeft, char horizontal, char vertical)
+        : this(topLeft, horizontal, topRight, vertical, bottomRight, horizontal, bottomLeft, vertical) { }
+
+    /// Renders all sides and corners as a filled block
+    public static Border Block { get; } = new('\u2588');
+
+    /// Renders a border with straight edges and sharp, square corners
+    public static Border Square { get; } = new(
+        topLeft: '\u250c',
+        topRight: '\u2510',
+        bottomRight: '\u2518',
+        bottomLeft: '\u2514',
+        horizontal: '\u2500',
+        vertical: '\u2502'
+    );
+
+    /// Renders a border with straight edges and rounded corners
+    public static Border Rounded { get; } = new(
+        topLeft: '\u256d',
+        topRight: '\u256e',
+        bottomRight: '\u256f',
+        bottomLeft: '\u2570',
+        horizontal: '\u2500',
+        vertical: '\u2502'
+    );
+
+    /// Renders a border for debug purposes with each side of the border showing the initial of that side (T, R, B, L)
+    public static Border DebugSide { get; } = new(
+        TopLeft: '/',
+        Top: 'T',
+        TopRight: '\\',
+        Right: 'R',
+        BottomRight: '/',
+        Bottom: 'B',
+        BottomLeft: '\\',
+        Left: 'L'
+    );
 }

@@ -29,11 +29,11 @@ internal class Program
 
         var block = new BorderBlock
         {
-            BorderType = BorderType.Square,
+            Border = Border.Square,
             // Padding = new Padding(0, 1),
             // HorizontalSizing = Sizing.Content,
-            HorizontalContentAlignment = Alignment.End,
-            VerticalContentAlignment = Alignment.End,
+            HorizontalContentAlignment = Alignment.Center,
+            VerticalContentAlignment = Alignment.Center,
             Content = new RandomStringBlock
             {
                 Width = 80,
