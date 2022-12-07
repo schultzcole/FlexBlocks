@@ -26,7 +26,7 @@ public abstract class ContentBlock : UiBlock
     {
         if (Content is null) return buffer;
 
-        var maxSize = buffer.GetSize();
+        var maxSize = buffer.BlockSize();
         var contentSize = Content?.CalcDesiredSize(maxSize) ?? maxSize;
 
         var hDimension = CalcAlignedDimension(maxSize.Width, contentSize.Width, HorizontalContentAlignment);

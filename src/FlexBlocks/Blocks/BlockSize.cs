@@ -31,5 +31,5 @@ public readonly record struct BlockSize(
 
 public static class BlockSizeExtensions
 {
-    public static BlockSize GetSize<T>(this Span2D<T> span) => new(span.Width, span.Height);
+    public static BlockSize BlockSize<T>(this Span2D<T> span) => new(span.Width, span.Height);
 }

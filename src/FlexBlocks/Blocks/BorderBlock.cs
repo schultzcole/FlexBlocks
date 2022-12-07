@@ -30,7 +30,7 @@ public class BorderBlock : SizedBlock
         if (Content is null) return;
 
         var padding = EffectivePadding;
-        var maxContentSize = CalcMaxContentSize(buffer.GetSize(), padding);
+        var maxContentSize = CalcMaxContentSize(buffer.BlockSize(), padding);
 
         var contentBuffer = buffer.Slice(
             row: padding.Top,
