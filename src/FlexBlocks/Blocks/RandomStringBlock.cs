@@ -12,10 +12,10 @@ public class RandomStringBlock : UiBlock
     public override BlockSize CalcDesiredSize(BlockSize maxSize) =>
         (Width, Height) switch
         {
-            (null, null) => maxSize,
-            ({}, null)   => maxSize.ConstrainWidth(Width.Value),
-            (null, {})   => maxSize.ConstrainHeight(Height.Value),
-            _            => maxSize.Constrain(Width.Value, Height.Value)
+            (null, null)            => maxSize,
+            ({ } width, null)       => maxSize.ConstrainWidth(width),
+            (null, { } height)      => maxSize.ConstrainHeight(height),
+            ({ } width, { } height) => maxSize.Constrain(width, height)
         };
 
     public override void Render(Span2D<char> buffer)
