@@ -31,9 +31,10 @@ internal class Program
         {
             Border = Border.Square,
             // Padding = new Padding(0, 1),
-            // HorizontalSizing = Sizing.Content,
-            HorizontalContentAlignment = Alignment.Center,
-            VerticalContentAlignment = Alignment.Center,
+            HorizontalSizing = Sizing.Fill,
+            VerticalSizing = Sizing.Fill,
+            // HorizontalContentAlignment = Alignment.Center,
+            // VerticalContentAlignment = Alignment.Center,
             Content = new RandomStringBlock
             {
                 Width = 80,
@@ -43,7 +44,14 @@ internal class Program
 
         while (loop)
         {
-            block.Render(buffer);
+            var rootDesiredSize = block.CalcDesiredSize(buffer.GetSize());
+            var rootBuffer = buffer.Slice(
+                row: 0,
+                column: 0,
+                height: rootDesiredSize.Height,
+                width: rootDesiredSize.Width
+            );
+            block.Render(rootBuffer);
 
             Console.SetCursorPosition(0, 0);
             Console.Out.Write(buffer1d);
