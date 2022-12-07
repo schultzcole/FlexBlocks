@@ -3,7 +3,7 @@
 public record Padding(int Top, int Right, int Bottom, int Left)
 {
     public static Padding Zero => new(0);
-    public static Padding One => new(0);
+    public static Padding One => new(1);
 
     public int Top { get; set; } = Top;
     public int Right { get; set; } = Right;
