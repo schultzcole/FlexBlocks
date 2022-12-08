@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.HighPerformance;
-using Nito.AsyncEx;
+﻿using Nito.AsyncEx;
 
 namespace FlexBlocks.Blocks;
 
@@ -13,13 +12,7 @@ public sealed class FlexBlocksDriver
     /// Optional custom max height
     private readonly int? _maxHeight;
 
-    /// Width of the render buffer when represented in 2d
-    private int _width;
-    /// Height of the render buffer when represented in 2d
-    private int _height;
-
-    /// The render buffer. Blocks render to this buffer and then the driver blits the buffer contents to the console window
-    private char[] _1dBuffer;
+    private readonly BlockRenderer _blockRenderer;
 
     /// Creates a new flex blocks driver.
     /// If no maximum dimensions are defined, the root block will fill the console window.
@@ -31,65 +24,27 @@ public sealed class FlexBlocksDriver
         _rootBlock = rootBlock;
         _maxWidth = maxWidth;
         _maxHeight = maxHeight;
-        _1dBuffer = Array.Empty<char>();
-        CreateBuffer();
+        var (width, height) = ComputeBufferSize(_maxWidth, _maxHeight);
+        _blockRenderer = new BlockRenderer(width, height);
     }
 
     /// Allocates the render buffer based on the available console space
-    private void CreateBuffer()
+    private (int width, int height) ComputeBufferSize(int? maxWidth, int? maxHeight)
     {
-        _width = Math.Min(Console.BufferWidth, Console.WindowWidth);
-        if (_maxWidth is { } maxWidth && _width > maxWidth)
+        var width = Math.Min(Console.BufferWidth, Console.WindowWidth);
+        if (_maxWidth is not null && width > maxWidth)
         {
-            _width = maxWidth;
+            width = maxWidth.Value;
         }
-        _height = Math.Min(Console.BufferHeight, Console.WindowHeight);
-        if (_maxHeight is { } maxHeight && _height > maxHeight)
+        var height = Math.Min(Console.BufferHeight, Console.WindowHeight);
+        if (_maxHeight is not null && height > maxHeight)
         {
-            _height = maxHeight;
+            height = maxHeight.Value;
         }
-        var bufferSize = _width * _height;
-        _1dBuffer = new char[bufferSize];
-        Array.Fill(_1dBuffer, ' '); // \0 prints as zero-width in some terminals, so fill with a space
+
+        return (width, height);
     }
 
-    /// Renders the root block to the render buffer
-    private void RenderRoot()
-    {
-        var buffer = Span2D<char>.DangerousCreate(ref _1dBuffer.DangerousGetReference(), _height, _width, 0);
-        var rootDesiredSize = _rootBlock.CalcDesiredSize(buffer.BlockSize());
-        var rootBuffer = buffer.Slice(
-            row: 0,
-            column: 0,
-            height: rootDesiredSize.Height,
-            width: rootDesiredSize.Width
-        );
-        _rootBlock.Render(rootBuffer);
-
-        Blit();
-    }
-
-    /// Writes the render buffer to the console
-    private void Blit()
-    {
-        if (_width == Math.Min(Console.WindowHeight, Console.BufferHeight))
-        {
-            // buffer width matches the console window width, no need to manually wrap lines
-            Console.SetCursorPosition(0, 0);
-            Console.Out.Write(_1dBuffer);
-        }
-        else
-        {
-            // buffer width is different than the console window width.
-            // if we don't manually wrap, it will show more than a single line of our buffer per console line
-            for (int row = 0; row < _height; row++)
-            {
-                Console.SetCursorPosition(0, row);
-                Console.Out.Write(_1dBuffer.AsSpan((row * _width), _width));
-            }
-        }
-        Console.SetCursorPosition(0, 0);
-    }
 
     /// Starts the flex blocks driver.
     /// <param name="quitToken">Quits the program when canceled.</param>
@@ -115,7 +70,7 @@ public sealed class FlexBlocksDriver
             quitTokenSource.Token.ThrowIfCancellationRequested();
 
             // initial render
-            RenderRoot();
+            _blockRenderer.RenderRoot(_rootBlock);
 
             // yield thread until program is quit (either externally via quitToken or via user-initiated kill signal)
             using var cancelTaskSource = new CancellationTokenTaskSource<object>(quitTokenSource.Token);
@@ -128,7 +83,7 @@ public sealed class FlexBlocksDriver
         finally
         {
             Console.CursorVisible = true;
-            Console.SetCursorPosition(0, _height - 1);
+            Console.SetCursorPosition(0, _blockRenderer.Height - 1);
             Console.WriteLine();
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using FlexBlocks.Blocks;
+using Playground;
 
 var block = new BorderBlock
 {
@@ -9,7 +10,7 @@ var block = new BorderBlock
     VerticalSizing = Sizing.Fill,
     // HorizontalContentAlignment = Alignment.Center,
     // VerticalContentAlignment = Alignment.Center,
-    Content = new RandomStringBlock
+    Content = new MyCustomRandomStringBlock
     {
         Width = 10,
         Height = 10

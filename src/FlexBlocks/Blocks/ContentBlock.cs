@@ -19,11 +19,10 @@ public abstract class ContentBlock : UiBlock
     public Sizing HorizontalSizing { get; set; } = Sizing.Content;
     public Sizing VerticalSizing { get; set; } = Sizing.Content;
 
-    public override bool ShouldRecomputeDesiredSize =>
+    public override bool ShouldRerenderWithChildren =>
         Content is not null
         && HorizontalSizing == Sizing.Content
-        && VerticalSizing == Sizing.Content
-        && Content.ShouldRecomputeDesiredSize;
+        && VerticalSizing == Sizing.Content;
 
     public override BlockSize CalcDesiredSize(BlockSize maxSize)
     {
@@ -52,19 +51,20 @@ public abstract class ContentBlock : UiBlock
     {
         if (Content is null) return;
 
-        var alignedBuffer = CalcAlignedContentBuffer(contentBuffer);
-        Content.Render(alignedBuffer);
+        var alignedBuffer = ComputeAlignedContentBuffer(contentBuffer);
+
+        RenderChild(Content, alignedBuffer);
     }
 
-    protected virtual Span2D<char> CalcAlignedContentBuffer(Span2D<char> buffer)
+    private Span2D<char> ComputeAlignedContentBuffer(Span2D<char> buffer)
     {
         if (Content is null) return buffer;
 
         var maxSize = buffer.BlockSize();
         var contentSize = Content?.CalcDesiredSize(maxSize) ?? maxSize;
 
-        var hDimension = CalcAlignedDimension(maxSize.Width, contentSize.Width, HorizontalContentAlignment);
-        var vDimension = CalcAlignedDimension(maxSize.Height, contentSize.Height, VerticalContentAlignment);
+        var hDimension = ComputeAlignedDimension(maxSize.Width, contentSize.Width, HorizontalContentAlignment);
+        var vDimension = ComputeAlignedDimension(maxSize.Height, contentSize.Height, VerticalContentAlignment);
 
         return buffer.Slice(
             row: vDimension.start,
@@ -74,7 +74,7 @@ public abstract class ContentBlock : UiBlock
         );
     }
 
-    private static (int start, int length) CalcAlignedDimension(int maxSize, int desiredSize, Alignment alignment)
+    private static (int start, int length) ComputeAlignedDimension(int maxSize, int desiredSize, Alignment alignment)
     {
         var sanitizedSize = Math.Min(maxSize, desiredSize);
 

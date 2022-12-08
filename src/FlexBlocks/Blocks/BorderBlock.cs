@@ -2,7 +2,7 @@
 
 namespace FlexBlocks.Blocks;
 
-public class BorderBlock : SizedBlock
+public class BorderBlock : ContentBlock
 {
     /// The type of border to render for this block
     public Border? Border { get; set; }
