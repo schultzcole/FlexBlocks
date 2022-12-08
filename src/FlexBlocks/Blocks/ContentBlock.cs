@@ -1,16 +1,50 @@
-﻿using CommunityToolkit.HighPerformance;
+﻿using System.Diagnostics;
+using CommunityToolkit.HighPerformance;
 
 namespace FlexBlocks.Blocks;
 
-public enum Alignment { Start, Center, End, }
+public enum Sizing { Fill, Content }
 
-/// A block type that contains another single block and can align that block within itself.
+public enum Alignment { Start, Center, End }
+
+/// A block type that contains another single block, can align that block within itself,
+/// and can either size itself to its content or grow to fill available space.
 public abstract class ContentBlock : UiBlock
 {
     public UiBlock? Content { get; set; }
 
     public Alignment HorizontalContentAlignment { get; set; } = Alignment.Start;
     public Alignment VerticalContentAlignment { get; set; } = Alignment.Start;
+
+    public Sizing HorizontalSizing { get; set; } = Sizing.Content;
+    public Sizing VerticalSizing { get; set; } = Sizing.Content;
+
+    public override bool ShouldRecomputeDesiredSize =>
+        Content is not null
+        && HorizontalSizing == Sizing.Content
+        && VerticalSizing == Sizing.Content
+        && Content.ShouldRecomputeDesiredSize;
+
+    public override BlockSize CalcDesiredSize(BlockSize maxSize)
+    {
+        if (HorizontalSizing == Sizing.Fill && VerticalSizing == Sizing.Fill)
+        {
+            return maxSize;
+        }
+
+        var maxContentSize = CalcMaxContentSize(maxSize);
+        var contentSize = Content?.CalcDesiredSize(maxContentSize) ?? maxContentSize;
+
+        return (HorizontalSizing, VerticalSizing) switch
+        {
+            (Sizing.Content, Sizing.Content) => contentSize.Constrain(maxSize),
+            (Sizing.Content, Sizing.Fill)    => maxSize.ConstrainWidth(contentSize),
+            (Sizing.Fill, Sizing.Content)    => maxSize.ConstrainHeight(contentSize),
+
+            // (Fill, Fill) case is covered above
+            _ => throw new UnreachableException($"Unknown sizing values. H={HorizontalSizing}, V={VerticalSizing}")
+        };
+    }
 
     protected virtual BlockSize CalcMaxContentSize(BlockSize maxSize) => maxSize;
 
