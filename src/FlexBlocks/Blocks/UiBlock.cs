@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.HighPerformance;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
 
 namespace FlexBlocks.Blocks;
 
@@ -10,7 +12,7 @@ public abstract class UiBlock
 
     /// <summary>
     /// The container to which this Block belongs. Should be used to <see cref="IBlockContainer.RenderChild"/>
-    /// Blocks in <see cref="Render"/>, or to <see cref="IBlockContainer.RequestRerender" />
+    /// Blocks in <see cref="Render"/>, or to <see cref="IBlockContainer.RequestRerender" />.
     /// </summary>
     public IBlockContainer? Container { get; internal set; }
 
@@ -32,15 +34,7 @@ public abstract class UiBlock
     /// </exception>
     protected void RequestRerender()
     {
-        if (Container is null)
-        {
-            var typeName = GetType().Name;
-            throw new UnattachedUiBlockException(
-                $"{nameof(UiBlock)} of type {typeName} cannot request a rerender without a Container. " +
-                $"This can occur if {nameof(RequestRerender)} is called prior to the block initially being rendered, " +
-                "or if the block was rendered outside the context of a container."
-            );
-        }
+        EnsureContainer();
 
         Container.RequestRerender(this);
     }
@@ -51,26 +45,22 @@ public abstract class UiBlock
     /// </exception>
     protected void RenderChild(UiBlock child, Span2D<char> childBuffer)
     {
-        if (Container is null)
-        {
-            var typeName = GetType().Name;
-            throw new UnattachedUiBlockException(
-                $"{nameof(UiBlock)} of type {typeName} cannot render a child block without a Container. " +
-                $"This can occur if {nameof(RenderChild)} is called prior to the block initially being rendered, " +
-                "or if the block was rendered outside the context of a container."
-            );
-        }
+        EnsureContainer();
 
         Container.RenderChild(this, child, childBuffer);
     }
-}
 
-/// <summary>
-/// Thrown when attempting to use a UiBlock's <see cref="UiBlock.Container"/> before a render has been initiated by the
-/// container.
-/// </summary>
-public class UnattachedUiBlockException : Exception
-{
-    public UnattachedUiBlockException(string message) : base(message) { }
-    public UnattachedUiBlockException(string message, Exception inner) : base(message, inner) { }
+    /// <summary>Ensures that <see cref="Container"/> has been set prior to a call that requires it.</summary>
+    [MemberNotNull(nameof(Container))]
+    protected void EnsureContainer([CallerMemberName] string? caller = null)
+    {
+        if (Container is not null) return;
+
+        var typeName = GetType().Name;
+        throw new UnattachedUiBlockException(
+            $"{nameof(UiBlock)} of type {typeName} cannot {caller} without a Container. " +
+            $"This can occur if {caller} is called prior to the block initially being rendered, " +
+            "or if the block was rendered outside the context of a container."
+        );
+    }
 }

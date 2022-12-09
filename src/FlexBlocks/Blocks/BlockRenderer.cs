@@ -3,22 +3,24 @@ using CommunityToolkit.HighPerformance;
 
 namespace FlexBlocks.Blocks;
 
+/// <summary>
 /// Responsible for holding the render buffer for a FlexBlocks application and managing rendering Blocks to that buffer.
+/// </summary>
 internal class BlockRenderer : IBlockContainer
 {
     public readonly int Width;
     public readonly int Height;
 
-    /// The root render buffer. Blocks belonging to this BlockRenderer render to slices of this buffer
+    /// <summary>The root render buffer. Blocks belonging to this BlockRenderer render to slices of this buffer</summary>
     private readonly char[] _rootBuffer;
 
-    /// Stores data necessary to rerender each block after its initial rendering. The entry for each block is
-    /// updated each time it is rendered.
+    /// <summary>Stores data necessary to rerender each block after its initial rendering. The entry for each block is
+    /// updated each time it is rendered.</summary>
     private readonly ConditionalWeakTable<UiBlock, BlockRenderInfo> _blocks = new();
 
     private record BlockRenderInfo(UiBlock? Parent, BufferSlice BufferSlice);
 
-    /// Stores information about the slice of the main render buffer that a particular block occupies.
+    /// <summary>Stores information about the slice of the main render buffer that a particular block occupies.</summary>
     private record struct BufferSlice(int XOffset, int YOffset, int Width, int Height);
 
     public BlockRenderer(int width, int height)
@@ -30,7 +32,7 @@ internal class BlockRenderer : IBlockContainer
         Array.Fill(_rootBuffer, ' '); // \0 prints as zero-width in some terminals, so fill with a space
     }
 
-    /// Writes the render buffer to the console
+    /// <summary>Writes the render buffer to the console</summary>
     private void Blit()
     {
         if (Width == Math.Min(Console.WindowHeight, Console.BufferHeight))
@@ -53,13 +55,15 @@ internal class BlockRenderer : IBlockContainer
         Console.SetCursorPosition(0, 0);
     }
 
-    /// Returns a span that represents the render buffer as a rectangle of Height and Width
+    /// <summary>Returns a span that represents the render buffer as a rectangle of Height and Width.</summary>
     private Span2D<char> GetRectBuffer() => new(_rootBuffer, Height, Width);
 
+    /// <summary>Uses a BufferSlice to slice a 2d buffer.</summary>
     private Span2D<char> SliceBuffer(Span2D<char> buffer, BufferSlice slice) =>
         buffer.Slice(slice.YOffset, slice.XOffset, slice.Height, slice.Width);
 
-    /// Renders the entire Block hierarchy to the render buffer, then blits the render buffer to the console.
+    /// <summary>Renders the entire Block hierarchy to the render buffer,
+    /// then blits the render buffer to the console.</summary>
     public void RenderRoot(UiBlock root)
     {
         var buffer = GetRectBuffer();
@@ -75,7 +79,7 @@ internal class BlockRenderer : IBlockContainer
         Blit();
     }
 
-    /// Renders a child block (with optional parent block) to the given buffer
+    /// <summary>Renders a child block (with optional parent block) to the given buffer.</summary>
     /// <remarks>
     /// BlockRenderer itself needs to be able to render a root block without a parent,
     /// which is why this method is private. The publicly accessible implementation of
@@ -83,16 +87,16 @@ internal class BlockRenderer : IBlockContainer
     /// </remarks>
     private void InnerRenderChild(UiBlock? parent, UiBlock child, Span2D<char> childBuffer)
     {
-        ComputeBlockRenderData(parent, child, childBuffer);
+        WriteBlockRenderInfo(parent, child, childBuffer);
 
         child.Container = this;
         child.Render(childBuffer);
     }
 
-    /// Stores necessary render data for each block in this container, including information about the slice of the
-    /// full render buffer that this child renders to.
+    /// <summary>Stores necessary render data for each block in this container,
+    /// including information about the slice of the full render buffer that this child renders to.</summary>
     /// <seealso cref="_blocks"/>
-    private unsafe void ComputeBlockRenderData(UiBlock? parent, UiBlock child, Span2D<char> childBuffer)
+    private unsafe void WriteBlockRenderInfo(UiBlock? parent, UiBlock child, Span2D<char> childBuffer)
     {
         BufferSlice bufferSlice;
         fixed (char* rootPointer = _rootBuffer)
@@ -108,24 +112,11 @@ internal class BlockRenderer : IBlockContainer
         _blocks.AddOrUpdate(child, new BlockRenderInfo(parent, bufferSlice));
     }
 
-    // IBlockContainer Implementation
-
-    public void RenderChild(UiBlock parent, UiBlock child, Span2D<char> childBuffer) =>
-        InnerRenderChild(parent, child, childBuffer);
-
-    public void RequestRerender(UiBlock block)
-    {
-        var (parent, bufferSlice) = GetRenderInfoForBlock(block);
-
-        var fullBuffer = GetRectBuffer();
-        var slicedBuffer = SliceBuffer(fullBuffer, bufferSlice);
-
-        InnerRenderChild(parent, block, slicedBuffer);
-
-        Blit();
-    }
-
-    private BlockRenderInfo GetRenderInfoForBlock(UiBlock block)
+    /// <summary>Given a UiBlock, gets the previously stored render info data for that block.</summary>
+    /// <exception cref="UnattachedUiBlockException">
+    /// Thrown if the given block has not ever been rendered by this BLockRenderer.
+    /// </exception>
+    private BlockRenderInfo GetBlockRenderInfo(UiBlock block)
     {
         if (block.Container == this && _blocks.TryGetValue(block, out var renderInfo)) return renderInfo;
 
@@ -133,5 +124,24 @@ internal class BlockRenderer : IBlockContainer
         throw new UnattachedUiBlockException(
             $"{nameof(UiBlock)} of type {typeName} cannot be rerendered because it has not been rendered by this container."
         );
+    }
+
+    // IBlockContainer Implementation
+
+    /// <inheritdoc />
+    public void RenderChild(UiBlock parent, UiBlock child, Span2D<char> childBuffer) =>
+        InnerRenderChild(parent, child, childBuffer);
+
+    /// <inheritdoc />
+    public void RequestRerender(UiBlock block)
+    {
+        var (parent, bufferSlice) = GetBlockRenderInfo(block);
+
+        var fullBuffer = GetRectBuffer();
+        var slicedBuffer = SliceBuffer(fullBuffer, bufferSlice);
+
+        InnerRenderChild(parent, block, slicedBuffer);
+
+        Blit();
     }
 }

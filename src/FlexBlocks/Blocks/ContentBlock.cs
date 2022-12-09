@@ -7,8 +7,8 @@ public enum Sizing { Fill, Content }
 
 public enum Alignment { Start, Center, End }
 
-/// A block type that contains another single block, can align that block within itself,
-/// and can either size itself to its content or grow to fill available space.
+/// <summary>A block type that contains another single block, can align that block within itself,
+/// and can either size itself to its content or grow to fill available space.</summary>
 public abstract class ContentBlock : UiBlock
 {
     public UiBlock? Content { get; set; }
@@ -19,11 +19,12 @@ public abstract class ContentBlock : UiBlock
     public Sizing HorizontalSizing { get; set; } = Sizing.Content;
     public Sizing VerticalSizing { get; set; } = Sizing.Content;
 
+    /// <inheritdoc />
     public override bool ShouldRerenderWithChildren =>
-        Content is not null
-        && HorizontalSizing == Sizing.Content
-        && VerticalSizing == Sizing.Content;
+        // this block has a child and is sized according to that child in at least one dimension
+        Content is not null && (HorizontalSizing == Sizing.Content || VerticalSizing == Sizing.Content);
 
+    /// <inheritdoc />
     public override BlockSize CalcDesiredSize(BlockSize maxSize)
     {
         if (HorizontalSizing == Sizing.Fill && VerticalSizing == Sizing.Fill)
@@ -45,8 +46,10 @@ public abstract class ContentBlock : UiBlock
         };
     }
 
+    /// <summary>Calculates the maximum available size for this block's content.</summary>
     protected virtual BlockSize CalcMaxContentSize(BlockSize maxSize) => maxSize;
 
+    /// <summary>Renders this block's content to the given buffer, possibly aligned (<see cref="Alignment"/>).</summary>
     protected virtual void RenderContent(Span2D<char> contentBuffer)
     {
         if (Content is null) return;
@@ -56,7 +59,9 @@ public abstract class ContentBlock : UiBlock
         RenderChild(Content, alignedBuffer);
     }
 
-    private Span2D<char> ComputeAlignedContentBuffer(Span2D<char> buffer)
+    /// <summary>Determines what subset of the total content buffer this block's content should be rendered to,
+    /// according to the alignment settings.</summary>
+    protected Span2D<char> ComputeAlignedContentBuffer(Span2D<char> buffer)
     {
         if (Content is null) return buffer;
 
@@ -74,6 +79,7 @@ public abstract class ContentBlock : UiBlock
         );
     }
 
+    /// <summary>Calculates a slice of the full length of a single dimension that the content should be rendered to.</summary>
     private static (int start, int length) ComputeAlignedDimension(int maxSize, int desiredSize, Alignment alignment)
     {
         var sanitizedSize = Math.Min(maxSize, desiredSize);
@@ -83,8 +89,8 @@ public abstract class ContentBlock : UiBlock
             case Alignment.Start: return (0, sanitizedSize);
             case Alignment.Center:
                 var margin = (maxSize - sanitizedSize) / 2;
-                // if there would be uneven margins, let the content be 1 unit larger
-                return (margin, sanitizedSize + margin % 2);
+                var length = sanitizedSize + margin % 2; // if there would be uneven margins, let the content be 1 unit larger
+                return (margin, length);
             case Alignment.End: return (maxSize - sanitizedSize, sanitizedSize);
             default: throw new ArgumentOutOfRangeException(nameof(alignment), alignment, "Unknown alignment type");
         }

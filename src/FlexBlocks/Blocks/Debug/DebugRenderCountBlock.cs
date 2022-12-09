@@ -2,6 +2,7 @@
 
 namespace FlexBlocks.Blocks.Debug;
 
+/// A simple container block that simply renders the number of times it's content has been rendered.
 public class DebugRenderCountBlock : UiBlock
 {
     private int _renderCount;

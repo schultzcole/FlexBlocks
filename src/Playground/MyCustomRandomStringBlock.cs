@@ -2,11 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.HighPerformance;
-using FlexBlocks.Blocks;
+using FlexBlocks.Blocks.Debug;
 
 namespace Playground;
 
-// A custom implementation of RandomStringBlock that re-renders itself every 100 ms
+/// A custom implementation of RandomStringBlock that re-renders itself every 100 ms
+/// Disposing this Block stops the re-render loop.
 public class MyCustomRandomStringBlock : RandomStringBlock, IDisposable
 {
     private Task? _rerenderTask;

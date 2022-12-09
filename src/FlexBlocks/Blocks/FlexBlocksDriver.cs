@@ -2,20 +2,25 @@
 
 namespace FlexBlocks.Blocks;
 
+/// <summary>The entrypoint of the FlexBlocks application.</summary>
 public sealed class FlexBlocksDriver
 {
-    /// The top level ui block
+    /// <summary>The top level ui block</summary>
     private readonly UiBlock _rootBlock;
 
-    /// Optional custom max width
+    /// <summary>Optional custom max width</summary>
     private readonly int? _maxWidth;
-    /// Optional custom max height
+    /// <summary>Optional custom max height</summary>
     private readonly int? _maxHeight;
 
+    /// <summary>Responsible for rendering blocks to the console and maintaining
+    /// their hierarchy for the purposes of re-rendering later.</summary>
     private readonly BlockRenderer _blockRenderer;
 
+    /// <summary>
     /// Creates a new flex blocks driver.
     /// If no maximum dimensions are defined, the root block will fill the console window.
+    /// </summary>
     /// <param name="rootBlock">The top level ui block that will be rendered when this driver runs.</param>
     /// <param name="maxWidth">Optional maximum render buffer width.</param>
     /// <param name="maxHeight">Optional maximum render buffer height.</param>
@@ -28,7 +33,7 @@ public sealed class FlexBlocksDriver
         _blockRenderer = new BlockRenderer(width, height);
     }
 
-    /// Allocates the render buffer based on the available console space
+    /// <summary>Allocates the render buffer based on the available console space</summary>
     private (int width, int height) ComputeBufferSize(int? maxWidth, int? maxHeight)
     {
         var width = Math.Min(Console.BufferWidth, Console.WindowWidth);
@@ -46,7 +51,7 @@ public sealed class FlexBlocksDriver
     }
 
 
-    /// Starts the flex blocks driver.
+    /// <summary>Starts the flex blocks driver.</summary>
     /// <param name="quitToken">Quits the program when canceled.</param>
     /// <returns>A task the completes when the driver has quit.</returns>
     public async Task Run(CancellationToken quitToken)
@@ -66,10 +71,11 @@ public sealed class FlexBlocksDriver
             Console.Clear();
             Console.CursorVisible = false;
 
-            // on the off chance that the quitToken is canceled before now, quit before bothering to do the work of rendering the block
+            // on the off chance that the quitToken is canceled before now,
+            // quit before bothering to do the work of rendering the block
             quitTokenSource.Token.ThrowIfCancellationRequested();
 
-            // initial render
+            // initial render. subsequent renders will be initiated from within the block hierarchy using RequestRerender
             _blockRenderer.RenderRoot(_rootBlock);
 
             // yield thread until program is quit (either externally via quitToken or via user-initiated kill signal)
@@ -82,17 +88,18 @@ public sealed class FlexBlocksDriver
         }
         finally
         {
+            // return the console state to something resembling normalcy
             Console.CursorVisible = true;
             Console.SetCursorPosition(0, _blockRenderer.Height - 1);
             Console.WriteLine();
         }
     }
 
-    /// Starts the flex blocks driver.
+    /// <summary>Starts the flex blocks driver.</summary>
     /// <returns>A task the completes when the driver has quit.</returns>
     public Task Run() => Run(CancellationToken.None);
 
-    /// Starts up a fresh flex blocks driver with the given root block.
+    /// <summary>Starts up a fresh flex blocks driver with the given root block.</summary>
     /// <param name="rootBlock">The root block of this driver.</param>
     /// <param name="quitToken">Quits the program when canceled.</param>
     /// <returns>A task the completes when the driver has quit.</returns>
@@ -102,7 +109,7 @@ public sealed class FlexBlocksDriver
         await driver.Run(quitToken);
     }
 
-    /// Starts up a fresh flex blocks driver with the given root block.
+    /// <summary>Starts up a fresh flex blocks driver with the given root block.</summary>
     /// <param name="rootBlock">The root block of this driver.</param>
     /// <returns>A task the completes when the driver has quit.</returns>
     public static Task Run(UiBlock rootBlock) => Run(rootBlock, CancellationToken.None);

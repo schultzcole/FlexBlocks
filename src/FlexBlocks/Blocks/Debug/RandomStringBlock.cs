@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.HighPerformance;
 
-namespace FlexBlocks.Blocks;
+namespace FlexBlocks.Blocks.Debug;
 
+/// <summary>Fills a specified area (or the full extent of its parent) with random characters</summary>
 public class RandomStringBlock : UiBlock
 {
     private const string VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
