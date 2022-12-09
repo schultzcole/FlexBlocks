@@ -18,7 +18,11 @@ internal class BlockRenderer : IBlockContainer
     /// updated each time it is rendered.</summary>
     private readonly ConditionalWeakTable<UiBlock, BlockRenderInfo> _blocks = new();
 
-    private record BlockRenderInfo(UiBlock? Parent, BufferSlice BufferSlice);
+    private class BlockRenderInfo
+    {
+        public UiBlock? Parent { get; set; }
+        public BufferSlice BufferSlice { get; set; }
+    }
 
     /// <summary>Stores information about the slice of the main render buffer that a particular block occupies.</summary>
     private record struct BufferSlice(int XOffset, int YOffset, int Width, int Height);
@@ -109,7 +113,15 @@ internal class BlockRenderer : IBlockContainer
             bufferSlice = new BufferSlice(xOffset, yOffset, childBuffer.Width, childBuffer.Height);
         }
 
-        _blocks.AddOrUpdate(child, new BlockRenderInfo(parent, bufferSlice));
+        if (_blocks.TryGetValue(child, out var existingRenderInfo))
+        {
+            existingRenderInfo.Parent = parent;
+            existingRenderInfo.BufferSlice = bufferSlice;
+        }
+        else
+        {
+            _blocks.Add(child, new BlockRenderInfo { Parent = parent, BufferSlice = bufferSlice });
+        }
     }
 
     /// <summary>Given a UiBlock, gets the previously stored render info data for that block.</summary>
@@ -133,14 +145,43 @@ internal class BlockRenderer : IBlockContainer
         InnerRenderChild(parent, child, childBuffer);
 
     /// <inheritdoc />
-    public void RequestRerender(UiBlock block)
+    public void RequestRerender(UiBlock block, RerenderMode rerenderMode = RerenderMode.InPlace)
     {
-        var (parent, bufferSlice) = GetBlockRenderInfo(block);
+        switch (rerenderMode)
+        {
+            case RerenderMode.InPlace:
+            {
+                RerenderBlock(block);
+                break;
+            }
+            case RerenderMode.DesiredSizeChanged:
+            {
+                var renderInfo = GetBlockRenderInfo(block);
+                var parent = renderInfo.Parent;
+                if (parent is null)
+                {
+                    RenderRoot(block);
+                }
+                else
+                {
+                    var parentRerenderMode = parent.GetRerenderModeForChild(block);
+                    RequestRerender(parent, parentRerenderMode);
+                }
 
+                break;
+            }
+            default: throw new ArgumentOutOfRangeException(nameof(rerenderMode), rerenderMode, null);
+        }
+    }
+
+    private void RerenderBlock(UiBlock block)
+    {
+        var renderInfo = GetBlockRenderInfo(block);
         var fullBuffer = GetRectBuffer();
-        var slicedBuffer = SliceBuffer(fullBuffer, bufferSlice);
+        var slicedBuffer = SliceBuffer(fullBuffer, renderInfo.BufferSlice);
+        slicedBuffer.Fill(' ');
 
-        InnerRenderChild(parent, block, slicedBuffer);
+        InnerRenderChild(renderInfo.Parent, block, slicedBuffer);
 
         Blit();
     }

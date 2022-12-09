@@ -20,9 +20,18 @@ public abstract class ContentBlock : UiBlock
     public Sizing VerticalSizing { get; set; } = Sizing.Content;
 
     /// <inheritdoc />
-    public override bool ShouldRerenderWithChildren =>
-        // this block has a child and is sized according to that child in at least one dimension
-        Content is not null && (HorizontalSizing == Sizing.Content || VerticalSizing == Sizing.Content);
+    public override RerenderMode GetRerenderModeForChild(UiBlock child)
+    {
+        if (child != Content)
+        {
+            throw new Exception("This child isn't my child...");
+        }
+
+        // If this block is sized according to its child in either dimension, our size might change
+        return HorizontalSizing == Sizing.Content || VerticalSizing == Sizing.Content
+            ? RerenderMode.DesiredSizeChanged
+            : RerenderMode.InPlace;
+    }
 
     /// <inheritdoc />
     public override BlockSize CalcDesiredSize(BlockSize maxSize)
@@ -89,7 +98,7 @@ public abstract class ContentBlock : UiBlock
             case Alignment.Start: return (0, sanitizedSize);
             case Alignment.Center:
                 var margin = (maxSize - sanitizedSize) / 2;
-                var length = sanitizedSize + margin % 2; // if there would be uneven margins, let the content be 1 unit larger
+                var length = sanitizedSize;// + margin % 2; // if there would be uneven margins, let the content be 1 unit larger
                 return (margin, length);
             case Alignment.End: return (maxSize - sanitizedSize, sanitizedSize);
             default: throw new ArgumentOutOfRangeException(nameof(alignment), alignment, "Unknown alignment type");

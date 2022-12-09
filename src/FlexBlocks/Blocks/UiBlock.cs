@@ -7,9 +7,6 @@ namespace FlexBlocks.Blocks;
 /// <summary>Base class of UI components</summary>
 public abstract class UiBlock
 {
-    /// <summary>Returns whether this block's desired size should be recomputed.</summary>
-    public virtual bool ShouldRerenderWithChildren { get; } = false;
-
     /// <summary>
     /// The container to which this Block belongs. Should be used to <see cref="IBlockContainer.RenderChild"/>
     /// Blocks in <see cref="Render"/>, or to <see cref="IBlockContainer.RequestRerender" />.
@@ -28,15 +25,21 @@ public abstract class UiBlock
     /// available to render this Block to.</param>
     public abstract void Render(Span2D<char> buffer);
 
+    /// <summary>
+    /// Returns the rerender mode that should be used to rerender this UiBlock, given that
+    /// the given child block is being rerendered with <see cref="RerenderMode.DesiredSizeChanged"/>.
+    /// </summary>
+    public virtual RerenderMode GetRerenderModeForChild(UiBlock child) => RerenderMode.InPlace;
+
     /// <summary>Sends a request for this Block's container to rerender it.</summary>
     /// <exception cref="UnattachedUiBlockException">
     ///     Thrown if this method is called prior to the initial rendering of this block by a <see cref="IBlockContainer"/>.
     /// </exception>
-    protected void RequestRerender()
+    protected void RequestRerender(RerenderMode rerenderMode = RerenderMode.InPlace)
     {
         EnsureContainer();
 
-        Container.RequestRerender(this);
+        Container.RequestRerender(this, rerenderMode);
     }
 
     /// <summary>Renders the given child block to the given buffer via this Block's container.</summary>
