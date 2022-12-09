@@ -174,6 +174,7 @@ internal class BlockRenderer : IBlockContainer
         }
     }
 
+    /// <summary>Rerenders a block to the same buffer slice it was last rendered to.</summary>
     private void RerenderBlock(UiBlock block)
     {
         var renderInfo = GetBlockRenderInfo(block);
