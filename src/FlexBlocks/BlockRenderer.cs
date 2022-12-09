@@ -1,7 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
+using FlexBlocks.BlockProperties;
+using FlexBlocks.Blocks;
 
-namespace FlexBlocks.Blocks;
+namespace FlexBlocks;
 
 /// <summary>
 /// Responsible for holding the render buffer for a FlexBlocks application and managing rendering Blocks to that buffer.

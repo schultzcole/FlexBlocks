@@ -1,6 +1,7 @@
-﻿using Nito.AsyncEx;
+﻿using FlexBlocks.Blocks;
+using Nito.AsyncEx;
 
-namespace FlexBlocks.Blocks;
+namespace FlexBlocks;
 
 /// <summary>The entrypoint of the FlexBlocks application.</summary>
 public sealed class FlexBlocksDriver

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.HighPerformance;
+using FlexBlocks.Blocks;
 
-namespace FlexBlocks.Blocks;
+namespace FlexBlocks;
 
 /// <summary>
 /// Determines what will be rerendered

@@ -1,4 +1,4 @@
-﻿namespace FlexBlocks.Blocks;
+﻿namespace FlexBlocks.BlockProperties;
 
 /// <summary>Defines a set of characters to use for each corner and side of a border.</summary>
 public record Border(

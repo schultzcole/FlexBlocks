@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.HighPerformance;
+using FlexBlocks.BlockProperties;
 
 namespace FlexBlocks.Blocks;
 

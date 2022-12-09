@@ -1,4 +1,6 @@
-﻿namespace FlexBlocks.Blocks;
+﻿using FlexBlocks.Blocks;
+
+namespace FlexBlocks;
 
 /// <summary>
 /// Thrown when attempting to use a UiBlock's <see cref="UiBlock.Container"/> before a render has been initiated by the

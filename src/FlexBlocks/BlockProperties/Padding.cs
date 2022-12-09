@@ -1,4 +1,4 @@
-﻿namespace FlexBlocks.Blocks;
+﻿namespace FlexBlocks.BlockProperties;
 
 /// <summary>Represents a padding offset from each of the four sides of a rectangle.</summary>
 public record Padding(int Top, int Right, int Bottom, int Left)

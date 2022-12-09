@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
+using FlexBlocks.BlockProperties;
 
 namespace FlexBlocks.Blocks;
 
