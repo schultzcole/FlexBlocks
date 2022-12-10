@@ -95,7 +95,7 @@ public abstract class ContentBlock : UiBlock
             case Alignment.Start: return (0, sanitizedSize);
             case Alignment.Center:
                 var margin = (maxSize - sanitizedSize) / 2;
-                var length = sanitizedSize;// + margin % 2; // if there would be uneven margins, let the content be 1 unit larger
+                var length = sanitizedSize;
                 return (margin, length);
             case Alignment.End: return (maxSize - sanitizedSize, sanitizedSize);
             default: throw new ArgumentOutOfRangeException(nameof(alignment), alignment, "Unknown alignment type");
