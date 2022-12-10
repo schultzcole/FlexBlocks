@@ -27,9 +27,22 @@ public readonly record struct BlockSize(
 
     /// <summary>Constrains this block's height to be no taller than a specified value.</summary>
     public BlockSize ConstrainHeight(int height) => this with { Height = Math.Min(Height, height) };
+
+    /// <summary>Returns a new block size that is shrunk by the amount of padding on each side.</summary>
+    public BlockSize ShrinkByPadding(Padding padding) => new(
+        Width - padding.Left - padding.Right,
+        Height - padding.Top - padding.Bottom
+    );
+
+    /// <summary>Returns a new block size that is expanded by the amount of padding on each side.</summary>
+    public BlockSize ExpandByPadding(Padding padding) => new(
+        Width + padding.Left + padding.Right,
+        Height + padding.Top + padding.Bottom
+    );
 }
 
 public static class BlockSizeExtensions
 {
+    /// <summary>Returns a block size that has the same width and height as the given span.</summary>
     public static BlockSize BlockSize<T>(this Span2D<T> span) => new(span.Width, span.Height);
 }

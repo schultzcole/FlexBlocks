@@ -18,15 +18,14 @@ public class BorderBlock : ContentBlock
             ? Padding?.Copy() ?? Padding.Zero
             : Padding?.Expand(1) ?? Padding.One;
 
-    /// <inheritdoc />
-    protected override BlockSize CalcMaxContentSize(BlockSize maxSize) => CalcMaxContentSize(maxSize, EffectivePadding);
+    public override BlockSize CalcDesiredSize(BlockSize maxSize)
+    {
+        var padding = EffectivePadding;
+        var maxContentSize = maxSize.ShrinkByPadding(padding);
+        var contentDesiredSize = base.CalcDesiredSize(maxContentSize);
 
-    /// <summary>Calculates the maximum size available for content using the given padding.</summary>
-    private static BlockSize CalcMaxContentSize(BlockSize maxSize, Padding padding) =>
-        new(
-            maxSize.Width - padding.Left - padding.Right,
-            maxSize.Height - padding.Top - padding.Bottom
-        );
+        return contentDesiredSize.ExpandByPadding(padding);
+    }
 
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)
@@ -36,7 +35,7 @@ public class BorderBlock : ContentBlock
         if (Content is null) return;
 
         var padding = EffectivePadding;
-        var maxContentSize = CalcMaxContentSize(buffer.BlockSize(), padding);
+        var maxContentSize = buffer.BlockSize().ShrinkByPadding(padding);
 
         var contentBuffer = buffer.Slice(
             row: padding.Top,

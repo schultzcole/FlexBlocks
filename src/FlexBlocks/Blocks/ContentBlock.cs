@@ -42,8 +42,7 @@ public abstract class ContentBlock : UiBlock
             return maxSize;
         }
 
-        var maxContentSize = CalcMaxContentSize(maxSize);
-        var contentSize = Content?.CalcDesiredSize(maxContentSize) ?? maxContentSize;
+        var contentSize = Content?.CalcDesiredSize(maxSize) ?? maxSize;
 
         return (HorizontalSizing, VerticalSizing) switch
         {
@@ -55,9 +54,6 @@ public abstract class ContentBlock : UiBlock
             _ => throw new UnreachableException($"Unknown sizing values. H={HorizontalSizing}, V={VerticalSizing}")
         };
     }
-
-    /// <summary>Calculates the maximum available size for this block's content.</summary>
-    protected virtual BlockSize CalcMaxContentSize(BlockSize maxSize) => maxSize;
 
     /// <summary>Renders this block's content to the given buffer, possibly aligned (<see cref="Alignment"/>).</summary>
     protected virtual void RenderContent(Span2D<char> contentBuffer)
