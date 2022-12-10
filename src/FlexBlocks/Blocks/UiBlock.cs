@@ -2,12 +2,29 @@
 using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
+using FlexBlocks.Renderables;
 
 namespace FlexBlocks.Blocks;
 
 /// <summary>Base class of UI components</summary>
 public abstract class UiBlock
 {
+    /// <summary>
+    /// A pattern that is rendered into this block's buffer prior to rendering this block.
+    /// This is especially important for blocks whose layout may change, as without a background,
+    /// areas that are not explicitly overwritten will retain their previous content.
+    /// </summary>
+    public Pattern? Background { get; set; } = Patterns.BlankPattern;
+
+    /// <summary>
+    /// A renderable component that gets rendered on top of this block with no influence over layout.
+    /// </summary>
+    /// <remarks>
+    /// As a general rule, the overlay should be used for non-critical ui components such as debug
+    /// information. There may of course be exceptions to this rule.
+    /// </remarks>
+    public IRenderable? Overlay { get; set; }
+
     /// <summary>
     /// The container to which this Block belongs. Should be used to <see cref="IBlockContainer.RenderChild"/>
     /// Blocks in <see cref="Render"/>, or to <see cref="IBlockContainer.RequestRerender" />.

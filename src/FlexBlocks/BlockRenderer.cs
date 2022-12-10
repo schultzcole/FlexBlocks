@@ -96,7 +96,10 @@ internal class BlockRenderer : IBlockContainer
         WriteBlockRenderInfo(parent, child, childBuffer);
 
         child.Container = this;
+
+        child.Background?.Render(childBuffer);
         child.Render(childBuffer);
+        child.Overlay?.Render(childBuffer);
     }
 
     /// <summary>Stores necessary render data for each block in this container,
@@ -182,7 +185,6 @@ internal class BlockRenderer : IBlockContainer
         var renderInfo = GetBlockRenderInfo(block);
         var fullBuffer = GetRectBuffer();
         var slicedBuffer = SliceBuffer(fullBuffer, renderInfo.BufferSlice);
-        slicedBuffer.Fill(' ');
 
         InnerRenderChild(renderInfo.Parent, block, slicedBuffer);
 
