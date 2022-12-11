@@ -16,6 +16,8 @@ internal class BlockRenderer : IBlockContainer
     /// <summary>The root render buffer. Blocks belonging to this BlockRenderer render to slices of this buffer</summary>
     private readonly char[] _rootBuffer;
 
+    private readonly RenderQueue _renderQueue = new();
+
     /// <summary>Stores data necessary to rerender each block after its initial rendering. The entry for each block is
     /// updated each time it is rendered.</summary>
     private readonly ConditionalWeakTable<UiBlock, BlockRenderInfo> _blocks = new();
@@ -72,6 +74,13 @@ internal class BlockRenderer : IBlockContainer
     /// then blits the render buffer to the console.</summary>
     public void RenderRoot(UiBlock root)
     {
+        InnerRenderRoot(root);
+        Blit();
+    }
+
+    /// <summary>Renders the entire Block hierarchy to the render buffer.</summary>
+    private void InnerRenderRoot(UiBlock root)
+    {
         var buffer = GetRectBuffer();
         var rootDesiredSize = root.CalcDesiredSize(buffer.BlockSize());
         var rootBuffer = buffer.Slice(
@@ -80,9 +89,7 @@ internal class BlockRenderer : IBlockContainer
             height: rootDesiredSize.Height,
             width: rootDesiredSize.Width
         );
-        InnerRenderChild(null, root, rootBuffer);
-
-        Blit();
+        RenderBlock(null, root, rootBuffer);
     }
 
     /// <summary>Renders a child block (with optional parent block) to the given buffer.</summary>
@@ -91,7 +98,7 @@ internal class BlockRenderer : IBlockContainer
     /// which is why this method is private. The publicly accessible implementation of
     /// <see cref="IBlockContainer.RenderChild"/> in this class requires a non-null parent.
     /// </remarks>
-    private void InnerRenderChild(UiBlock? parent, UiBlock child, Span2D<char> childBuffer)
+    private void RenderBlock(UiBlock? parent, UiBlock child, Span2D<char> childBuffer)
     {
         WriteBlockRenderInfo(parent, child, childBuffer);
 
@@ -101,6 +108,43 @@ internal class BlockRenderer : IBlockContainer
         child.Render(childBuffer);
         child.Overlay?.Render(childBuffer);
     }
+
+    /// <summary>Rerenders a block to the same buffer slice it was last rendered to.</summary>
+    /// <remarks>
+    /// This method assumes that the given block has already been rendered by this BlockRenderer and thus
+    /// has render info stored.
+    /// </remarks>
+    private void RerenderBlock(UiBlock block, BlockRenderInfo renderInfo)
+    {
+        var fullBuffer = GetRectBuffer();
+        var slicedBuffer = SliceBuffer(fullBuffer, renderInfo.BufferSlice);
+
+        RenderBlock(renderInfo.Parent, block, slicedBuffer);
+    }
+
+    /// <summary>Renders all of the blocks currently in the render queue.</summary>
+    public void ConsumeRenderQueue(CancellationToken token)
+    {
+        // TODO: topological sort of blocks to re-render to avoid re-rendering a block if it's parent has already been/is going to be rerendered this frame?
+        // probably doesn't actually need to be a full topological sort... we can simply remove an item from the queue altogether if one of its ancestors is going to be rendered already.
+
+        if (!_renderQueue.IsReadyToConsume) return; // the queue is already being consumed, drop this "frame"
+
+        foreach (var block in _renderQueue.Consume(token))
+        {
+            var renderInfo = GetBlockRenderInfo(block);
+            if (renderInfo.Parent is null)
+            {
+                RenderRoot(block);
+                break; // we just re-rendered everything anyway, no need to rerender anything remaining in the queue.
+            }
+
+            RerenderBlock(block, renderInfo);
+        }
+
+        Blit();
+    }
+
 
     /// <summary>Stores necessary render data for each block in this container,
     /// including information about the slice of the full render buffer that this child renders to.</summary>
@@ -131,7 +175,7 @@ internal class BlockRenderer : IBlockContainer
 
     /// <summary>Given a UiBlock, gets the previously stored render info data for that block.</summary>
     /// <exception cref="UnattachedUiBlockException">
-    /// Thrown if the given block has not ever been rendered by this BLockRenderer.
+    /// Thrown if the given block has not ever been rendered by this BlockRenderer.
     /// </exception>
     private BlockRenderInfo GetBlockRenderInfo(UiBlock block)
     {
@@ -147,7 +191,7 @@ internal class BlockRenderer : IBlockContainer
 
     /// <inheritdoc />
     public void RenderChild(UiBlock parent, UiBlock child, Span2D<char> childBuffer) =>
-        InnerRenderChild(parent, child, childBuffer);
+        RenderBlock(parent, child, childBuffer);
 
     /// <inheritdoc />
     public void RequestRerender(UiBlock block, RerenderMode rerenderMode = RerenderMode.InPlace)
@@ -156,7 +200,7 @@ internal class BlockRenderer : IBlockContainer
         {
             case RerenderMode.InPlace:
             {
-                RerenderBlock(block);
+                _renderQueue.EnqueueBlock(block);
                 break;
             }
             case RerenderMode.DesiredSizeChanged:
@@ -165,7 +209,7 @@ internal class BlockRenderer : IBlockContainer
                 var parent = renderInfo.Parent;
                 if (parent is null)
                 {
-                    RenderRoot(block);
+                    _renderQueue.EnqueueBlock(block);
                 }
                 else
                 {
@@ -177,17 +221,5 @@ internal class BlockRenderer : IBlockContainer
             }
             default: throw new ArgumentOutOfRangeException(nameof(rerenderMode), rerenderMode, null);
         }
-    }
-
-    /// <summary>Rerenders a block to the same buffer slice it was last rendered to.</summary>
-    private void RerenderBlock(UiBlock block)
-    {
-        var renderInfo = GetBlockRenderInfo(block);
-        var fullBuffer = GetRectBuffer();
-        var slicedBuffer = SliceBuffer(fullBuffer, renderInfo.BufferSlice);
-
-        InnerRenderChild(renderInfo.Parent, block, slicedBuffer);
-
-        Blit();
     }
 }

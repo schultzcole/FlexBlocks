@@ -1,5 +1,6 @@
 ﻿using FlexBlocks.Blocks;
 using Nito.AsyncEx;
+using Timer = System.Timers.Timer;
 
 namespace FlexBlocks;
 
@@ -79,9 +80,14 @@ public sealed class FlexBlocksDriver
             // initial render. subsequent renders will be initiated from within the block hierarchy using RequestRerender
             _blockRenderer.RenderRoot(_rootBlock);
 
+            var timer = new Timer(TimeSpan.FromMilliseconds(10));
+            timer.Elapsed += (_, _) => _blockRenderer.ConsumeRenderQueue(quitTokenSource.Token);
+            timer.Start();
+
             // yield thread until program is quit (either externally via quitToken or via user-initiated kill signal)
             using var cancelTaskSource = new CancellationTokenTaskSource<object>(quitTokenSource.Token);
             await cancelTaskSource.Task.ConfigureAwait(true);
+            timer.Stop();
         }
         catch (TaskCanceledException)
         {
