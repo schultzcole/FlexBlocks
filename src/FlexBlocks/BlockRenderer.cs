@@ -18,8 +18,10 @@ internal class BlockRenderer : IBlockContainer
 
     private readonly RenderQueue _renderQueue = new();
 
-    /// <summary>Stores data necessary to rerender each block after its initial rendering. The entry for each block is
-    /// updated each time it is rendered.</summary>
+    /// <summary>
+    /// Stores data necessary to rerender each block after its initial rendering. The entry for each block is
+    /// updated each time it is rendered.
+    /// </summary>
     private readonly ConditionalWeakTable<UiBlock, BlockRenderInfo> _blocks = new();
 
     private class BlockRenderInfo
@@ -122,27 +124,55 @@ internal class BlockRenderer : IBlockContainer
         RenderBlock(renderInfo.Parent, block, slicedBuffer);
     }
 
+    /// <summary>
+    /// Keeps track of whether the BlockRenderer is currently consuming the render queue.
+    /// </summary>
+    private bool _isConsumingRenderQueue;
+
+    /// <summary>
+    /// A count of the number of times a frame was skipped because the previous frame was not finished rendering.
+    /// </summary>
+    internal int DroppedFrames { get; private set; }
+
     /// <summary>Renders all of the blocks currently in the render queue.</summary>
     public void ConsumeRenderQueue(CancellationToken token)
     {
         // TODO: topological sort of blocks to re-render to avoid re-rendering a block if it's parent has already been/is going to be rerendered this frame?
         // probably doesn't actually need to be a full topological sort... we can simply remove an item from the queue altogether if one of its ancestors is going to be rendered already.
 
-        if (!_renderQueue.IsReadyToConsume) return; // the queue is already being consumed, drop this "frame"
-
-        foreach (var block in _renderQueue.Consume(token))
+        // Prevent reentrant calls of ConsumeRenderQueue. We do not want to have multiple simultaneous
+        // instances of this method running and modifying the buffer simultaneously, so if a new frame request comes in
+        // while we're in the process of rendering a previous frame, just drop the incoming frame request.
+        if (_isConsumingRenderQueue)
         {
-            var renderInfo = GetBlockRenderInfo(block);
-            if (renderInfo.Parent is null)
-            {
-                RenderRoot(block);
-                break; // we just re-rendered everything anyway, no need to rerender anything remaining in the queue.
-            }
-
-            RerenderBlock(block, renderInfo);
+            DroppedFrames++;
+            return;
         }
 
-        Blit();
+        _isConsumingRenderQueue = true;
+
+        try
+        {
+            foreach (var block in _renderQueue.Consume())
+            {
+                token.ThrowIfCancellationRequested();
+                var renderInfo = GetBlockRenderInfo(block);
+                if (renderInfo.Parent is null)
+                {
+                    RenderRoot(block);
+                    break; // we just re-rendered everything anyway, no need to rerender anything remaining in the queue.
+                }
+
+                RerenderBlock(block, renderInfo);
+            }
+
+            token.ThrowIfCancellationRequested();
+            Blit();
+        }
+        finally
+        {
+            _isConsumingRenderQueue = false;
+        }
     }
 
 
