@@ -49,6 +49,12 @@ public abstract class UiBlock
     /// </summary>
     public virtual RerenderMode GetRerenderModeForChild(UiBlock child) => RerenderMode.InPlace;
 
+
+    /// <summary>
+    /// Returns true if this block is eligible for a re-render (i.e. it has already been rendered at least once).
+    /// </summary>
+    protected bool CanRequestRerender => Container is not null;
+
     /// <summary>Sends a request for this Block's container to rerender it.</summary>
     /// <exception cref="UnattachedUiBlockException">
     ///     Thrown if this method is called prior to the initial rendering of this block by a <see cref="IBlockContainer"/>.
@@ -58,6 +64,20 @@ public abstract class UiBlock
         EnsureContainer();
 
         Container.RequestRerender(this, rerenderMode);
+    }
+
+    /// <summary>Sends a request for this Block's container to rerender it.</summary>
+    /// <returns>
+    /// True if a rerender was successfully requested, otherwise False.
+    /// A rerender request can fail if this <see cref="UiBlock" /> has not yet been rendered.
+    /// </returns>
+    protected bool TryRequestRerender(RerenderMode rerenderMode = RerenderMode.InPlace)
+    {
+        if (Container is null) return false;
+
+        Container.RequestRerender(this, rerenderMode);
+        return true;
+
     }
 
     /// <summary>Renders the given child block to the given buffer via this Block's container.</summary>
