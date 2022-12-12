@@ -196,30 +196,18 @@ internal class BlockRenderer : IBlockContainer
     /// <inheritdoc />
     public void RequestRerender(UiBlock block, RerenderMode rerenderMode = RerenderMode.InPlace)
     {
-        switch (rerenderMode)
+        while (rerenderMode != RerenderMode.InPlace)
         {
-            case RerenderMode.InPlace:
-            {
-                _renderQueue.EnqueueBlock(block);
-                break;
-            }
-            case RerenderMode.DesiredSizeChanged:
-            {
-                var renderInfo = GetBlockRenderInfo(block);
-                var parent = renderInfo.Parent;
-                if (parent is null)
-                {
-                    _renderQueue.EnqueueBlock(block);
-                }
-                else
-                {
-                    var parentRerenderMode = parent.GetRerenderModeForChild(block);
-                    RequestRerender(parent, parentRerenderMode);
-                }
+            var renderInfo = GetBlockRenderInfo(block);
+            var parent = renderInfo.Parent;
 
-                break;
-            }
-            default: throw new ArgumentOutOfRangeException(nameof(rerenderMode), rerenderMode, null);
+            if (parent is null) break;
+
+            rerenderMode = parent.GetRerenderModeForChild(block);
+            block = parent;
         }
+
+
+        _renderQueue.EnqueueBlock(block);
     }
 }
