@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
 using FlexBlocks.Blocks;
@@ -137,9 +138,6 @@ internal class BlockRenderer : IBlockContainer
     /// <summary>Renders all of the blocks currently in the render queue.</summary>
     public void ConsumeRenderQueue(CancellationToken token)
     {
-        // TODO: topological sort of blocks to re-render to avoid re-rendering a block if it's parent has already been/is going to be rerendered this frame?
-        // probably doesn't actually need to be a full topological sort... we can simply remove an item from the queue altogether if one of its ancestors is going to be rendered already.
-
         // Prevent reentrant calls of ConsumeRenderQueue. We do not want to have multiple simultaneous
         // instances of this method running and modifying the buffer simultaneously, so if a new frame request comes in
         // while we're in the process of rendering a previous frame, just drop the incoming frame request.
@@ -153,17 +151,24 @@ internal class BlockRenderer : IBlockContainer
 
         try
         {
-            foreach (var block in _renderQueue.Consume())
+            var queue = _renderQueue.Consume();
+            foreach (var block in queue)
             {
-                token.ThrowIfCancellationRequested();
                 var renderInfo = GetBlockRenderInfo(block);
-                if (renderInfo.Parent is null)
-                {
-                    RenderRoot(block);
-                    break; // we just re-rendered everything anyway, no need to rerender anything remaining in the queue.
-                }
+                var parent = renderInfo.Parent;
 
-                RerenderBlock(block, renderInfo);
+                if (parent is null)
+                {
+                    token.ThrowIfCancellationRequested();
+                    RenderRoot(block);
+                }
+                else
+                {
+                    if (SetContainsAncestor(parent, queue)) continue;
+
+                    token.ThrowIfCancellationRequested();
+                    RerenderBlock(block, renderInfo);
+                }
             }
 
             token.ThrowIfCancellationRequested();
@@ -173,6 +178,25 @@ internal class BlockRenderer : IBlockContainer
         {
             _isConsumingRenderQueue = false;
         }
+    }
+
+    /// <summary>Returns whether the given set contains any ancestor of the given block (including the given block).</summary>
+    private bool SetContainsAncestor(UiBlock block, ImmutableHashSet<UiBlock> set)
+    {
+        UiBlock? parent = block;
+
+        // Search up through this block's ancestors. If one of its ancestors is also in the queue, skip this block.
+        while (parent is not null)
+        {
+            if (set.Contains(parent))
+            {
+                return true;
+            }
+
+            parent = GetBlockRenderInfo(parent).Parent;
+        }
+
+        return false;
     }
 
 
