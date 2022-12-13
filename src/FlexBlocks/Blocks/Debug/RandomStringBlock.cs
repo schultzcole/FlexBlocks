@@ -8,17 +8,20 @@ public class RandomStringBlock : UiBlock
 {
     private const string VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    public int? Width { get; set; }
-    public int? Height { get; set; }
+    public DesiredBlockSize DesiredSize { get; set; }
 
-    public override BlockSize CalcDesiredSize(BlockSize maxSize) =>
-        (Width, Height) switch
-        {
-            (null, null)            => maxSize,
-            ({ } width, null)       => maxSize.ConstrainWidth(width),
-            (null, { } height)      => maxSize.ConstrainHeight(height),
-            ({ } width, { } height) => maxSize.Constrain(width, height)
-        };
+    public BlockLength Width
+    {
+        get => DesiredSize.Width;
+        set => DesiredSize = DesiredSize with { Width = value };
+    }
+    public BlockLength Height
+    {
+        get => DesiredSize.Height;
+        set => DesiredSize = DesiredSize with { Height = value };
+    }
+
+    public override DesiredBlockSize CalcDesiredSize(BlockSize _) => DesiredSize;
 
     public override void Render(Span2D<char> buffer)
     {

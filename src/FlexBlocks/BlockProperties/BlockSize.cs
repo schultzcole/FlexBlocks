@@ -2,43 +2,37 @@
 
 namespace FlexBlocks.BlockProperties;
 
-/// Represents the size of a block
+/// <summary>Represents the size of a block</summary>
 /// <param name="Width">How many horizontal characters this block takes up.</param>
 /// <param name="Height">How many vertical characters this block takes up.</param>
-public readonly record struct BlockSize(
-    int Width,
-    int Height
-)
+public readonly record struct BlockSize(int Width, int Height)
 {
-    /// <summary>Constrains this block size to be no larger than another. Effectively a 2d minimum.</summary>
-    public BlockSize Constrain(BlockSize other) => new(Math.Min(Width, other.Width), Math.Min(Height, other.Height));
-
-    /// <summary>Constrains this block size to be no larger than the given width and height. Effectively a 2d minimum.</summary>
-    public BlockSize Constrain(int width, int height) => new(Math.Min(Width, width), Math.Min(Height, height));
-
-    /// <summary>Constrains this block's width to be no wider than another.</summary>
-    public BlockSize ConstrainWidth(BlockSize other) => this with { Width = Math.Min(Width, other.Width) };
-
-    /// <summary>Constrains this block's width to be no wider than a specified value.</summary>
-    public BlockSize ConstrainWidth(int width) => this with { Width = Math.Min(Width, width) };
-
-    /// <summary>Constrains this block's height to be no taller than another.</summary>
-    public BlockSize ConstrainHeight(BlockSize other) => this with { Height = Math.Min(Height, other.Height) };
-
-    /// <summary>Constrains this block's height to be no taller than a specified value.</summary>
-    public BlockSize ConstrainHeight(int height) => this with { Height = Math.Min(Height, height) };
-
     /// <summary>Returns a new block size that is shrunk by the amount of padding on each side.</summary>
     public BlockSize ShrinkByPadding(Padding padding) => new(
         Width - padding.Left - padding.Right,
         Height - padding.Top - padding.Bottom
     );
+}
 
-    /// <summary>Returns a new block size that is expanded by the amount of padding on each side.</summary>
-    public BlockSize ExpandByPadding(Padding padding) => new(
-        Width + padding.Left + padding.Right,
-        Height + padding.Top + padding.Bottom
-    );
+/// <summary>Represents the desired width of a block, with the option to be unbounded.</summary>
+/// <param name="Width"></param>
+/// <param name="Height"></param>
+public readonly record struct DesiredBlockSize(BlockLength Width, BlockLength Height)
+{
+    public static DesiredBlockSize Unbounded { get; } = new(BlockLength.Unbounded, BlockLength.Unbounded);
+
+    public static DesiredBlockSize From(int? width, int? height) =>
+        new(BlockLength.From(width), BlockLength.From(height));
+
+    public static DesiredBlockSize From(BlockLength width, BlockLength height) => new(width, height);
+
+    public BlockSize Constrain(BlockSize maxSize)
+    {
+        var width = Width.Value is not null ? Math.Min(Width.Value.Value, maxSize.Width) : maxSize.Width;
+        var height = Height.Value is not null ? Math.Min(Height.Value.Value, maxSize.Height) : maxSize.Height;
+
+        return new BlockSize(width, height);
+    }
 }
 
 public static class BlockSizeExtensions

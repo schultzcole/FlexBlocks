@@ -35,20 +35,20 @@ public abstract class ContentBlock : UiBlock
     }
 
     /// <inheritdoc />
-    public override BlockSize CalcDesiredSize(BlockSize maxSize)
+    public override DesiredBlockSize CalcDesiredSize(BlockSize maxSize)
     {
         if (HorizontalSizing == Sizing.Fill && VerticalSizing == Sizing.Fill)
         {
-            return maxSize;
+            return DesiredBlockSize.Unbounded;
         }
 
-        var contentSize = Content?.CalcDesiredSize(maxSize) ?? maxSize;
+        var contentSize = Content?.CalcDesiredSize(maxSize) ?? DesiredBlockSize.Unbounded;
 
         return (HorizontalSizing, VerticalSizing) switch
         {
-            (Sizing.Content, Sizing.Content) => contentSize.Constrain(maxSize),
-            (Sizing.Content, Sizing.Fill)    => maxSize.ConstrainWidth(contentSize),
-            (Sizing.Fill, Sizing.Content)    => maxSize.ConstrainHeight(contentSize),
+            (Sizing.Content, Sizing.Content) => contentSize,
+            (Sizing.Content, Sizing.Fill)    => contentSize with { Height = BlockLength.Unbounded },
+            (Sizing.Fill, Sizing.Content)    => contentSize with { Width = BlockLength.Unbounded },
 
             // (Fill, Fill) case is covered above
             _ => throw new UnreachableException($"Unknown sizing values. H={HorizontalSizing}, V={VerticalSizing}")
@@ -72,7 +72,7 @@ public abstract class ContentBlock : UiBlock
         if (Content is null) return buffer;
 
         var maxSize = buffer.BlockSize();
-        var contentSize = Content?.CalcDesiredSize(maxSize) ?? maxSize;
+        var contentSize = Content.CalcDesiredSize(maxSize).Constrain(maxSize);
 
         var hDimension = ComputeAlignedDimension(maxSize.Width, contentSize.Width, HorizontalContentAlignment);
         var vDimension = ComputeAlignedDimension(maxSize.Height, contentSize.Height, VerticalContentAlignment);

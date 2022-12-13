@@ -34,7 +34,7 @@ public abstract class UiBlock
     /// <summary>Computes the size in columns and rows that this block will take up when rendered.</summary>
     /// <remarks>This is used to determine the size of the buffer that will be passed to <see cref="Render"/>.</remarks>
     /// <param name="maxSize">The maximum space available in which to render this Block.</param>
-    public abstract BlockSize CalcDesiredSize(BlockSize maxSize);
+    public abstract DesiredBlockSize CalcDesiredSize(BlockSize maxSize);
 
     /// <summary>Renders this Block to a given render buffer.</summary>
     /// <remarks>This method should not be called directly in user code in most cases. Most often, it gets called by the

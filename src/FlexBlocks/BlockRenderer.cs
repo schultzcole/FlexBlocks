@@ -85,7 +85,8 @@ internal class BlockRenderer : IBlockContainer
     private void InnerRenderRoot(UiBlock root)
     {
         var buffer = GetRectBuffer();
-        var rootDesiredSize = root.CalcDesiredSize(buffer.BlockSize());
+        var maxSize = buffer.BlockSize();
+        var rootDesiredSize = root.CalcDesiredSize(maxSize).Constrain(maxSize);
         var rootBuffer = buffer.Slice(
             row: 0,
             column: 0,
