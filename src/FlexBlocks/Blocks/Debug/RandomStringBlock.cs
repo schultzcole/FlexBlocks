@@ -8,20 +8,7 @@ public class RandomStringBlock : UiBlock
 {
     private const string VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    public DesiredBlockSize DesiredSize { get; set; }
-
-    public BlockLength Width
-    {
-        get => DesiredSize.Width;
-        set => DesiredSize = DesiredSize with { Width = value };
-    }
-    public BlockLength Height
-    {
-        get => DesiredSize.Height;
-        set => DesiredSize = DesiredSize with { Height = value };
-    }
-
-    public override DesiredBlockSize CalcDesiredSize(BlockSize _) => DesiredSize;
+    public override DesiredBlockSize CalcDesiredSize(BlockSize _) => DesiredBlockSize.Unbounded;
 
     public override void Render(Span2D<char> buffer)
     {
