@@ -8,8 +8,10 @@ public enum Sizing { Fill, Content }
 
 public enum Alignment { Start, Center, End }
 
-/// <summary>A block type that contains another single block, can align that block within itself,
-/// and can either size itself to its content or grow to fill available space.</summary>
+/// <summary>
+/// A block type that contains another single block, can align that block within itself,
+/// and can either size itself to its content or grow to fill available space in either or both dimensions.
+/// </summary>
 public abstract class ContentBlock : UiBlock
 {
     public UiBlock? Content { get; set; }
