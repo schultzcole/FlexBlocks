@@ -33,6 +33,9 @@ public record struct BlockLength :
 
     public BlockLength() { }
 
+    public static BlockLength Min(BlockLength left, BlockLength right) => left < right ? left : right;
+    public static BlockLength Max(BlockLength left, BlockLength right) => left > right ? left : right;
+
     /// <summary>Adds two block lengths. If either is unbounded, the result will be unbounded.</summary>
     public static BlockLength operator +(BlockLength length, BlockLength other) => From(length.Value + other.Value);
 
@@ -109,50 +112,112 @@ public record struct BlockLength :
     public static BlockLength operator %(double? value, BlockLength length) => From((int?)(length.Value % value));
 
     /// <inheritdoc />
-    public static bool operator >(BlockLength left, BlockLength right) => left.Value > right.Value;
+    public static bool operator >(BlockLength left, BlockLength right) =>
+        UnboundedNumberComparisons.GreaterThan(left.Value, right.Value);
 
     /// <inheritdoc />
-    public static bool operator >=(BlockLength left, BlockLength right) => left.Value >= right.Value;
+    public static bool operator >=(BlockLength left, BlockLength right) =>
+        UnboundedNumberComparisons.GreaterThanOrEqual(left.Value, right.Value);
 
     /// <inheritdoc />
-    public static bool operator <(BlockLength left, BlockLength right) => left.Value < right.Value;
+    public static bool operator <(BlockLength left, BlockLength right) =>
+        UnboundedNumberComparisons.LessThan(left.Value, right.Value);
 
     /// <inheritdoc />
-    public static bool operator <=(BlockLength left, BlockLength right) => left.Value <= right.Value;
+    public static bool operator <=(BlockLength left, BlockLength right) =>
+        UnboundedNumberComparisons.LessThanOrEqual(left.Value, right.Value);
 
     /// <inheritdoc />
-    public static bool operator ==(BlockLength left, int? right) => left.Value == right;
+    public static bool operator ==(BlockLength left, int? right) =>
+        UnboundedNumberComparisons.Equal(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator !=(BlockLength left, int? right) => left.Value != right;
+    public static bool operator !=(BlockLength left, int? right) =>
+        UnboundedNumberComparisons.NotEqual(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator >(BlockLength left, int? right) => left.Value > right;
+    public static bool operator >(BlockLength left, int? right) =>
+        UnboundedNumberComparisons.GreaterThan(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator >=(BlockLength left, int? right) => left.Value >= right;
+    public static bool operator >=(BlockLength left, int? right) =>
+        UnboundedNumberComparisons.GreaterThanOrEqual(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator <(BlockLength left, int? right) => left.Value < right;
+    public static bool operator <(BlockLength left, int? right) =>
+        UnboundedNumberComparisons.LessThan(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator <=(BlockLength left, int? right) => left.Value <= right;
+    public static bool operator <=(BlockLength left, int? right) =>
+        UnboundedNumberComparisons.LessThanOrEqual(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator ==(BlockLength left, double? right) => left.Value == right;
+    public static bool operator ==(BlockLength left, double? right) =>
+        UnboundedNumberComparisons.Equal(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator !=(BlockLength left, double? right) => left.Value != right;
+    public static bool operator !=(BlockLength left, double? right) =>
+        UnboundedNumberComparisons.NotEqual(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator >(BlockLength left, double? right) => left.Value > right;
+    public static bool operator >(BlockLength left, double? right) =>
+        UnboundedNumberComparisons.GreaterThan(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator >=(BlockLength left, double? right) => left.Value >= right;
+    public static bool operator >=(BlockLength left, double? right) =>
+        UnboundedNumberComparisons.GreaterThanOrEqual(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator <(BlockLength left, double? right) => left.Value < right;
+    public static bool operator <(BlockLength left, double? right) =>
+        UnboundedNumberComparisons.LessThan(left.Value, right);
 
     /// <inheritdoc />
-    public static bool operator <=(BlockLength left, double? right) => left.Value <= right;
+    public static bool operator <=(BlockLength left, double? right) =>
+        UnboundedNumberComparisons.LessThanOrEqual(left.Value, right);
+}
+
+/// <summary>
+/// Generic comparison functions for nullable numbers where a value of null represents "unbounded" or "infinity"
+/// </summary>
+public static class UnboundedNumberComparisons
+{
+    public static bool GreaterThan<T>(T? left, T? right) where T : unmanaged, IComparisonOperators<T, T, bool> =>
+        (left, right) switch
+        {
+            (_, null)      => false,
+            (null, _)      => true,
+            ({ } l, { } r) => l > r
+        };
+
+    public static bool GreaterThanOrEqual<T>(T? left, T? right) where T : unmanaged, IComparisonOperators<T, T, bool> =>
+        (left, right) switch
+        {
+            (null, null)   => true,
+            (_, null)      => false,
+            (null, _)      => true,
+            ({ } l, { } r) => l >= r
+        };
+
+    public static bool LessThan<T>(T? left, T? right) where T : unmanaged, IComparisonOperators<T, T, bool> =>
+        (left, right) switch
+        {
+            (null, _)      => false,
+            (_, null)      => true,
+            ({ } l, { } r) => l < r
+        };
+
+    public static bool LessThanOrEqual<T>(T? left, T? right) where T : unmanaged, IComparisonOperators<T, T, bool> =>
+        (left, right) switch
+        {
+            (null, null)   => true,
+            (null, _)      => false,
+            (_, null)      => true,
+            ({ } l, { } r) => l <= r
+        };
+
+    public static bool Equal<T>(T? left, T? right) where T : unmanaged, IComparisonOperators<T, T, bool> =>
+        left == right;
+
+    public static bool NotEqual<T>(T? left, T? right) where T : unmanaged, IComparisonOperators<T, T, bool> =>
+        left != right;
 }
