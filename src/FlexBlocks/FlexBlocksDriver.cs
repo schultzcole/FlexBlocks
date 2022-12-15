@@ -80,6 +80,9 @@ public sealed class FlexBlocksDriver
             // initial render. subsequent renders will be initiated from within the block hierarchy using RequestRerender
             _blockRenderer.RenderRoot(_rootBlock);
 
+            // rerender the whole screen when a hot reload was detected.
+            HotReloader.OnHotReloaded += () => _blockRenderer.RequestRerender(_rootBlock);
+
             var timer = new Timer(TimeSpan.FromMilliseconds(10));
             timer.Elapsed += (_, _) => _blockRenderer.ConsumeRenderQueue(quitTokenSource.Token);
             timer.Start();
