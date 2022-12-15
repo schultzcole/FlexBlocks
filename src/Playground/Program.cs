@@ -23,17 +23,20 @@ var block = new BorderBlock
     {
         Overlay = new CompositeRenderable
         {
-            new DimensionsOverlay(),
+            // new DimensionsOverlay(),
             new RenderCountOverlay(),
         },
         Border = Borders.Square,
-        Padding = new Padding(1, 3),
+        // Padding = new Padding(1, 3),
         HorizontalSizing = Sizing.Content,
-        VerticalSizing = Sizing.Fill,
+        VerticalSizing = Sizing.Content,
         Content = new MyAnimatedBoundedBlock
         {
-            DesiredSize = DesiredBlockSize.From(11, 15),
-            Content = new RandomStringBlock(),
+            DesiredSize = DesiredBlockSize.From(12, 4),
+            Content = new TextBlock
+            {
+                Text = "The quick brown\tfox jumps over-the lazy dog.\n\tAnd some more text.\n\nUh oh loooooooooooooong word"
+            },
         },
     },
 };

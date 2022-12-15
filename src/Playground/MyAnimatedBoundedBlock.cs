@@ -32,7 +32,7 @@ public class MyAnimatedBoundedBlock : BoundedBlock, IDisposable
                 {
                     while (!_cts.Token.IsCancellationRequested)
                     {
-                        await Task.Delay(10, _cts.Token);
+                        await Task.Delay(100, _cts.Token);
 
                         if (!CanRequestRerender) continue;
 
@@ -40,8 +40,8 @@ public class MyAnimatedBoundedBlock : BoundedBlock, IDisposable
                         {
                             _expandDir = Width.Value switch
                             {
-                                >= 80 => -1,
-                                <= 15 => 1,
+                                >= 50 => -1,
+                                <= 10 => 1,
                                 _     => _expandDir
                             };
 
