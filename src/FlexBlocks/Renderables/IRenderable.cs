@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.HighPerformance;
+using FlexBlocks.Blocks;
 
-namespace FlexBlocks.Blocks;
+namespace FlexBlocks.Renderables;
 
 /// <summary>
 /// Represents a thing that can be rendered to a 2D character buffer with no ability to influence the layout or size of
