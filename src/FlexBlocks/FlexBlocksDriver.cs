@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.HighPerformance;
+﻿using System.Text;
+using CommunityToolkit.HighPerformance;
 using FlexBlocks.Blocks;
 using Nito.AsyncEx;
 using Timer = System.Timers.Timer;
@@ -162,6 +163,7 @@ public sealed class FlexBlocksDriver
 
             Console.Clear();
             Console.CursorVisible = false;
+            Console.OutputEncoding = Encoding.Unicode;
 
             // on the off chance that the quitToken is canceled before now,
             // quit before bothering to do the work of rendering the first frame.
