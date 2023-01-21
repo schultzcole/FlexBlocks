@@ -32,7 +32,7 @@ var block = new BorderBlock
         VerticalSizing = Sizing.Content,
         Content = new MyAnimatedBoundedBlock
         {
-            DesiredSize = DesiredBlockSize.From(12, 4),
+            MaxSize = UnboundedBlockSize.From(15, 12),
             Content = new TextBlock
             {
                 Text = "The quick brown\tfox jumps over-the lazy dog.\n\tAnd some more text.\n\nUh oh loooooooooooooong word"

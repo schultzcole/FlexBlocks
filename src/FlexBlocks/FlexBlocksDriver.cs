@@ -171,7 +171,7 @@ public sealed class FlexBlocksDriver
             Render(true, quitTokenSource.Token);
 
             // rerender the whole screen when a hot reload was detected.
-            HotReloader.OnHotReloaded += () => Render(false, quitTokenSource.Token);
+            HotReloader.OnHotReloaded += () => Render(true, quitTokenSource.Token);
 
             // render loop
             var timer = new Timer(TimeSpan.FromMilliseconds(10));

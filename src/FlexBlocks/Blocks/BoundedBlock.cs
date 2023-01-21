@@ -12,27 +12,36 @@ public class BoundedBlock : UiBlock
     public UiBlock? Content { get; set; }
 
     /// <summary>The desired size of this block.</summary>
-    public DesiredBlockSize DesiredSize { get; set; }
+    public UnboundedBlockSize MaxSize { get; set; }
 
     /// <summary>The desired width of this block.</summary>
     public BlockLength Width
     {
-        get => DesiredSize.Width;
-        set => DesiredSize = DesiredSize with { Width = value };
+        get => MaxSize.Width;
+        set => MaxSize = MaxSize with { Width = value };
     }
 
     /// <summary>The desired height of this block.</summary>
     public BlockLength Height
     {
-        get => DesiredSize.Height;
-        set => DesiredSize = DesiredSize with { Height = value };
+        get => MaxSize.Height;
+        set => MaxSize = MaxSize with { Height = value };
     }
 
     /// <inheritdoc />
-    public override DesiredBlockSize CalcDesiredSize(BlockSize maxSize) =>
+    public override UnboundedBlockSize CalcMaxSize() =>
         Content is not null
-            ? DesiredBlockSize.Min(DesiredSize, Content.CalcDesiredSize(maxSize))
-            : DesiredSize;
+            ? Content.CalcMaxSize().Constrain(MaxSize)
+            : MaxSize;
+
+    /// <inheritdoc />
+    public override BlockSize CalcSize(BlockSize maxSize)
+    {
+        var boundedSize = maxSize.Constrain(MaxSize);
+        return Content is not null
+            ? Content.CalcSize(boundedSize).Constrain(boundedSize)
+            : boundedSize;
+    }
 
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)

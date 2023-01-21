@@ -3,12 +3,14 @@ using FlexBlocks.BlockProperties;
 
 namespace FlexBlocks.Blocks.Debug;
 
-/// <summary>Fills a specified area (or the full extent of its parent) with random characters</summary>
+/// <summary>Fills a block with random characters.</summary>
 public class RandomStringBlock : UiBlock
 {
     private const string VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    public override DesiredBlockSize CalcDesiredSize(BlockSize _) => DesiredBlockSize.Unbounded;
+    public override UnboundedBlockSize CalcMaxSize() => UnboundedBlockSize.Unbounded;
+
+    public override BlockSize CalcSize(BlockSize maxSize) => maxSize;
 
     public override void Render(Span2D<char> buffer)
     {

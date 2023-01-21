@@ -18,13 +18,13 @@ public class BorderBlock : ContentBlock
             ? Padding?.Copy() ?? Padding.Zero
             : Padding?.Expand(1) ?? Padding.One;
 
-    public override DesiredBlockSize CalcDesiredSize(BlockSize maxSize)
+    public override BlockSize CalcSize(BlockSize maxSize)
     {
         var padding = EffectivePadding;
         var maxContentSize = maxSize.ShrinkByPadding(padding);
-        var contentDesiredSize = base.CalcDesiredSize(maxContentSize);
+        var contentDesiredSize = base.CalcSize(maxContentSize).Constrain(maxContentSize);
 
-        return DesiredBlockSize.From(
+        return BlockSize.From(
             contentDesiredSize.Width + padding.Left + padding.Right,
             contentDesiredSize.Height + padding.Top + padding.Bottom
         );

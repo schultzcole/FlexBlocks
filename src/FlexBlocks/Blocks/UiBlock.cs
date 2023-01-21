@@ -31,10 +31,17 @@ public abstract class UiBlock
     /// </summary>
     public IBlockContainer? Container { get; internal set; }
 
-    /// <summary>Computes the size in columns and rows that this block will take up when rendered.</summary>
+    /// <summary>
+    /// Computes the maximum size in columns and rows that this block would take up, given infinite space.
+    /// </summary>
+    public abstract UnboundedBlockSize CalcMaxSize();
+
+    /// <summary>
+    /// Computes the size in columns and rows that this block will take up when rendered, given a concrete maximum size.
+    /// </summary>
     /// <remarks>This is used to determine the size of the buffer that will be passed to <see cref="Render"/>.</remarks>
     /// <param name="maxSize">The maximum space available in which to render this Block.</param>
-    public abstract DesiredBlockSize CalcDesiredSize(BlockSize maxSize);
+    public abstract BlockSize CalcSize(BlockSize maxSize);
 
     /// <summary>Renders this Block to a given render buffer.</summary>
     /// <remarks>This method should not be called directly in user code in most cases. Most often, it gets called by the

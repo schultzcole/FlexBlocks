@@ -37,20 +37,41 @@ public abstract class ContentBlock : UiBlock
     }
 
     /// <inheritdoc />
-    public override DesiredBlockSize CalcDesiredSize(BlockSize maxSize)
+    public override UnboundedBlockSize CalcMaxSize()
     {
         if (HorizontalSizing == Sizing.Fill && VerticalSizing == Sizing.Fill)
         {
-            return DesiredBlockSize.Unbounded;
+            return UnboundedBlockSize.Unbounded;
         }
 
-        var contentSize = Content?.CalcDesiredSize(maxSize) ?? DesiredBlockSize.Unbounded;
+        var contentSize = Content?.CalcMaxSize() ?? UnboundedBlockSize.Unbounded;
 
         return (HorizontalSizing, VerticalSizing) switch
         {
             (Sizing.Content, Sizing.Content) => contentSize,
             (Sizing.Content, Sizing.Fill)    => contentSize with { Height = BlockLength.Unbounded },
             (Sizing.Fill, Sizing.Content)    => contentSize with { Width = BlockLength.Unbounded },
+
+            // (Fill, Fill) case is covered above
+            _ => throw new UnreachableException($"Unknown sizing values. H={HorizontalSizing}, V={VerticalSizing}")
+        };
+    }
+
+    /// <inheritdoc />
+    public override BlockSize CalcSize(BlockSize maxSize)
+    {
+        if (HorizontalSizing == Sizing.Fill && VerticalSizing == Sizing.Fill)
+        {
+            return maxSize;
+        }
+
+        var contentSize = Content?.CalcSize(maxSize) ?? maxSize;
+
+        return (HorizontalSizing, VerticalSizing) switch
+        {
+            (Sizing.Content, Sizing.Content) => contentSize,
+            (Sizing.Content, Sizing.Fill)    => contentSize with { Height = maxSize.Height },
+            (Sizing.Fill, Sizing.Content)    => contentSize with { Width = maxSize.Width },
 
             // (Fill, Fill) case is covered above
             _ => throw new UnreachableException($"Unknown sizing values. H={HorizontalSizing}, V={VerticalSizing}")
@@ -74,7 +95,7 @@ public abstract class ContentBlock : UiBlock
         if (Content is null) return buffer;
 
         var maxSize = buffer.BlockSize();
-        var contentSize = Content.CalcDesiredSize(maxSize).Constrain(maxSize);
+        var contentSize = Content.CalcSize(maxSize).Constrain(maxSize);
 
         var hDimension = ComputeAlignedDimension(maxSize.Width, contentSize.Width, HorizontalContentAlignment);
         var vDimension = ComputeAlignedDimension(maxSize.Height, contentSize.Height, VerticalContentAlignment);
