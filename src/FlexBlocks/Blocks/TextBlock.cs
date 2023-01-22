@@ -16,16 +16,10 @@ public class TextBlock : UiBlock
     public override UnboundedBlockSize CalcMaxSize() => UnboundedBlockSize.Unbounded;
 
     /// <inheritdoc />
-    public override BlockSize CalcSize(BlockSize maxSize)
-    {
-        return LayoutText(maxSize, Span2D<char>.Empty, false);
-    }
+    public override BlockSize CalcSize(BlockSize maxSize) => LayoutText(maxSize, Span2D<char>.Empty, false);
 
     /// <inheritdoc />
-    public override void Render(Span2D<char> buffer)
-    {
-        LayoutText(buffer.BlockSize(), buffer, true);
-    }
+    public override void Render(Span2D<char> buffer) => LayoutText(buffer.BlockSize(), buffer, true);
 
     private BlockSize LayoutText(BlockSize maxSize, Span2D<char> buffer, bool renderToBuffer)
     {
@@ -56,7 +50,8 @@ public class TextBlock : UiBlock
                 case '\t':
                 {
                     lastBreakableChar = i;
-                    for (int t = 0; t < TabWidth; t++)
+                    var reachedEndOfLine = false;
+                    for (int t = 0; !reachedEndOfLine && t < TabWidth; t++)
                     {
                         lastWordStartInRow = writeCol + 1;
 
@@ -71,7 +66,10 @@ public class TextBlock : UiBlock
 
                         HandleWrapResult(buffer, wrapResult, writeRow, ref lastWordStartInRow, renderToBuffer);
 
-                        if (wrapResult != WrapResult.DidntWrap) break;
+                        if (wrapResult is WrapResult.Wrap or WrapResult.WrapClear)
+                        {
+                            reachedEndOfLine = true;
+                        }
                     }
 
                     break;
@@ -163,7 +161,8 @@ public class TextBlock : UiBlock
         Wrap,
     }
 
-    private void HandleWrapResult(Span2D<char> buffer, WrapResult wrapResult, int writeRow, ref int lastWordStartInRow, bool renderToBuffer)
+    private void HandleWrapResult(Span2D<char> buffer, WrapResult wrapResult, int writeRow,
+        ref int lastWordStartInRow, bool renderToBuffer)
     {
         if (wrapResult != WrapResult.WrapClear) return;
 
