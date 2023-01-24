@@ -8,189 +8,223 @@ namespace FlexBlocks.Blocks;
 /// </summary>
 public class TextBlock : UiBlock
 {
-    public string? Text { get; set; }
+    private string? _text;
+
+    public string? Text
+    {
+        get => _text;
+        set
+        {
+            if (_text != value)
+            {
+                _measureResult?.ClearLines();
+            }
+            _text = value;
+        }
+    }
 
     public uint TabWidth { get; set; } = 4;
+
+    private MeasureResult? _measureResult;
 
     /// <inheritdoc />
     public override UnboundedBlockSize CalcMaxSize() => UnboundedBlockSize.Unbounded;
 
     /// <inheritdoc />
-    public override BlockSize CalcSize(BlockSize maxSize) => LayoutText(maxSize, Span2D<char>.Empty, false);
+    public override BlockSize CalcSize(BlockSize maxSize)
+    {
+        LayoutText(maxSize);
+
+        return _measureResult?.Size ?? BlockSize.From(0, 0);
+    }
 
     /// <inheritdoc />
-    public override void Render(Span2D<char> buffer) => LayoutText(buffer.BlockSize(), buffer, true);
-
-    private BlockSize LayoutText(BlockSize maxSize, Span2D<char> buffer, bool renderToBuffer)
+    public override void Render(Span2D<char> buffer)
     {
-        var textSpan = Text.AsSpan();
+        var size = buffer.BlockSize();
+        LayoutText(size);
 
-        var writeRow = 0;
-        var writeCol = 0;
+        _measureResult?.RenderLines(buffer);
+    }
 
-        var lastBreakableChar = 0;
-        var lastWordStartInRow = 0;
+    /// <summary>Lays out the text in this text block in accordance with the given size restrictions.</summary>
+    private void LayoutText(BlockSize maxSize)
+    {
+        if (Text is null) return;
+        if (_measureResult?.Size == maxSize) return;
+
+        if (_measureResult is not null)
+        {
+            _measureResult.ClearLines();
+        }
+        else
+        {
+            _measureResult = new MeasureResult();
+        }
+
+        var expandedText = ExpandText(Text, (int)TabWidth);
+        var expandedTextSpan = expandedText.Span;
+
+        var currentRowStart = 0; // index relative to start of string
+        var endOfLastWordInRow = 0; // index relative to start of current line
+        var startOfLastWordInRow = 0; // index relative to start of current line
+        for (var i = 0; i < expandedTextSpan.Length; i++)
+        {
+            var positionInRow = i - currentRowStart;
+            var currentChar = expandedTextSpan[i];
+
+            if (currentChar == '\n')
+            {
+                _measureResult.AddLine(expandedText.Slice(currentRowStart, positionInRow));
+                currentRowStart = i + 1;
+                endOfLastWordInRow = 0;
+                startOfLastWordInRow = 0;
+                continue;
+            }
+
+            var currentBreakability = IsBreakable(currentChar);
+            var prevBreakability = i > 0 ? IsBreakable(expandedTextSpan[i - 1]) : Breakability.NoBreak;
+            if (currentBreakability == Breakability.Break && prevBreakability != Breakability.Break)
+            {
+                endOfLastWordInRow = positionInRow;
+            }
+            else if (currentBreakability != Breakability.Break && prevBreakability == Breakability.Break)
+            {
+                startOfLastWordInRow = positionInRow;
+            }
+            else if (currentBreakability == Breakability.NoBreak && prevBreakability == Breakability.BreakAndKeep)
+            {
+                endOfLastWordInRow = positionInRow;
+                startOfLastWordInRow = positionInRow;
+            }
+
+            var overflowingLine = positionInRow >= maxSize.Width;
+            var isLastChar = i + 1 >= expandedTextSpan.Length;
+
+            if (overflowingLine && currentBreakability != Breakability.Break)
+            {
+                _measureResult.AddLine(expandedText.Slice(currentRowStart, endOfLastWordInRow));
+                i = currentRowStart + startOfLastWordInRow;
+                currentRowStart = i;
+                endOfLastWordInRow = 0;
+                startOfLastWordInRow = 0;
+
+                if (_measureResult.Size.Height >= maxSize.Height)
+                {
+                    break;
+                }
+            }
+            else if (isLastChar && currentBreakability == Breakability.NoBreak)
+            {
+                endOfLastWordInRow = positionInRow + 1;
+            }
+        }
+
+        if (endOfLastWordInRow > 0)
+        {
+            _measureResult.AddLine(expandedText.Slice(currentRowStart, endOfLastWordInRow));
+        }
+    }
+
+    /// <summary>Expands tab characters in the given text into <paramref name="tabWidth"/> spaces.</summary>
+    /// <param name="text">The text to expand.</param>
+    /// <param name="tabWidth">Number of spaces that a tab should be rendered as.</param>
+    public static ReadOnlyMemory<char> ExpandText(string text, int tabWidth)
+    {
+        var expandedLen = ExpandedStringLength(text, tabWidth);
+
+        if (expandedLen == text.Length)
+        {
+            return text.AsMemory();
+        }
+
+        var textSpan = text.AsSpan();
+        var newStr = new char[expandedLen];
+        var newStrSpan = newStr.AsSpan();
+
+        Span<char> tabStr = stackalloc char[tabWidth];
+        tabStr.Fill(' ');
+
+        var lastTab = 0; // index within the given text just after the last tab character
+        var writeIndex = 0; // index within the new string array
         for (int i = 0; i < textSpan.Length; i++)
         {
-            var current = textSpan[i];
+            if (textSpan[i] != '\t') continue;
 
-            switch (current)
+            if (i - lastTab > 0)
             {
-                case '\n':
-                {
-                    writeRow++;
-                    writeCol = 0;
-                    break;
-                }
-                case '\r':
-                {
-                    writeCol = 0;
-                    break;
-                }
-                case '\t':
-                {
-                    lastBreakableChar = i;
-                    var reachedEndOfLine = false;
-                    for (int t = 0; !reachedEndOfLine && t < TabWidth; t++)
-                    {
-                        lastWordStartInRow = writeCol + 1;
-
-                        if (renderToBuffer)
-                        {
-                            buffer[writeRow, writeCol] = ' ';
-                        }
-
-                        var wrapResult = IncrementPosition(maxSize.Width, textSpan,
-                            ref i, ref writeRow, ref writeCol, ref lastBreakableChar, ref lastWordStartInRow
-                        );
-
-                        HandleWrapResult(buffer, wrapResult, writeRow, ref lastWordStartInRow, renderToBuffer);
-
-                        if (wrapResult is WrapResult.Wrap or WrapResult.WrapClear)
-                        {
-                            reachedEndOfLine = true;
-                        }
-                    }
-
-                    break;
-                }
-                default:
-                {
-                    if (renderToBuffer)
-                    {
-                        buffer[writeRow, writeCol] = current;
-                    }
-
-                    if (IsBreakable(current) != BreakMode.NotBreakable)
-                    {
-                        lastBreakableChar = i;
-                        lastWordStartInRow = writeCol + 1;
-                    }
-
-                    var wrapResult = IncrementPosition(maxSize.Width, textSpan,
-                        ref i, ref writeRow, ref writeCol, ref lastBreakableChar, ref lastWordStartInRow
-                    );
-
-                    HandleWrapResult(buffer, wrapResult, writeRow, ref lastWordStartInRow, renderToBuffer);
-
-                    break;
-                }
+                var textToWrite = textSpan[lastTab..i];
+                textToWrite.CopyTo(newStrSpan[writeIndex..]);
+                writeIndex += textToWrite.Length;
             }
 
-            if ((writeRow + 1 == maxSize.Height && writeCol >= maxSize.Width) || writeRow + 1 > maxSize.Height)
+            tabStr.CopyTo(newStrSpan[writeIndex..]);
+            writeIndex += tabStr.Length;
+
+            lastTab = i + 1;
+        }
+
+        textSpan[lastTab..].CopyTo(newStrSpan[writeIndex..]);
+
+        return newStr.AsMemory();
+    }
+
+    /// <summary>Gets the length that a given line will occupy in the final rendered buffer.</summary>
+    private static int ExpandedStringLength(string line, int tabWidth)
+    {
+        var length = 0;
+        for (int i = 0; i < line.Length; i++)
+        {
+            if (i + 1 < line.Length && line[i] == '\t')
             {
-                break;
+                length += tabWidth;
+            }
+            else
+            {
+                length++;
             }
         }
 
-        return BlockSize.From(maxSize.Width, writeRow + 1);
+        return length;
     }
 
-    /// <summary>
-    /// Increments to the next row and/or column to write to.
-    /// </summary>
-    /// <returns>Whether we wrapped to the next line</returns>
-    private static WrapResult IncrementPosition(
-        int maxWidth,
-        ReadOnlySpan<char> textSpan,
-        ref int i,
-        ref int row,
-        ref int col,
-        ref int lastBreakableChar,
-        ref int lastWordStartInRow
-    )
-    {
-        if (col + 1 < maxWidth)
+    private static Breakability IsBreakable(char c) => c switch
         {
-            col++;
-            return WrapResult.DidntWrap;
-        }
-
-        row++;
-        col = 0;
-
-        if (i + 1 < textSpan.Length)
-        {
-            // we're going to overflow
-            var next = textSpan[i + 1];
-            if (lastWordStartInRow == 0) return WrapResult.Wrap;
-
-            switch (IsBreakable(next))
-            {
-                case BreakMode.BreakAndKeepWithPrevious:
-                case BreakMode.NotBreakable:
-                    i = lastBreakableChar;
-                    return WrapResult.WrapClear;
-                case BreakMode.BreakAndRemove:
-                    i++;
-                    break;
-            }
-        }
-
-        return WrapResult.Wrap;
-    }
-
-    /// What type of wrap, if any, occurred when we incremented the write position?
-    private enum WrapResult
-    {
-        // No wrap occurred, proceed as normal
-        DidntWrap,
-        // Wrapped in the middle of a word; need to clear the line so that we can start rewriting it on the next line
-        WrapClear,
-        // Wrapped, but on a breakable character. Proceed as normal
-        Wrap,
-    }
-
-    private void HandleWrapResult(Span2D<char> buffer, WrapResult wrapResult, int writeRow,
-        ref int lastWordStartInRow, bool renderToBuffer)
-    {
-        if (wrapResult != WrapResult.WrapClear) return;
-
-        if (renderToBuffer)
-        {
-            buffer.GetRowSpan(writeRow - 1)[lastWordStartInRow..].Fill(' ');
-        }
-        lastWordStartInRow = 0;
-    }
-
-    private static BreakMode IsBreakable(char c)
-    {
-        return c switch
-        {
-            ' ' or '\n' => BreakMode.BreakAndRemove,
-            '-' or '\t' => BreakMode.BreakAndKeepWithPrevious,
-            _           => BreakMode.NotBreakable
+            ' ' => Breakability.Break,
+            '-' => Breakability.BreakAndKeep,
+            _   => Breakability.NoBreak
         };
-    }
 
-    /// The "breakableness" of a text character
-    private enum BreakMode
+    private enum Breakability { NoBreak, Break, BreakAndKeep }
+
+    private class MeasureResult
     {
-        // Not allowed to break on this character, wrap the whole word to the next line
-        NotBreakable,
-        // Breaking on this character is allowed, and don't try to render it after wrapping
-        BreakAndRemove,
-        // Breaking on this character is allowed, but don't erase it from the current line and don't try to render it on the next line
-        BreakAndKeepWithPrevious
+        public BlockSize Size { get; private set; }
+        private readonly List<ReadOnlyMemory<char>> _rawLines = new();
+
+        public void ClearLines()
+        {
+            Size = BlockSize.From(0, 0);
+            _rawLines.Clear();
+        }
+
+        public void AddLine(ReadOnlyMemory<char> line)
+        {
+            _rawLines.Add(line);
+
+            var newWidth = Math.Max(line.Length, Size.Width);
+            var newHeight = _rawLines.Count;
+
+            Size = BlockSize.From(newWidth, newHeight);
+        }
+
+        public void RenderLines(Span2D<char> buffer)
+        {
+            for (var i = 0; i < _rawLines.Count; i++)
+            {
+                _rawLines[i].Span.CopyTo(buffer.GetRowSpan(i));
+            }
+        }
+
     }
 }
