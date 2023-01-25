@@ -166,8 +166,11 @@ public class TextBlock : UiBlock
                 writeIndex += textToWrite.Length;
             }
 
-            tabStr.CopyTo(newStrSpan[writeIndex..]);
-            writeIndex += tabStr.Length;
+            if (i + 1 < textSpan.Length)
+            {
+                tabStr.CopyTo(newStrSpan[writeIndex..]);
+                writeIndex += tabStr.Length;
+            }
 
             lastTab = i + 1;
         }
@@ -183,8 +186,13 @@ public class TextBlock : UiBlock
         var length = 0;
         for (int i = 0; i < line.Length; i++)
         {
-            if (i + 1 < line.Length && line[i] == '\t')
+            if (line[i] == '\t')
             {
+                if (i + 1 >= line.Length)
+                {
+                    break;
+                }
+
                 length += tabWidth;
             }
             else
@@ -197,11 +205,11 @@ public class TextBlock : UiBlock
     }
 
     private static Breakability IsBreakable(char c) => c switch
-        {
-            ' ' => Breakability.Break,
-            '-' => Breakability.BreakAndKeep,
-            _   => Breakability.NoBreak
-        };
+    {
+        ' ' => Breakability.Break,
+        '-' => Breakability.BreakAndKeep,
+        _   => Breakability.NoBreak
+    };
 
     private enum Breakability { NoBreak, Break, BreakAndKeep }
 

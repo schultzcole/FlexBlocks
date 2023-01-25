@@ -261,28 +261,35 @@ public class TextBlockTests
         public void Should_return_same_text_when_input_has_no_tabs()
         {
             var actualExpandedText = TextBlock.ExpandText("some text", 2);
-            actualExpandedText.ToArray().Should().BeEquivalentTo("some text");
+            actualExpandedText.ToString().Should().BeEquivalentTo("some text");
         }
 
         [Fact]
         public void Should_return_text_with_spaces_instead_of_tabs()
         {
             var actualExpandedText = TextBlock.ExpandText("some\ttext", 2);
-            actualExpandedText.ToArray().Should().BeEquivalentTo("some  text");
+            actualExpandedText.ToString().Should().BeEquivalentTo("some  text");
         }
 
         [Fact]
         public void Should_return_text_with_spaces_instead_of_two_tabs()
         {
             var actualExpandedText = TextBlock.ExpandText("some\tmore\ttext", 2);
-            actualExpandedText.ToArray().Should().BeEquivalentTo("some  more  text");
+            actualExpandedText.ToString().Should().BeEquivalentTo("some  more  text");
         }
 
         [Fact]
         public void Should_return_text_with_spaces_instead_of_two_tabs_in_a_row()
         {
             var actualExpandedText = TextBlock.ExpandText("some\t\ttext", 2);
-            actualExpandedText.ToArray().Should().BeEquivalentTo("some    text");
+            actualExpandedText.ToString().Should().BeEquivalentTo("some    text");
+        }
+
+        [Fact]
+        public void Should_not_expand_trailing_tab()
+        {
+            var actualExpandedText = TextBlock.ExpandText("some text\t", 2);
+            actualExpandedText.ToString().Should().BeEquivalentTo("some text");
         }
     }
 }
