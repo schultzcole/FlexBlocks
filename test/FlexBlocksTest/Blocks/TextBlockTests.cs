@@ -4,6 +4,7 @@ using FlexBlocks.Blocks;
 using FlexBlocksTest.Utils;
 using FluentAssertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace FlexBlocksTest.Blocks;
 
@@ -65,6 +66,9 @@ public class TextBlockTests
 
     public class Render
     {
+        private readonly ITestOutputHelper _output;
+        public Render(ITestOutputHelper output) { _output = output; }
+
         [Fact]
         public void Should_render_to_one_row_when_string_is_shorter_than_buffer_width()
         {
@@ -80,6 +84,8 @@ public class TextBlockTests
                 "□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□",
                 "□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□",
             }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
 
             buffer.Should().BeEquivalentTo(expected);
         }
@@ -100,6 +106,8 @@ public class TextBlockTests
                 "□□□□□□□□□□□",
             }.ToCharGrid();
 
+            _output.WriteCharGrid(buffer, expected);
+
             buffer.Should().BeEquivalentTo(expected);
         }
 
@@ -118,6 +126,8 @@ public class TextBlockTests
                 "charlie□□□□□□□",
                 "□□□□□□□□□□□□□□",
             }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
 
             buffer.Should().BeEquivalentTo(expected);
         }
@@ -138,6 +148,8 @@ public class TextBlockTests
                 "□□□□□□□□□□□□□□",
             }.ToCharGrid();
 
+            _output.WriteCharGrid(buffer, expected);
+
             buffer.Should().BeEquivalentTo(expected);
         }
 
@@ -156,6 +168,8 @@ public class TextBlockTests
                 "bravo-□□□□□",
                 "charlie□□□□",
             }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
 
             buffer.Should().BeEquivalentTo(expected);
         }
@@ -176,6 +190,8 @@ public class TextBlockTests
                 "□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□",
             }.ToCharGrid();
 
+            _output.WriteCharGrid(buffer, expected);
+
             buffer.Should().BeEquivalentTo(expected);
         }
 
@@ -194,6 +210,8 @@ public class TextBlockTests
                 "charlie□□□□□□",
                 "□□□□□□□□□□□□□",
             }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
 
             buffer.Should().BeEquivalentTo(expected);
         }
@@ -214,6 +232,8 @@ public class TextBlockTests
                 "□□□□□□□□□□□",
             }.ToCharGrid();
 
+            _output.WriteCharGrid(buffer, expected);
+
             buffer.Should().BeEquivalentTo(expected);
         }
 
@@ -233,6 +253,8 @@ public class TextBlockTests
                 "□□□□□□□□□□□□□□□",
             }.ToCharGrid();
 
+            _output.WriteCharGrid(buffer, expected);
+
             buffer.Should().BeEquivalentTo(expected);
         }
 
@@ -250,6 +272,8 @@ public class TextBlockTests
                 "alpha bravo□□□□",
                 "charlie delta□□",
             }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
 
             buffer.Should().BeEquivalentTo(expected);
         }
