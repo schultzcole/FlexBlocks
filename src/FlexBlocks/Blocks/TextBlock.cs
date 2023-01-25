@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.HighPerformance;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
 
 namespace FlexBlocks.Blocks;
@@ -35,7 +36,7 @@ public class TextBlock : UiBlock
     {
         LayoutText(maxSize);
 
-        return _measureResult?.Size ?? BlockSize.From(0, 0);
+        return _measureResult?.Size() ?? BlockSize.From(0, 0);
     }
 
     /// <inheritdoc />
@@ -51,16 +52,9 @@ public class TextBlock : UiBlock
     private void LayoutText(BlockSize maxSize)
     {
         if (Text is null) return;
-        if (_measureResult?.Size == maxSize) return;
+        if (_measureResult?.Size() == maxSize) return;
 
-        if (_measureResult is not null)
-        {
-            _measureResult.ClearLines();
-        }
-        else
-        {
-            _measureResult = new MeasureResult();
-        }
+        EnsureMeasureResult();
 
         var expandedText = ExpandText(Text, (int)TabWidth);
         var expandedTextSpan = expandedText.Span;
@@ -109,7 +103,7 @@ public class TextBlock : UiBlock
                 endOfLastWordInRow = 0;
                 startOfLastWordInRow = 0;
 
-                if (_measureResult.Size.Height >= maxSize.Height)
+                if (_measureResult.LineCount >= maxSize.Height)
                 {
                     break;
                 }
@@ -123,6 +117,20 @@ public class TextBlock : UiBlock
         if (endOfLastWordInRow > 0)
         {
             _measureResult.AddLine(expandedText.Slice(currentRowStart, endOfLastWordInRow));
+        }
+    }
+
+    /// <summary>Ensures that measure result has been initialized.</summary>
+    [MemberNotNull(nameof(_measureResult))]
+    private void EnsureMeasureResult()
+    {
+        if (_measureResult is not null)
+        {
+            _measureResult.ClearLines();
+        }
+        else
+        {
+            _measureResult = new MeasureResult();
         }
     }
 
@@ -199,23 +207,18 @@ public class TextBlock : UiBlock
 
     private class MeasureResult
     {
-        public BlockSize Size { get; private set; }
         private readonly List<ReadOnlyMemory<char>> _rawLines = new();
+
+        public int LineCount => _rawLines.Count;
 
         public void ClearLines()
         {
-            Size = BlockSize.From(0, 0);
             _rawLines.Clear();
         }
 
         public void AddLine(ReadOnlyMemory<char> line)
         {
             _rawLines.Add(line);
-
-            var newWidth = Math.Max(line.Length, Size.Width);
-            var newHeight = _rawLines.Count;
-
-            Size = BlockSize.From(newWidth, newHeight);
         }
 
         public void RenderLines(Span2D<char> buffer)
@@ -226,5 +229,6 @@ public class TextBlock : UiBlock
             }
         }
 
+        public BlockSize Size() => BlockSize.From(_rawLines.Max(s => s.Length), _rawLines.Count);
     }
 }
