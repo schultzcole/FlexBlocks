@@ -97,8 +97,16 @@ public class TextBlock : UiBlock
 
             if (overflowingLine && currentBreakability != Breakability.Break)
             {
-                _measureResult.AddLine(expandedText.Slice(currentRowStart, endOfLastWordInRow));
-                i = currentRowStart + startOfLastWordInRow;
+                if (startOfLastWordInRow == 0)
+                {
+                    // the word is taking up this whole line, we have to break it
+                    _measureResult.AddLine(expandedText.Slice(currentRowStart, i - currentRowStart));
+                }
+                else
+                {
+                    _measureResult.AddLine(expandedText.Slice(currentRowStart, endOfLastWordInRow));
+                    i = currentRowStart + startOfLastWordInRow;
+                }
                 currentRowStart = i;
                 endOfLastWordInRow = 0;
                 startOfLastWordInRow = 0;

@@ -253,6 +253,27 @@ public class TextBlockTests
 
             buffer.Should().BeEquivalentTo(expected);
         }
+
+        [Fact]
+        public void Should_wrap_mid_word_if_word_is_wider_than_buffer()
+        {
+            var textBlock = new TextBlock { Text = "alpha biotechnological charlie" };
+            var buffer = new char[3, 15];
+            var bufferSpan = buffer.AsSpan2D();
+            bufferSpan.Fill('□');
+            textBlock.Render(bufferSpan);
+
+            var expected = new []
+            {
+                "alpha□□□□□□□□□□",
+                "biotechnologica",
+                "l charlie□□□□□□",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
+
+            buffer.Should().BeEquivalentTo(expected);
+        }
     }
 
     public class ExpandText
