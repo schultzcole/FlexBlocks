@@ -1,5 +1,6 @@
 ﻿using System;
 using CommunityToolkit.HighPerformance;
+using Xunit.Abstractions;
 
 namespace FlexBlocksTest.Utils;
 
@@ -23,5 +24,21 @@ public static class RenderTestUtils
         }
 
         return resultArray;
+    }
+
+    public static void WriteCharGrid(this ITestOutputHelper outputHelper, char[,] actual, char[,] expected)
+    {
+        outputHelper.WriteLine("\nActual");
+        outputHelper.WriteCharGrid(actual);
+        outputHelper.WriteLine("\nExpected");
+        outputHelper.WriteCharGrid(expected);
+    }
+
+    public static void WriteCharGrid(this ITestOutputHelper outputHelper, char[,] grid)
+    {
+        for (int i = 0; i < grid.GetLength(0); i++)
+        {
+            outputHelper.WriteLine(grid.GetRowSpan(i).ToString());
+        }
     }
 }
