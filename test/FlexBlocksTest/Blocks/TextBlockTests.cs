@@ -75,14 +75,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "ab cd ef" };
             var buffer = new char[3, 30];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "ab cd ef□□□□□□□□□□□□□□□□□□□□□□",
-                "□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□",
-                "□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□",
+                "ab cd ef××××××××××××××××××××××",
+                "××××××××××××××××××××××××××××××",
+                "××××××××××××××××××××××××××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -96,14 +96,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo charlie" };
             var buffer = new char[3, 11];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
                 "alpha bravo",
-                "charlie□□□□",
-                "□□□□□□□□□□□",
+                "charlie××××",
+                "×××××××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -117,14 +117,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo charlie" };
             var buffer = new char[3, 14];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "alpha bravo□□□",
-                "charlie□□□□□□□",
-                "□□□□□□□□□□□□□□",
+                "alpha bravo×××",
+                "charlie×××××××",
+                "××××××××××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -138,14 +138,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo-charlie" };
             var buffer = new char[3, 14];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "alpha bravo-□□",
-                "charlie□□□□□□□",
-                "□□□□□□□□□□□□□□",
+                "alpha bravo-××",
+                "charlie×××××××",
+                "××××××××××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -159,14 +159,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo-charlie" };
             var buffer = new char[3, 11];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "alpha□□□□□□",
-                "bravo-□□□□□",
-                "charlie□□□□",
+                "alpha××××××",
+                "bravo-×××××",
+                "charlie××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -180,14 +180,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo\ncharlie" };
             var buffer = new char[3, 30];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "alpha bravo□□□□□□□□□□□□□□□□□□□",
-                "charlie□□□□□□□□□□□□□□□□□□□□□□□",
-                "□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□",
+                "alpha bravo×××××××××××××××××××",
+                "charlie×××××××××××××××××××××××",
+                "××××××××××××××××××××××××××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -201,14 +201,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo\tcharlie", TabWidth = 4};
             var buffer = new char[3, 13];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "alpha bravo□□",
-                "charlie□□□□□□",
-                "□□□□□□□□□□□□□",
+                "alpha bravo××",
+                "charlie××××××",
+                "×××××××××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -222,14 +222,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo\tcharlie", TabWidth = 4};
             var buffer = new char[3, 11];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
                 "alpha bravo",
-                "charlie□□□□",
-                "□□□□□□□□□□□",
+                "charlie××××",
+                "×××××××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -243,14 +243,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo\n\tcharlie", TabWidth = 4};
             var buffer = new char[3, 15];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "alpha bravo□□□□",
-                "    charlie□□□□",
-                "□□□□□□□□□□□□□□□",
+                "alpha bravo××××",
+                "    charlie××××",
+                "×××××××××××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -264,13 +264,13 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha bravo charlie delta echo" };
             var buffer = new char[2, 15];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "alpha bravo□□□□",
-                "charlie delta□□",
+                "alpha bravo××××",
+                "charlie delta…×",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -284,14 +284,14 @@ public class TextBlockTests
             var textBlock = new TextBlock { Text = "alpha biotechnological charlie" };
             var buffer = new char[3, 15];
             var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('□');
+            bufferSpan.Fill('×');
             textBlock.Render(bufferSpan);
 
             var expected = new []
             {
-                "alpha□□□□□□□□□□",
+                "alpha××××××××××",
                 "biotechnologica",
-                "l charlie□□□□□□",
+                "l charlie××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);

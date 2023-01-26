@@ -54,6 +54,7 @@ public class TextBlock : UiBlock
     private const char NEWLINE = '\n';
     private const char SPACE = ' ';
     private const char HYPHEN = '-';
+    private const char ELLIPSIS = '…';
 
     /// <summary>Lays out the text in this text block in accordance with the given size restrictions.</summary>
     private void LayoutText(BlockSize maxSize)
@@ -128,6 +129,8 @@ public class TextBlock : UiBlock
 
                 if (_measureResult.LineCount >= maxSize.Height)
                 {
+                    // we've run out of lines to write to
+                    _measureResult.VerticalOverflow = true;
                     break;
                 }
             }
@@ -257,11 +260,17 @@ public class TextBlock : UiBlock
 
     private class MeasureResult
     {
+        public bool VerticalOverflow { get; set; }
+
         private readonly List<ReadOnlyMemory<char>> _rawLines = new();
 
         public int LineCount => _rawLines.Count;
 
-        public void ClearLines() => _rawLines.Clear();
+        public void ClearLines()
+        {
+            VerticalOverflow = false;
+            _rawLines.Clear();
+        }
 
         public void AddLine(ReadOnlyMemory<char> line) => _rawLines.Add(line);
 
@@ -270,6 +279,18 @@ public class TextBlock : UiBlock
             for (var i = 0; i < _rawLines.Count; i++)
             {
                 _rawLines[i].Span.CopyTo(buffer.GetRowSpan(i));
+            }
+
+            if (VerticalOverflow)
+            {
+                var lastCharIndex = _rawLines[^1].Length;
+                var lastBufferLine = buffer.GetRowSpan(_rawLines.Count - 1);
+                if (lastCharIndex >= lastBufferLine.Length)
+                {
+                    lastCharIndex = lastBufferLine.Length - 1;
+                }
+
+                lastBufferLine[lastCharIndex] = ELLIPSIS;
             }
         }
 
