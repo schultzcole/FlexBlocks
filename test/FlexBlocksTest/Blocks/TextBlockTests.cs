@@ -336,5 +336,19 @@ public class TextBlockTests
             var actualExpandedText = TextBlock.ExpandText("some text\t", 2);
             actualExpandedText.ToString().Should().BeEquivalentTo("some text");
         }
+
+        [Fact]
+        public void Should_not_remove_newline()
+        {
+            var actualExpandedText = TextBlock.ExpandText("some\ntext", 2);
+            actualExpandedText.ToString().Should().BeEquivalentTo("some\ntext");
+        }
+
+        [Fact]
+        public void Should_remove_control_characters()
+        {
+            var actualExpandedText = TextBlock.ExpandText("some\b\rtext", 2);
+            actualExpandedText.ToString().Should().BeEquivalentTo("sometext");
+        }
     }
 }
