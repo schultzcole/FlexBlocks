@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
 
@@ -20,6 +21,7 @@ public class TextBlock : UiBlock
             {
                 _measureResult?.ClearLines();
             }
+
             _text = value;
         }
     }
@@ -48,6 +50,11 @@ public class TextBlock : UiBlock
         _measureResult?.RenderLines(buffer);
     }
 
+    private const char TAB = '\t';
+    private const char NEWLINE = '\n';
+    private const char SPACE = ' ';
+    private const char HYPHEN = '-';
+
     /// <summary>Lays out the text in this text block in accordance with the given size restrictions.</summary>
     private void LayoutText(BlockSize maxSize)
     {
@@ -59,15 +66,16 @@ public class TextBlock : UiBlock
         var expandedText = ExpandText(Text, (int)TabWidth);
         var expandedTextSpan = expandedText.Span;
 
-        var currentRowStart = 0; // index relative to start of string
-        var endOfLastWordInRow = 0; // index relative to start of current line
+        var currentRowStart = 0;      // index relative to start of string
+        var endOfLastWordInRow = 0;   // index relative to start of current line
         var startOfLastWordInRow = 0; // index relative to start of current line
         for (var i = 0; i < expandedTextSpan.Length; i++)
         {
             var positionInRow = i - currentRowStart;
             var currentChar = expandedTextSpan[i];
 
-            if (currentChar == '\n')
+            // special character handling
+            if (currentChar == NEWLINE)
             {
                 _measureResult.AddLine(expandedText.Slice(currentRowStart, positionInRow));
                 currentRowStart = i + 1;
@@ -76,6 +84,7 @@ public class TextBlock : UiBlock
                 continue;
             }
 
+            // compute word boundaries
             var currentBreakability = IsBreakable(currentChar);
             var prevBreakability = i > 0 ? IsBreakable(expandedTextSpan[i - 1]) : Breakability.NoBreak;
             if (currentBreakability == Breakability.Break && prevBreakability != Breakability.Break)
@@ -92,21 +101,27 @@ public class TextBlock : UiBlock
                 startOfLastWordInRow = positionInRow;
             }
 
+            // Wrap when overflowing current line
             var overflowingLine = positionInRow >= maxSize.Width;
             var isLastChar = i + 1 >= expandedTextSpan.Length;
 
             if (overflowingLine && currentBreakability != Breakability.Break)
             {
+                int wrapPoint;
                 if (startOfLastWordInRow == 0)
                 {
-                    // the word is taking up this whole line, we have to break it
-                    _measureResult.AddLine(expandedText.Slice(currentRowStart, i - currentRowStart));
+                    // If there is only one word in this row, wrap it mid-word at the current character
+                    wrapPoint = i - currentRowStart;
                 }
                 else
                 {
-                    _measureResult.AddLine(expandedText.Slice(currentRowStart, endOfLastWordInRow));
+                    // If there is more than one word in this row, wrap at the end of the last full word
+                    wrapPoint = endOfLastWordInRow;
                     i = currentRowStart + startOfLastWordInRow;
                 }
+
+                _measureResult.AddLine(expandedText.Slice(currentRowStart, wrapPoint));
+
                 currentRowStart = i;
                 endOfLastWordInRow = 0;
                 startOfLastWordInRow = 0;
@@ -159,31 +174,41 @@ public class TextBlock : UiBlock
         var newStrSpan = newStr.AsSpan();
 
         Span<char> tabStr = stackalloc char[tabWidth];
-        tabStr.Fill(' ');
+        tabStr.Fill(SPACE);
 
-        var lastTab = 0; // index within the given text just after the last tab character
-        var writeIndex = 0; // index within the new string array
-        for (int i = 0; i < textSpan.Length; i++)
+        var copyStart = 0;  // read start index from source span
+        var writeIndex = 0; // write start index in destination span
+
+        void copySpanToStr(int copyEnd, ReadOnlySpan<char> source, Span<char> dest)
         {
-            if (textSpan[i] != '\t') continue;
-
-            if (i - lastTab > 0)
+            if (copyEnd - copyStart > 0)
             {
-                var textToWrite = textSpan[lastTab..i];
-                textToWrite.CopyTo(newStrSpan[writeIndex..]);
+                var textToWrite = source[copyStart..copyEnd];
+                textToWrite.CopyTo(dest[writeIndex..]);
                 writeIndex += textToWrite.Length;
             }
+            copyStart = copyEnd + 1;
+        }
 
-            if (i + 1 < textSpan.Length)
+        for (int i = 0; i < textSpan.Length; i++)
+        {
+            var currentChar = textSpan[i];
+            if (currentChar == TAB)
             {
+                copySpanToStr(i, textSpan, newStrSpan);
+
+                if (i + 1 >= textSpan.Length) continue;
+
                 tabStr.CopyTo(newStrSpan[writeIndex..]);
                 writeIndex += tabStr.Length;
             }
-
-            lastTab = i + 1;
+            else if (IsSkippable(currentChar))
+            {
+                copySpanToStr(i, textSpan, newStrSpan);
+            }
         }
 
-        textSpan[lastTab..].CopyTo(newStrSpan[writeIndex..]);
+        textSpan[copyStart..].CopyTo(newStrSpan[writeIndex..]);
 
         return newStr.AsMemory();
     }
@@ -194,7 +219,7 @@ public class TextBlock : UiBlock
         var length = 0;
         for (int i = 0; i < line.Length; i++)
         {
-            if (line[i] == '\t')
+            if (line[i] == TAB)
             {
                 if (i + 1 >= line.Length)
                 {
@@ -202,6 +227,10 @@ public class TextBlock : UiBlock
                 }
 
                 length += tabWidth;
+            }
+            else if (IsSkippable(line[i]))
+            {
+                // do nothing
             }
             else
             {
@@ -212,11 +241,16 @@ public class TextBlock : UiBlock
         return length;
     }
 
+    /// <summary>Whether this character should be skipped when outputting text to the buffer.</summary>
+    private static bool IsSkippable(char c) =>
+        char.GetUnicodeCategory(c) is UnicodeCategory.Control
+        && c is not NEWLINE or TAB;
+
     private static Breakability IsBreakable(char c) => c switch
     {
-        ' ' => Breakability.Break,
-        '-' => Breakability.BreakAndKeep,
-        _   => Breakability.NoBreak
+        SPACE  => Breakability.Break,
+        HYPHEN => Breakability.BreakAndKeep,
+        _      => Breakability.NoBreak
     };
 
     private enum Breakability { NoBreak, Break, BreakAndKeep }
@@ -227,15 +261,9 @@ public class TextBlock : UiBlock
 
         public int LineCount => _rawLines.Count;
 
-        public void ClearLines()
-        {
-            _rawLines.Clear();
-        }
+        public void ClearLines() => _rawLines.Clear();
 
-        public void AddLine(ReadOnlyMemory<char> line)
-        {
-            _rawLines.Add(line);
-        }
+        public void AddLine(ReadOnlyMemory<char> line) => _rawLines.Add(line);
 
         public void RenderLines(Span2D<char> buffer)
         {
