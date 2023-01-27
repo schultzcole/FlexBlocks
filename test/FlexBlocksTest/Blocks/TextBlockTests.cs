@@ -300,54 +300,54 @@ public class TextBlockTests
         }
     }
 
-    public class ExpandText
+    public class PreprocessText
     {
         [Fact]
         public void Should_return_same_text_when_input_has_no_tabs()
         {
-            var actualExpandedText = TextBlock.ExpandText("some text", 2);
+            var actualExpandedText = TextBlock.PreprocessText("some text", 2);
             actualExpandedText.ToString().Should().BeEquivalentTo("some text");
         }
 
         [Fact]
         public void Should_return_text_with_spaces_instead_of_tabs()
         {
-            var actualExpandedText = TextBlock.ExpandText("some\ttext", 2);
+            var actualExpandedText = TextBlock.PreprocessText("some\ttext", 2);
             actualExpandedText.ToString().Should().BeEquivalentTo("some  text");
         }
 
         [Fact]
         public void Should_return_text_with_spaces_instead_of_two_tabs()
         {
-            var actualExpandedText = TextBlock.ExpandText("some\tmore\ttext", 2);
+            var actualExpandedText = TextBlock.PreprocessText("some\tmore\ttext", 2);
             actualExpandedText.ToString().Should().BeEquivalentTo("some  more  text");
         }
 
         [Fact]
         public void Should_return_text_with_spaces_instead_of_two_tabs_in_a_row()
         {
-            var actualExpandedText = TextBlock.ExpandText("some\t\ttext", 2);
+            var actualExpandedText = TextBlock.PreprocessText("some\t\ttext", 2);
             actualExpandedText.ToString().Should().BeEquivalentTo("some    text");
         }
 
         [Fact]
         public void Should_not_expand_trailing_tab()
         {
-            var actualExpandedText = TextBlock.ExpandText("some text\t", 2);
+            var actualExpandedText = TextBlock.PreprocessText("some text\t", 2);
             actualExpandedText.ToString().Should().BeEquivalentTo("some text");
         }
 
         [Fact]
         public void Should_not_remove_newline()
         {
-            var actualExpandedText = TextBlock.ExpandText("some\ntext", 2);
+            var actualExpandedText = TextBlock.PreprocessText("some\ntext", 2);
             actualExpandedText.ToString().Should().BeEquivalentTo("some\ntext");
         }
 
         [Fact]
         public void Should_remove_control_characters()
         {
-            var actualExpandedText = TextBlock.ExpandText("some\b\rtext", 2);
+            var actualExpandedText = TextBlock.PreprocessText("some\b\rtext", 2);
             actualExpandedText.ToString().Should().BeEquivalentTo("sometext");
         }
     }

@@ -12,6 +12,7 @@ public class TextBlock : UiBlock
 {
     private string? _text;
 
+    /// <summary>The text to display in this block</summary>
     public string? Text
     {
         get => _text;
@@ -26,6 +27,7 @@ public class TextBlock : UiBlock
         }
     }
 
+    /// <summary>The number of spaces a tab character should expand to in the final text.</summary>
     public uint TabWidth { get; set; } = 4;
 
     private MeasureResult? _measureResult;
@@ -64,7 +66,7 @@ public class TextBlock : UiBlock
 
         EnsureMeasureResult();
 
-        var expandedText = ExpandText(Text, (int)TabWidth);
+        var expandedText = PreprocessText(Text, (int)TabWidth);
         var expandedTextSpan = expandedText.Span;
 
         var currentRowStart = 0;      // index relative to start of string
@@ -88,11 +90,11 @@ public class TextBlock : UiBlock
             // compute word boundaries
             var currentBreakability = IsBreakable(currentChar);
             var prevBreakability = i > 0 ? IsBreakable(expandedTextSpan[i - 1]) : Breakability.NoBreak;
-            if (currentBreakability == Breakability.Break && prevBreakability != Breakability.Break)
+            if (currentBreakability == Breakability.BreakAndDrop && prevBreakability != Breakability.BreakAndDrop)
             {
                 endOfLastWordInRow = positionInRow;
             }
-            else if (currentBreakability != Breakability.Break && prevBreakability == Breakability.Break)
+            else if (currentBreakability != Breakability.BreakAndDrop && prevBreakability == Breakability.BreakAndDrop)
             {
                 startOfLastWordInRow = positionInRow;
             }
@@ -106,7 +108,7 @@ public class TextBlock : UiBlock
             var overflowingLine = positionInRow >= maxSize.Width;
             var isLastChar = i + 1 >= expandedTextSpan.Length;
 
-            if (overflowingLine && currentBreakability != Breakability.Break)
+            if (overflowingLine && currentBreakability != Breakability.BreakAndDrop)
             {
                 int wrapPoint;
                 if (startOfLastWordInRow == 0)
@@ -160,10 +162,12 @@ public class TextBlock : UiBlock
         }
     }
 
-    /// <summary>Expands tab characters in the given text into <paramref name="tabWidth"/> spaces.</summary>
-    /// <param name="text">The text to expand.</param>
-    /// <param name="tabWidth">Number of spaces that a tab should be rendered as.</param>
-    public static ReadOnlyMemory<char> ExpandText(string text, int tabWidth)
+    /// <summary>
+    /// Preprocesses text prior to layout and rendering.
+    /// Removes non-printable characters and expands tab characters in the given text into <paramref name="tabWidth"/>
+    /// spaces.
+    /// </summary>
+    public static ReadOnlyMemory<char> PreprocessText(string text, int tabWidth)
     {
         var expandedLen = ExpandedStringLength(text, tabWidth);
 
@@ -249,15 +253,18 @@ public class TextBlock : UiBlock
         char.GetUnicodeCategory(c) is UnicodeCategory.Control
         && c is not NEWLINE or TAB;
 
+    /// <summary>Determines whether it is legal to break on the given character.</summary>
     private static Breakability IsBreakable(char c) => c switch
     {
-        SPACE  => Breakability.Break,
+        SPACE  => Breakability.BreakAndDrop,
         HYPHEN => Breakability.BreakAndKeep,
         _      => Breakability.NoBreak
     };
 
-    private enum Breakability { NoBreak, Break, BreakAndKeep }
+    /// <summary>Whether it is safe to break a line on a character.</summary>
+    private enum Breakability { NoBreak, BreakAndDrop, BreakAndKeep }
 
+    /// <summary>Stores computed text layout</summary>
     private class MeasureResult
     {
         public bool VerticalOverflow { get; set; }
