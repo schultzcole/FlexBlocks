@@ -12,7 +12,7 @@ public enum Alignment { Start, Center, End }
 /// A block type that contains another single block, can align that block within itself,
 /// and can either size itself to its content or grow to fill available space in either or both dimensions.
 /// </summary>
-public abstract class ContentBlock : UiBlock
+public class ContentBlock : UiBlock
 {
     public UiBlock? Content { get; set; }
 
@@ -44,7 +44,7 @@ public abstract class ContentBlock : UiBlock
             return UnboundedBlockSize.Unbounded;
         }
 
-        var contentSize = Content?.CalcMaxSize() ?? UnboundedBlockSize.Unbounded;
+        var contentSize = Content?.CalcMaxSize() ?? UnboundedBlockSize.From(0, 0);
 
         return (HorizontalSizing, VerticalSizing) switch
         {
@@ -65,7 +65,7 @@ public abstract class ContentBlock : UiBlock
             return maxSize;
         }
 
-        var contentSize = Content?.CalcSize(maxSize) ?? maxSize;
+        var contentSize = Content?.CalcSize(maxSize) ?? BlockSize.From(0, 0);
 
         return (HorizontalSizing, VerticalSizing) switch
         {
@@ -77,6 +77,9 @@ public abstract class ContentBlock : UiBlock
             _ => throw new UnreachableException($"Unknown sizing values. H={HorizontalSizing}, V={VerticalSizing}")
         };
     }
+
+    /// <inheritdoc />
+    public override void Render(Span2D<char> buffer) => RenderContent(buffer);
 
     /// <summary>Renders this block's content to the given buffer, possibly aligned (<see cref="Alignment"/>).</summary>
     protected virtual void RenderContent(Span2D<char> contentBuffer)
