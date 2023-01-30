@@ -39,7 +39,7 @@ public abstract class AlignableBlock : UiBlock
             return UnboundedBlockSize.Unbounded;
         }
 
-        var contentSize = CalcContentMaxSize() ?? UnboundedBlockSize.From(0, 0);
+        var contentSize = CalcContentMaxSize() ?? UnboundedBlockSize.Zero;
 
         return (HorizontalSizing, VerticalSizing) switch
         {
@@ -63,7 +63,7 @@ public abstract class AlignableBlock : UiBlock
             return maxSize;
         }
 
-        var contentSize = CalcContentSize(maxSize) ?? BlockSize.From(0, 0);
+        var contentSize = CalcContentSize(maxSize) ?? BlockSize.Zero;
 
         return (HorizontalSizing, VerticalSizing) switch
         {

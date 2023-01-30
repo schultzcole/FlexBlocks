@@ -40,7 +40,7 @@ public class TextBlock : UiBlock
     {
         LayoutText(maxSize);
 
-        return _measureResult?.Size() ?? BlockSize.From(0, 0);
+        return _measureResult?.Size() ?? BlockSize.Zero;
     }
 
     /// <inheritdoc />

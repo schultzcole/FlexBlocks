@@ -7,6 +7,8 @@ namespace FlexBlocks.BlockProperties;
 /// <param name="Height">How many vertical characters this block takes up.</param>
 public readonly record struct BlockSize(int Width, int Height)
 {
+    public static BlockSize Zero { get; } = From(0, 0);
+
     public static BlockSize From(int width, int height) => new(width, height);
 
     /// <summary>Returns a new block size that is shrunk by the amount of padding on each side.</summary>
@@ -44,6 +46,8 @@ public readonly record struct BlockSize(int Width, int Height)
 public readonly record struct UnboundedBlockSize(BlockLength Width, BlockLength Height)
 {
     public static UnboundedBlockSize Unbounded { get; } = new(BlockLength.Unbounded, BlockLength.Unbounded);
+
+    public static UnboundedBlockSize Zero { get; } = From(0, 0);
 
     public static UnboundedBlockSize From(int? width, int? height) =>
         new(BlockLength.From(width), BlockLength.From(height));
