@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 
 namespace FlexBlocks.BlockProperties;
 
@@ -18,6 +19,14 @@ public record struct BlockLength :
     IComparisonOperators<BlockLength, int?, bool>
 {
     public int? Value { get; private init; }
+
+    /// <summary>Whether this BlockLength is bounded.</summary>
+    [MemberNotNullWhen(true, nameof(Value))]
+    public bool IsBounded => Value.HasValue;
+
+    /// <summary>Whether this BlockLength is unbounded.</summary>
+    [MemberNotNullWhen(false, nameof(Value))]
+    public bool IsUnbounded => !IsBounded;
 
     /// <summary>An unbounded length.</summary>
     public static BlockLength Unbounded { get; } = new();

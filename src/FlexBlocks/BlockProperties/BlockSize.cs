@@ -45,6 +45,12 @@ public readonly record struct BlockSize(int Width, int Height)
 /// <param name="Height">How many vertical characters this block takes up. This can be unbounded.</param>
 public readonly record struct UnboundedBlockSize(BlockLength Width, BlockLength Height)
 {
+    /// <summary>Whether this UnboundedBlockSize is bounded in both dimensions.</summary>
+    public bool IsBounded => Width.IsBounded && Height.IsBounded;
+
+    /// <summary>Whether this UnboundedBlockSize is bounded in either dimension.</summary>
+    public bool IsUnbounded => Width.IsUnbounded || Height.IsUnbounded;
+
     public static UnboundedBlockSize Unbounded { get; } = new(BlockLength.Unbounded, BlockLength.Unbounded);
 
     public static UnboundedBlockSize Zero { get; } = From(0, 0);
