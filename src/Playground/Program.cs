@@ -4,14 +4,14 @@ using FlexBlocks;
 using FlexBlocks.BlockProperties;
 using FlexBlocks.Blocks;
 using FlexBlocks.Renderables;
+using FlexBlocks.Renderables.Debug;
+using Playground;
 
 var block = new BorderBlock
 {
     Overlay = new CompositeRenderable
     {
-        // new DimensionsOverlay(),
-        // new RenderCountOverlay(),
-        // new FrametimeOverlay { ShowFps = true },
+        new FrametimeOverlay { ShowFps = true },
         new TitleOverlay { Title = " FlexBlocks Demo ", Offset = 2 }
     },
     Border = Borders.Rounded,
@@ -24,9 +24,11 @@ var block = new BorderBlock
         VerticalSizing = Sizing.Content,
         Contents = new List<UiBlock>
         {
-            new FixedSizeBlock
+            new MyAnimatedWidthBlock
             {
                 Size = UnboundedBlockSize.From(BlockLength.From(30), BlockLength.Unbounded),
+                MinWidth = 20,
+                MaxWidth = 60,
                 Content = new BorderBlock
                 {
                     Overlay = new TitleOverlay { Title = "Sidebar", Offset = 2 },

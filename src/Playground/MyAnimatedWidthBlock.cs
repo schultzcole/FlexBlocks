@@ -10,10 +10,15 @@ namespace Playground;
 
 /// A custom implementation of BoundedBlock that re-renders itself periodically
 /// Disposing this Block stops the re-render loop.
-public class MyAnimatedBoundedBlock : BoundedBlock, IDisposable
+public class MyAnimatedWidthBlock : FixedSizeBlock, IDisposable
 {
     private Task? _rerenderTask;
     private readonly CancellationTokenSource _cts = new();
+
+    public int MinWidth { get; set; }
+    public int MaxWidth { get; set; }
+
+    public int Interval { get; set; } = 100;
 
     public override void Render(Span2D<char> buffer)
     {
@@ -32,21 +37,16 @@ public class MyAnimatedBoundedBlock : BoundedBlock, IDisposable
                 {
                     while (!_cts.Token.IsCancellationRequested)
                     {
-                        await Task.Delay(100, _cts.Token);
+                        await Task.Delay(Interval, _cts.Token);
 
                         if (!CanRequestRerender) continue;
 
-                        if (Width != BlockLength.Unbounded)
-                        {
-                            _expandDir = Width.Value switch
-                            {
-                                >= 50 => -1,
-                                <= 10 => 1,
-                                _     => _expandDir
-                            };
+                        Width = Width.Clamp(MinWidth, MaxWidth);
 
-                            Width += _expandDir;
-                        }
+                        if (Width.Value >= MaxWidth) _expandDir = -1;
+                        if (Width.Value <= MinWidth) _expandDir = 1;
+
+                        Width += _expandDir;
 
                         RequestRerender(RerenderMode.DesiredSizeChanged);
                     }
@@ -56,4 +56,16 @@ public class MyAnimatedBoundedBlock : BoundedBlock, IDisposable
     }
 
     public void Dispose() { _cts.Dispose(); }
+}
+
+internal static class BlockLengthExtensions
+{
+    public static BlockLength Clamp(this BlockLength length, int min, int max)
+    {
+        if (length.IsUnbounded) return BlockLength.From(max);
+        if (length.Value > max) return BlockLength.From(max);
+        if (length.Value < min) return BlockLength.From(min);
+
+        return length;
+    }
 }
