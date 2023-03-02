@@ -7,6 +7,11 @@ public class FlexBlock : AlignableBlock
 {
     public List<UiBlock>? Contents { get; set; }
 
+    /// <summary>
+    /// Whether the contents of this block should wrap to the next row if they are too wide for the width of the parent.
+    /// </summary>
+    public bool Wrapping { get; set; }
+
     /// <inheritdoc />
     public override bool HasContent => Contents?.Count > 0;
 
@@ -44,10 +49,51 @@ public class FlexBlock : AlignableBlock
     {
         if (Contents is null) return;
 
-        var childCount = Contents.Count;
-        var bufferSize = buffer.BlockSize();
+        Span<BlockSize> concreteSizes = stackalloc BlockSize[Contents.Count];
 
-        Span<BlockSize?> concreteSizes = stackalloc BlockSize?[childCount];
+        MeasureChildren(buffer.BlockSize(), concreteSizes);
+
+        var xPos = 0;
+        var yPos = 0;
+        var maxHeightInRow = 0;
+        for (int i = 0; i < Contents.Count; i++)
+        {
+            var child = Contents[i];
+            var size = concreteSizes[i];
+
+            if (size.Width + xPos > buffer.Width)
+            {
+                if (Wrapping)
+                {
+                    xPos = 0;
+                    yPos += maxHeightInRow;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (size.Height + yPos > buffer.Height)
+            {
+                return;
+            }
+
+            maxHeightInRow = Math.Max(size.Height, maxHeightInRow);
+
+            var childBuffer = buffer.Slice(yPos, xPos, size.Height, size.Width);
+            RenderChild(child, childBuffer);
+            xPos += size.Width;
+        }
+    }
+
+    private void MeasureChildren(BlockSize bufferSize, Span<BlockSize> concreteSizes)
+    {
+        if (Contents is null) return;
+
+        var childCount = Contents.Count;
+
+        Span<BlockSize?> accumulatedSizes = stackalloc BlockSize?[childCount];
 
         var remainingConcreteWidth = bufferSize.Width;
         var remainingChildrenToAllocate = Contents.Count;
@@ -61,7 +107,7 @@ public class FlexBlock : AlignableBlock
 
             var concreteSize = child.CalcSize(maxSize.Constrain(bufferSize));
             remainingConcreteWidth -= concreteSize.Width;
-            concreteSizes[i] = concreteSize;
+            accumulatedSizes[i] = concreteSize;
             remainingChildrenToAllocate--;
         }
 
@@ -70,7 +116,7 @@ public class FlexBlock : AlignableBlock
         {
             for (int i = 0; i < childCount; i++)
             {
-                if (concreteSizes[i] is not null) continue;
+                if (accumulatedSizes[i] is not null) continue;
 
                 var child = Contents[i];
 
@@ -78,22 +124,14 @@ public class FlexBlock : AlignableBlock
 
                 var concreteSize = child.CalcSize(BlockSize.From(availableWidth, bufferSize.Height));
                 remainingConcreteWidth -= concreteSize.Width;
-                concreteSizes[i] = concreteSize;
+                accumulatedSizes[i] = concreteSize;
                 remainingChildrenToAllocate--;
             }
         }
 
-        var xPos = 0;
-
-        // Render children into their allocated segments of the buffer.
         for (int i = 0; i < childCount; i++)
         {
-            var child = Contents[i];
-            var size = concreteSizes[i]!.Value; // we can be sure that all concrete sizes have been calculated by now
-
-            var childBuffer = buffer.Slice(0, xPos, size.Height, size.Width);
-            RenderChild(child, childBuffer);
-            xPos += size.Width;
+            concreteSizes[i] = accumulatedSizes[i] ?? BlockSize.Zero;
         }
     }
 }

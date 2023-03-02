@@ -243,5 +243,135 @@ public class FlexBlockTests
 
             buffer.Should().BeEquivalentTo(expected);
         }
+
+        [Fact]
+        public void Should_render_bounded_height_child_at_desired_height()
+        {
+            var block = new FlexBlock
+            {
+                Background = null,
+                Contents = new List<UiBlock> {
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('¤'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(2), BlockLength.From(2))
+                    },
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('◊'),
+                        MaxSize = UnboundedBlockSize.Unbounded
+                    },
+                },
+            };
+            var buffer = new char[4, 8];
+            var bufferSpan = buffer.AsSpan2D();
+            bufferSpan.Fill('×');
+
+            var container = new SimpleBlockContainer();
+            container.RenderBlock(block, bufferSpan);
+
+            var expected = new[]
+            {
+                "¤¤◊◊◊◊◊◊",
+                "¤¤◊◊◊◊◊◊",
+                "××◊◊◊◊◊◊",
+                "××◊◊◊◊◊◊",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
+
+            buffer.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_not_render_overflowing_children_if_they_are_too_wide_for_parent()
+        {
+            var block = new FlexBlock
+            {
+                Background = null,
+                Wrapping = false,
+                Contents = new List<UiBlock> {
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('¤'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(2))
+                    },
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('◊'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(3))
+                    },
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('△'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(7), BlockLength.From(2))
+                    },
+                },
+            };
+            var buffer = new char[4, 8];
+            var bufferSpan = buffer.AsSpan2D();
+            bufferSpan.Fill('×');
+
+            var container = new SimpleBlockContainer();
+            container.RenderBlock(block, bufferSpan);
+
+            var expected = new[]
+            {
+                "¤¤¤◊◊◊××",
+                "¤¤¤◊◊◊××",
+                "×××◊◊◊××",
+                "××××××××",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
+
+            buffer.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_wrap_children_to_next_row_when_wrapping_is_enabled()
+        {
+            var block = new FlexBlock
+            {
+                Background = null,
+                Wrapping = true,
+                Contents = new List<UiBlock> {
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('¤'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(2))
+                    },
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('◊'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(3))
+                    },
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('△'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(7), BlockLength.From(2))
+                    },
+                },
+            };
+            var buffer = new char[5, 8];
+            var bufferSpan = buffer.AsSpan2D();
+            bufferSpan.Fill('×');
+
+            var container = new SimpleBlockContainer();
+            container.RenderBlock(block, bufferSpan);
+
+            var expected = new[]
+            {
+                "¤¤¤◊◊◊××",
+                "¤¤¤◊◊◊××",
+                "×××◊◊◊××",
+                "△△△△△△△×",
+                "△△△△△△△×",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
+
+            buffer.Should().BeEquivalentTo(expected);
+        }
     }
 }
