@@ -67,6 +67,7 @@ public class FlexBlock : AlignableBlock
                 {
                     xPos = 0;
                     yPos += maxHeightInRow;
+                    if (yPos > buffer.Height) return;
                 }
                 else
                 {
@@ -74,15 +75,14 @@ public class FlexBlock : AlignableBlock
                 }
             }
 
-            if (size.Height + yPos > buffer.Height)
+            if (size.Height + yPos <= buffer.Height)
             {
-                return;
+                maxHeightInRow = Math.Max(size.Height, maxHeightInRow);
+
+                var childBuffer = buffer.Slice(yPos, xPos, size.Height, size.Width);
+                RenderChild(child, childBuffer);
             }
 
-            maxHeightInRow = Math.Max(size.Height, maxHeightInRow);
-
-            var childBuffer = buffer.Slice(yPos, xPos, size.Height, size.Width);
-            RenderChild(child, childBuffer);
             xPos += size.Width;
         }
     }

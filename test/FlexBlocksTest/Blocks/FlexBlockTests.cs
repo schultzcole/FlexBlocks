@@ -284,7 +284,7 @@ public class FlexBlockTests
         }
 
         [Fact]
-        public void Should_not_render_overflowing_children_if_they_are_too_wide_for_parent()
+        public void Should_not_render_horizontally_overflowing_children_if_they_are_too_wide_for_parent()
         {
             var block = new FlexBlock
             {
@@ -321,6 +321,56 @@ public class FlexBlockTests
                 "111222××",
                 "×××222××",
                 "××××××××",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
+
+            buffer.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_not_render_vertically_overflowing_children()
+        {
+            var block = new FlexBlock
+            {
+                Background = null,
+                Wrapping = true,
+                Contents = new List<UiBlock> {
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('1'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(2))
+                    },
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('2'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(3))
+                    },
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('3'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(6), BlockLength.From(2))
+                    },
+                    new BoundedBlock
+                    {
+                        Background = Patterns.Fill('4'),
+                        MaxSize = UnboundedBlockSize.From(BlockLength.From(2), BlockLength.From(1))
+                    },
+                },
+            };
+            var buffer = new char[4, 8];
+            var bufferSpan = buffer.AsSpan2D();
+            bufferSpan.Fill('×');
+
+            var container = new SimpleBlockContainer();
+            container.RenderBlock(block, bufferSpan);
+
+            var expected = new[]
+            {
+                "111222××",
+                "111222××",
+                "×××222××",
+                "××××××44",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
