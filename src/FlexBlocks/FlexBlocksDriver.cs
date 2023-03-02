@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.Blocks;
 using Nito.AsyncEx;
@@ -44,7 +45,6 @@ public sealed class FlexBlocksDriver
         _maxWidth = maxWidth;
         _maxHeight = maxHeight;
         (Width, Height) = ComputeBufferSize();
-        _renderBuffer = Array.Empty<char>();
         AllocateBuffer();
         _blockRenderer = new BlockRenderer(this, rootBlock);
     }
@@ -68,6 +68,7 @@ public sealed class FlexBlocksDriver
     }
 
     /// <summary>Allocates a new render buffer using the Width and Height.</summary>
+    [MemberNotNull(nameof(_renderBuffer))]
     private void AllocateBuffer() { _renderBuffer = new char[Width * Height]; }
 
     /// <summary>Keeps track of whether the BlockRenderer is currently consuming the render queue.</summary>
