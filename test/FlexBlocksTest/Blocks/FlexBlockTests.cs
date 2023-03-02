@@ -138,7 +138,7 @@ public class FlexBlockTests
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('¤'),
+                        Background = Patterns.Fill('1'),
                         MaxSize = UnboundedBlockSize.Unbounded
                     },
                 },
@@ -153,10 +153,10 @@ public class FlexBlockTests
 
             var expected = new[]
             {
-                "¤¤¤¤¤¤¤¤",
-                "¤¤¤¤¤¤¤¤",
-                "¤¤¤¤¤¤¤¤",
-                "¤¤¤¤¤¤¤¤",
+                "11111111",
+                "11111111",
+                "11111111",
+                "11111111",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -173,12 +173,12 @@ public class FlexBlockTests
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('¤'),
+                        Background = Patterns.Fill('1'),
                         MaxSize = UnboundedBlockSize.Unbounded
                     },
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('◊'),
+                        Background = Patterns.Fill('2'),
                         MaxSize = UnboundedBlockSize.Unbounded
                     },
                 },
@@ -193,10 +193,10 @@ public class FlexBlockTests
 
             var expected = new[]
             {
-                "¤¤¤¤◊◊◊◊",
-                "¤¤¤¤◊◊◊◊",
-                "¤¤¤¤◊◊◊◊",
-                "¤¤¤¤◊◊◊◊",
+                "11112222",
+                "11112222",
+                "11112222",
+                "11112222",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -213,12 +213,12 @@ public class FlexBlockTests
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('¤'),
+                        Background = Patterns.Fill('1'),
                         MaxSize = UnboundedBlockSize.From(BlockLength.From(2), BlockLength.Unbounded)
                     },
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('◊'),
+                        Background = Patterns.Fill('2'),
                         MaxSize = UnboundedBlockSize.Unbounded
                     },
                 },
@@ -233,10 +233,10 @@ public class FlexBlockTests
 
             var expected = new[]
             {
-                "¤¤◊◊◊◊◊◊",
-                "¤¤◊◊◊◊◊◊",
-                "¤¤◊◊◊◊◊◊",
-                "¤¤◊◊◊◊◊◊",
+                "11222222",
+                "11222222",
+                "11222222",
+                "11222222",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -253,12 +253,12 @@ public class FlexBlockTests
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('¤'),
+                        Background = Patterns.Fill('1'),
                         MaxSize = UnboundedBlockSize.From(BlockLength.From(2), BlockLength.From(2))
                     },
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('◊'),
+                        Background = Patterns.Fill('2'),
                         MaxSize = UnboundedBlockSize.Unbounded
                     },
                 },
@@ -272,10 +272,10 @@ public class FlexBlockTests
 
             var expected = new[]
             {
-                "¤¤◊◊◊◊◊◊",
-                "¤¤◊◊◊◊◊◊",
-                "××◊◊◊◊◊◊",
-                "××◊◊◊◊◊◊",
+                "11222222",
+                "11222222",
+                "××222222",
+                "××222222",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
@@ -293,17 +293,17 @@ public class FlexBlockTests
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('¤'),
+                        Background = Patterns.Fill('1'),
                         MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(2))
                     },
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('◊'),
+                        Background = Patterns.Fill('2'),
                         MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(3))
                     },
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('△'),
+                        Background = Patterns.Fill('3'),
                         MaxSize = UnboundedBlockSize.From(BlockLength.From(7), BlockLength.From(2))
                     },
                 },
@@ -317,9 +317,9 @@ public class FlexBlockTests
 
             var expected = new[]
             {
-                "¤¤¤◊◊◊××",
-                "¤¤¤◊◊◊××",
-                "×××◊◊◊××",
+                "111222××",
+                "111222××",
+                "×××222××",
                 "××××××××",
             }.ToCharGrid();
 
@@ -338,17 +338,17 @@ public class FlexBlockTests
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('¤'),
+                        Background = Patterns.Fill('1'),
                         MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(2))
                     },
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('◊'),
+                        Background = Patterns.Fill('2'),
                         MaxSize = UnboundedBlockSize.From(BlockLength.From(3), BlockLength.From(3))
                     },
                     new BoundedBlock
                     {
-                        Background = Patterns.Fill('△'),
+                        Background = Patterns.Fill('3'),
                         MaxSize = UnboundedBlockSize.From(BlockLength.From(7), BlockLength.From(2))
                     },
                 },
@@ -362,11 +362,11 @@ public class FlexBlockTests
 
             var expected = new[]
             {
-                "¤¤¤◊◊◊××",
-                "¤¤¤◊◊◊××",
-                "×××◊◊◊××",
-                "△△△△△△△×",
-                "△△△△△△△×",
+                "111222××",
+                "111222××",
+                "×××222××",
+                "3333333×",
+                "3333333×",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
