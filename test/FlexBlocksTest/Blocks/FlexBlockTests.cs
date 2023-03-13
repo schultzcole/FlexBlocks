@@ -114,13 +114,48 @@ public class FlexBlockTests
             {
                 Contents = new List<UiBlock>
                 {
-                    new BoundedBlock { Width = BlockLength.From(13) },
-                    new BoundedBlock { Width = BlockLength.From(7) },
+                    new FixedSizeBlock { Width = BlockLength.From(13) },
+                    new FixedSizeBlock { Width = BlockLength.From(7) },
                 }
             };
             var maxSize = BlockSize.From(30, 1);
             var actualSize = block.CalcSize(maxSize);
             actualSize.Width.Should().Be(20);
+        }
+
+        [Fact]
+        public void Should_not_include_children_that_overextend_beyond_max_width()
+        {
+            var block = new FlexBlock
+            {
+                Contents = new List<UiBlock>
+                {
+                    new FixedSizeBlock { Width = BlockLength.From(7) },
+                    new FixedSizeBlock { Width = BlockLength.From(11) },
+                    new FixedSizeBlock { Width = BlockLength.From(17) },
+                }
+            };
+            var maxSize = BlockSize.From(30, 1);
+            var actualSize = block.CalcSize(maxSize);
+            actualSize.Width.Should().Be(18);
+        }
+
+        [Fact]
+        public void Should_wrap_children_to_next_line_when_they_extend_beyond_max_width_and_wrapping_is_enabled()
+        {
+            var block = new FlexBlock
+            {
+                Wrapping = true,
+                Contents = new List<UiBlock>
+                {
+                    new FixedSizeBlock { Size = UnboundedBlockSize.From(5, 1) },
+                    new FixedSizeBlock { Size = UnboundedBlockSize.From(7, 1) },
+                    new FixedSizeBlock { Size = UnboundedBlockSize.From(17, 1) },
+                }
+            };
+            var maxSize = BlockSize.From(20, 2);
+            var actualSize = block.CalcSize(maxSize);
+            actualSize.Width.Should().Be(17);
         }
     }
 

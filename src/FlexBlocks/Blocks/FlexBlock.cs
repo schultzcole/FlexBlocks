@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.HighPerformance;
+﻿using System.Buffers;
+using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
 
 namespace FlexBlocks.Blocks;
@@ -31,65 +32,35 @@ public class FlexBlock : AlignableBlock
 
     /// <inheritdoc />
     protected override BlockSize? CalcContentSize(BlockSize maxSize) =>
-        Contents?.Aggregate(
-            BlockSize.Zero,
-            (runningSize, block) =>
-            {
-                var remainingSize = BlockSize.From(maxSize.Width - runningSize.Width, maxSize.Height);
-                var blockSize = block.CalcSize(remainingSize);
-                return BlockSize.From(
-                    runningSize.Width + blockSize.Width,
-                    Math.Max(runningSize.Height, blockSize.Height)
-                );
-            }
-        );
+        Contents is null ? null : MeasureChildren(maxSize, null);
 
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)
     {
         if (Contents is null) return;
 
-        Span<BlockSize> concreteSizes = stackalloc BlockSize[Contents.Count];
+        var concreteSizes = ArrayPool<BufferSlice?>.Shared.Rent(Contents.Count);
+        Array.Fill(concreteSizes, null);
 
         MeasureChildren(buffer.BlockSize(), concreteSizes);
 
-        var xPos = 0;
-        var yPos = 0;
-        var maxHeightInRow = 0;
         for (int i = 0; i < Contents.Count; i++)
         {
             var child = Contents[i];
             var size = concreteSizes[i];
 
-            if (size.Width + xPos > buffer.Width)
-            {
-                if (Wrapping)
-                {
-                    xPos = 0;
-                    yPos += maxHeightInRow;
-                    if (yPos > buffer.Height) return;
-                }
-                else
-                {
-                    return;
-                }
-            }
+            if (size is null) continue;
 
-            if (size.Height + yPos <= buffer.Height)
-            {
-                maxHeightInRow = Math.Max(size.Height, maxHeightInRow);
-
-                var childBuffer = buffer.Slice(yPos, xPos, size.Height, size.Width);
-                RenderChild(child, childBuffer);
-            }
-
-            xPos += size.Width;
+            var childBuffer = buffer.Slice(size.Row, size.Column, size.Height, size.Width);
+            RenderChild(child, childBuffer);
         }
+
+        ArrayPool<BufferSlice?>.Shared.Return(concreteSizes);
     }
 
-    private void MeasureChildren(BlockSize bufferSize, Span<BlockSize> concreteSizes)
+    private BlockSize MeasureChildren(BlockSize bufferSize, BufferSlice?[]? concreteSizes)
     {
-        if (Contents is null) return;
+        if (Contents is null) return BlockSize.Zero;
 
         var childCount = Contents.Count;
 
@@ -129,9 +100,47 @@ public class FlexBlock : AlignableBlock
             }
         }
 
+        var xPos = 0;
+        var yPos = 0;
+        var maxHeightInRow = 0;
+        var maxWidth = 0;
+        var maxHeight = 0;
         for (int i = 0; i < childCount; i++)
         {
-            concreteSizes[i] = accumulatedSizes[i] ?? BlockSize.Zero;
+            if (accumulatedSizes[i] is null) continue;
+
+            var size = accumulatedSizes[i]!.Value;
+
+            if (size.Width + xPos > bufferSize.Width)
+            {
+                // Overflowing the end of the row
+                if (Wrapping)
+                {
+                    xPos = 0;
+                    yPos += maxHeightInRow;
+                    maxHeight = yPos;
+                    maxHeightInRow = 0;
+                    if (yPos > bufferSize.Height) break;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (size.Height + yPos <= bufferSize.Height)
+            {
+                maxHeightInRow = Math.Max(size.Height, maxHeightInRow);
+                if (concreteSizes is not null)
+                {
+                    concreteSizes[i] = new BufferSlice(xPos, yPos, size.Width, size.Height);
+                }
+            }
+
+            xPos += size.Width;
+            maxWidth = Math.Max(maxWidth, xPos);
         }
+
+        return BlockSize.From(maxWidth, maxHeight);
     }
 }
