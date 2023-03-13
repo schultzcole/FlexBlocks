@@ -9,7 +9,7 @@ public readonly record struct BlockSize(int Width, int Height)
 {
     public static BlockSize Zero { get; } = From(0, 0);
 
-    public static BlockSize From(int width, int height) => new(width, height);
+    public static BlockSize From(int width, int height) => new(Math.Max(width, 0), Math.Max(height, 0));
 
     /// <summary>Returns a new block size that is shrunk by the amount of padding on each side.</summary>
     public BlockSize ShrinkByPadding(Padding padding) => From(
