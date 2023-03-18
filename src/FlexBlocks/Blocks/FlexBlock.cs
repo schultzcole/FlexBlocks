@@ -32,22 +32,22 @@ public class FlexBlock : AlignableBlock
 
     /// <inheritdoc />
     protected override BlockSize? CalcContentSize(BlockSize maxSize) =>
-        Contents is null ? null : MeasureChildren(maxSize, null);
+        Contents is null ? null : LayoutChildren(maxSize, null);
 
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)
     {
         if (Contents is null) return;
 
-        var concreteSizes = ArrayPool<BufferSlice?>.Shared.Rent(Contents.Count);
-        Array.Fill(concreteSizes, null);
+        var childArrangement = ArrayPool<BufferSlice?>.Shared.Rent(Contents.Count);
+        Array.Fill(childArrangement, null);
 
-        MeasureChildren(buffer.BlockSize(), concreteSizes);
+        LayoutChildren(buffer.BlockSize(), childArrangement);
 
         for (int i = 0; i < Contents.Count; i++)
         {
             var child = Contents[i];
-            var size = concreteSizes[i];
+            var size = childArrangement[i];
 
             if (size is null) continue;
 
@@ -55,92 +55,99 @@ public class FlexBlock : AlignableBlock
             RenderChild(child, childBuffer);
         }
 
-        ArrayPool<BufferSlice?>.Shared.Return(concreteSizes);
+        ArrayPool<BufferSlice?>.Shared.Return(childArrangement);
     }
 
-    private BlockSize MeasureChildren(BlockSize bufferSize, BufferSlice?[]? concreteSizes)
+    private BlockSize LayoutChildren(BlockSize bufferSize, BufferSlice?[]? childArrangement)
     {
         if (Contents is null) return BlockSize.Zero;
 
         var childCount = Contents.Count;
 
-        Span<BlockSize?> accumulatedSizes = stackalloc BlockSize?[childCount];
-
-        var remainingConcreteWidth = bufferSize.Width;
-        var remainingChildrenToAllocate = Contents.Count;
-
-        // Find children with bound width and calculate their concrete size.
-        for (var i = 0; i < childCount; i++)
-        {
-            var child = Contents[i];
-            var maxSize = child.CalcMaxSize();
-            if (maxSize.Width.IsUnbounded) continue;
-
-            var concreteSize = child.CalcSize(maxSize.Constrain(bufferSize));
-            remainingConcreteWidth -= concreteSize.Width;
-            accumulatedSizes[i] = concreteSize;
-            remainingChildrenToAllocate--;
-        }
-
-        // If there are unbounded children, divide remaining width among them.
-        if (remainingChildrenToAllocate > 0 && remainingConcreteWidth > 0)
-        {
-            for (int i = 0; i < childCount; i++)
-            {
-                if (accumulatedSizes[i] is not null) continue;
-
-                var child = Contents[i];
-
-                var availableWidth = remainingConcreteWidth / remainingChildrenToAllocate;
-
-                var concreteSize = child.CalcSize(BlockSize.From(availableWidth, bufferSize.Height));
-                remainingConcreteWidth -= concreteSize.Width;
-                accumulatedSizes[i] = concreteSize;
-                remainingChildrenToAllocate--;
-            }
-        }
-
-        var xPos = 0;
         var yPos = 0;
-        var maxHeightInRow = 0;
+        var startOfCurrentRow = 0;
+        var allocatedWidthInCurrentRow = 0;
+        var unallocatedBlocksInCurrentRow = 0;
         var maxWidth = 0;
-        var maxHeight = 0;
-        for (int i = 0; i < childCount; i++)
+
+        void arrangeRow(Span<BlockSize?> sizes, int endIndex)
         {
-            if (accumulatedSizes[i] is null) continue;
-
-            var size = accumulatedSizes[i]!.Value;
-
-            if (size.Width + xPos > bufferSize.Width)
+            var xPos = 0;
+            var maxRowHeight = 0;
+            for (int i = startOfCurrentRow; i <= endIndex; i++)
             {
-                // Overflowing the end of the row
-                if (Wrapping)
+                var maybeSize = sizes[i];
+                if (maybeSize is null)
                 {
-                    xPos = 0;
-                    yPos += maxHeightInRow;
-                    maxHeight = yPos;
-                    maxHeightInRow = 0;
-                    if (yPos > bufferSize.Height) break;
+                    var remainingWidth = bufferSize.Width - allocatedWidthInCurrentRow;
+                    var remainingHeight = bufferSize.Height - yPos;
+                    var width = (int)Math.Ceiling((float)remainingWidth / unallocatedBlocksInCurrentRow);
+                    var block = Contents[i];
+                    var availableSize = BlockSize.From(width, remainingHeight);
+                    maybeSize = block.CalcSize(availableSize).Constrain(availableSize);
+                    unallocatedBlocksInCurrentRow--;
+                    allocatedWidthInCurrentRow += maybeSize.Value.Width;
                 }
-                else
+
+                var size = maybeSize.Value;
+
+                maxRowHeight = Math.Max(maxRowHeight, size.Height);
+
+                if (xPos + size.Width <= bufferSize.Width && yPos + size.Height <= bufferSize.Height)
                 {
-                    break;
+                    if (childArrangement is not null)
+                    {
+                        childArrangement[i] = new BufferSlice(xPos, yPos, size.Width, size.Height);
+                    }
                 }
+
+                xPos += size.Width;
             }
 
-            if (size.Height + yPos <= bufferSize.Height)
-            {
-                maxHeightInRow = Math.Max(size.Height, maxHeightInRow);
-                if (concreteSizes is not null)
-                {
-                    concreteSizes[i] = new BufferSlice(xPos, yPos, size.Width, size.Height);
-                }
-            }
-
-            xPos += size.Width;
+            yPos += maxRowHeight;
             maxWidth = Math.Max(maxWidth, xPos);
         }
 
-        return BlockSize.From(maxWidth, maxHeight);
+        Span<BlockSize?> boundedSizes = stackalloc BlockSize?[childCount];
+        for (int i = 0; i < childCount; i++)
+        {
+            var block = Contents[i];
+            var maxSize = block.CalcMaxSize();
+
+            int width = 0;
+            if (maxSize.Width.IsBounded)
+            {
+                var concreteSize = block.CalcSize(maxSize.Constrain(bufferSize));
+                boundedSizes[i] = concreteSize;
+                width = concreteSize.Width;
+            }
+            else
+            {
+                unallocatedBlocksInCurrentRow++;
+            }
+
+            if (allocatedWidthInCurrentRow + width > bufferSize.Width)
+            {
+                // wrap to next row
+                arrangeRow(boundedSizes, i - 1);
+
+                if (yPos > bufferSize.Width) break;
+
+                startOfCurrentRow = i;
+                allocatedWidthInCurrentRow = width;
+                unallocatedBlocksInCurrentRow = maxSize.Width.IsBounded ? 0 : 1;
+            }
+            else
+            {
+                allocatedWidthInCurrentRow += width;
+            }
+        }
+
+        if (startOfCurrentRow <= childCount)
+        {
+            arrangeRow(boundedSizes, childCount - 1);
+        }
+
+        return BlockSize.From(maxWidth, yPos - 1).Constrain(bufferSize);
     }
 }

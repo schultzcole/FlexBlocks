@@ -157,6 +157,24 @@ public class FlexBlockTests
             var actualSize = block.CalcSize(maxSize);
             actualSize.Width.Should().Be(17);
         }
+
+        [Fact]
+        public void Should_wrap_children_and_properly_allocate_width_when_child_is_unbounded()
+        {
+            var block = new FlexBlock
+            {
+                Wrapping = true,
+                Contents = new List<UiBlock>
+                {
+                    new FixedSizeBlock { Size = UnboundedBlockSize.From(7, 1) },
+                    new FixedSizeBlock { Size = UnboundedBlockSize.From(BlockLength.Unbounded, BlockLength.From(1)) },
+                    new FixedSizeBlock { Size = UnboundedBlockSize.From(7, 1) },
+                }
+            };
+            var maxSize = BlockSize.From(13, 2);
+            var actualSize = block.CalcSize(maxSize);
+            actualSize.Width.Should().Be(13);
+        }
     }
 
     public class Render
@@ -452,6 +470,40 @@ public class FlexBlockTests
                 "×××222××",
                 "3333333×",
                 "3333333×",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(buffer, expected);
+
+            buffer.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_render_unbounded_children_to_fill_remainder_of_line_when_wrapping_is_enabled()
+        {
+            var block = new FlexBlock
+            {
+                Background = null,
+                Wrapping = true,
+                Contents = new List<UiBlock>
+                {
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(7, 1) },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(BlockLength.Unbounded, BlockLength.From(1)) },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(BlockLength.Unbounded, BlockLength.From(1)) },
+                    new FixedSizeBlock { Background = Patterns.Fill('4'), Size = UnboundedBlockSize.From(8, 1) },
+                    new FixedSizeBlock { Background = Patterns.Fill('5'), Size = UnboundedBlockSize.From(BlockLength.Unbounded, BlockLength.From(1)) },
+                }
+            };
+            var buffer = new char[2, 14];
+            var bufferSpan = buffer.AsSpan2D();
+            bufferSpan.Fill('×');
+
+            var container = new SimpleBlockContainer();
+            container.RenderBlock(block, bufferSpan);
+
+            var expected = new[]
+            {
+                "11111112222333",
+                "44444444555555",
             }.ToCharGrid();
 
             _output.WriteCharGrid(buffer, expected);
