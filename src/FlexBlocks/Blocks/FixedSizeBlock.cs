@@ -37,7 +37,10 @@ public class FixedSizeBlock : UiBlock
     public override void Render(Span2D<char> buffer)
     {
         if (Content is null) return;
-        RenderChild(Content, buffer);
+
+        var bufferSize = buffer.BlockSize().Constrain(Size);
+        var contentSize = Content.CalcSize(bufferSize).Constrain(bufferSize);
+        RenderChild(Content, buffer.Slice(0, 0, contentSize.Height, contentSize.Width));
     }
 
     /// <inheritdoc />
