@@ -36,6 +36,12 @@ public record struct BlockLength :
 
     public BlockLength() { }
 
+    /// <inheritdoc />
+    public override string ToString() =>
+        IsUnbounded
+            ? $"{nameof(BlockLength)} {{ Unbounded }}"
+            : $"{nameof(BlockLength)} {{ {nameof(Value)} = {Value} }}";
+
     public static BlockLength Min(BlockLength left, BlockLength right) => left < right ? left : right;
     public static BlockLength Max(BlockLength left, BlockLength right) => left > right ? left : right;
 

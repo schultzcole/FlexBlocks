@@ -89,6 +89,12 @@ public readonly record struct UnboundedBlockSize(BlockLength Width, BlockLength 
             BlockLength.Max(left.Width, right.Width),
             BlockLength.Max(left.Height, right.Height)
         );
+
+    /// <inheritdoc />
+    public override string ToString() =>
+        Width.IsUnbounded && Height.IsUnbounded
+            ? $"{nameof(UnboundedBlockSize)} {{ Unbounded }}"
+            : $"{nameof(UnboundedBlockSize)} {{ {nameof(Width)} = {Width}, {nameof(Height)} = {Height} }}";
 }
 
 public static class BlockSizeExtensions
