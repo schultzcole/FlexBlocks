@@ -148,6 +148,6 @@ public class FlexBlock : AlignableBlock
             arrangeRow(boundedSizes, childCount - 1);
         }
 
-        return BlockSize.From(maxWidth, yPos - 1).Constrain(bufferSize);
+        return BlockSize.From(maxWidth, yPos);
     }
 }
