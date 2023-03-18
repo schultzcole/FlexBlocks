@@ -72,11 +72,9 @@ public class TextBlockTests
         [Fact]
         public void Should_render_to_one_row_when_string_is_shorter_than_buffer_width()
         {
-            var textBlock = new TextBlock { Text = "ab cd ef" };
-            var buffer = new char[3, 30];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "ab cd ef" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 30, 3);
 
             var expected = new []
             {
@@ -85,19 +83,17 @@ public class TextBlockTests
                 "××××××××××××××××××××××××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_to_two_rows_when_string_wraps_on_word_boundary()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo charlie" };
-            var buffer = new char[3, 11];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null,  Text = "alpha bravo charlie" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 11, 3);
 
             var expected = new []
             {
@@ -106,19 +102,17 @@ public class TextBlockTests
                 "×××××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_to_two_rows_when_string_wraps_mid_word()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo charlie" };
-            var buffer = new char[3, 14];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo charlie" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 14, 3);
 
             var expected = new []
             {
@@ -127,19 +121,17 @@ public class TextBlockTests
                 "××××××××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_to_two_rows_when_string_wraps_on_hyphen()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo-charlie" };
-            var buffer = new char[3, 14];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo-charlie" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 14, 3);
 
             var expected = new []
             {
@@ -148,19 +140,17 @@ public class TextBlockTests
                 "××××××××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_to_three_rows_when_string_wraps_exactly_on_hyphen()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo-charlie" };
-            var buffer = new char[3, 11];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo-charlie" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 11, 3);
 
             var expected = new []
             {
@@ -169,19 +159,17 @@ public class TextBlockTests
                 "charlie××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_to_two_rows_when_string_contains_newline()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo\ncharlie" };
-            var buffer = new char[3, 30];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo\ncharlie" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 30, 3);
 
             var expected = new []
             {
@@ -190,19 +178,17 @@ public class TextBlockTests
                 "××××××××××××××××××××××××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_to_two_rows_when_string_wraps_mid_tab()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo\tcharlie", TabWidth = 4};
-            var buffer = new char[3, 13];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo\tcharlie", TabWidth = 4};
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 13, 3);
 
             var expected = new []
             {
@@ -211,19 +197,17 @@ public class TextBlockTests
                 "×××××××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_to_two_rows_with_no_leading_spaces_when_string_wraps_at_start_of_tab()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo\tcharlie", TabWidth = 4};
-            var buffer = new char[3, 11];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo\tcharlie", TabWidth = 4};
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 11, 3);
 
             var expected = new []
             {
@@ -232,19 +216,17 @@ public class TextBlockTests
                 "×××××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_new_paragraph_with_leading_tabs()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo\n\tcharlie", TabWidth = 4};
-            var buffer = new char[3, 15];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo\n\tcharlie", TabWidth = 4};
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 15, 3);
 
             var expected = new []
             {
@@ -253,19 +235,17 @@ public class TextBlockTests
                 "×××××××××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_render_all_that_can_fit_if_string_is_larger_than_buffer()
         {
-            var textBlock = new TextBlock { Text = "alpha bravo charlie delta echo" };
-            var buffer = new char[2, 15];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo charlie delta echo" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 15, 2);
 
             var expected = new []
             {
@@ -273,19 +253,34 @@ public class TextBlockTests
                 "charlie delta…×",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_ellipsize_text_too_long_for_single_line_buffer()
+        {
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 10, 1);
+
+            var expected = new []
+            {
+                "alpha bra…",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void Should_wrap_mid_word_if_word_is_wider_than_buffer()
         {
-            var textBlock = new TextBlock { Text = "alpha biotechnological charlie" };
-            var buffer = new char[3, 15];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
-            textBlock.Render(bufferSpan);
+            var textBlock = new TextBlock { Background = null, Text = "alpha biotechnological charlie" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 15, 3);
 
             var expected = new []
             {
@@ -294,9 +289,9 @@ public class TextBlockTests
                 "l charlie××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
     }
 

@@ -134,14 +134,12 @@ public class ContentBlockTests
                     MaxSize = UnboundedBlockSize.From(2, 2)
                 },
                 HorizontalContentAlignment = Alignment.Start,
-                VerticalContentAlignment = Alignment.Start
+                VerticalContentAlignment = Alignment.Start,
+                HorizontalSizing = Sizing.Fill,
+                VerticalSizing = Sizing.Fill,
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new []
             {
@@ -152,9 +150,9 @@ public class ContentBlockTests
             }.ToCharGrid();
 
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -169,14 +167,12 @@ public class ContentBlockTests
                     MaxSize = UnboundedBlockSize.From(2, 2)
                 },
                 HorizontalContentAlignment = Alignment.End,
-                VerticalContentAlignment = Alignment.Center
+                VerticalContentAlignment = Alignment.Center,
+                HorizontalSizing = Sizing.Fill,
+                VerticalSizing = Sizing.Fill,
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new []
             {
@@ -187,9 +183,9 @@ public class ContentBlockTests
             }.ToCharGrid();
 
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -204,14 +200,12 @@ public class ContentBlockTests
                     MaxSize = UnboundedBlockSize.From(2, 2)
                 },
                 HorizontalContentAlignment = Alignment.Center,
-                VerticalContentAlignment = Alignment.End
+                VerticalContentAlignment = Alignment.End,
+                HorizontalSizing = Sizing.Fill,
+                VerticalSizing = Sizing.Fill,
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new []
             {
@@ -222,9 +216,9 @@ public class ContentBlockTests
             }.ToCharGrid();
 
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
     }
 }

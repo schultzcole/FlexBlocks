@@ -197,12 +197,8 @@ public class FlexBlockTests
                 },
 
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new[]
             {
@@ -212,9 +208,9 @@ public class FlexBlockTests
                 "11111111",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -237,12 +233,8 @@ public class FlexBlockTests
                 },
 
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new[]
             {
@@ -252,9 +244,9 @@ public class FlexBlockTests
                 "11112222",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -277,12 +269,8 @@ public class FlexBlockTests
                 },
 
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new[]
             {
@@ -292,9 +280,9 @@ public class FlexBlockTests
                 "11222222",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -316,12 +304,8 @@ public class FlexBlockTests
                     },
                 },
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new[]
             {
@@ -331,9 +315,9 @@ public class FlexBlockTests
                 "××222222",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -361,12 +345,8 @@ public class FlexBlockTests
                     },
                 },
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new[]
             {
@@ -376,9 +356,9 @@ public class FlexBlockTests
                 "××××××××",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -411,12 +391,8 @@ public class FlexBlockTests
                     },
                 },
             };
-            var buffer = new char[4, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
 
             var expected = new[]
             {
@@ -426,9 +402,9 @@ public class FlexBlockTests
                 "××××××44",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -456,12 +432,8 @@ public class FlexBlockTests
                     },
                 },
             };
-            var buffer = new char[5, 8];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 8, 5);
 
             var expected = new[]
             {
@@ -472,9 +444,9 @@ public class FlexBlockTests
                 "3333333×",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -493,12 +465,8 @@ public class FlexBlockTests
                     new FixedSizeBlock { Background = Patterns.Fill('5'), Size = UnboundedBlockSize.From(BlockLength.Unbounded, 1) },
                 }
             };
-            var buffer = new char[2, 14];
-            var bufferSpan = buffer.AsSpan2D();
-            bufferSpan.Fill('×');
 
-            var container = new SimpleBlockContainer();
-            container.RenderBlock(block, bufferSpan);
+            var actual = BlockRenderTestHelper.RenderBlock(block, 14, 2);
 
             var expected = new[]
             {
@@ -506,9 +474,9 @@ public class FlexBlockTests
                 "44444444555555",
             }.ToCharGrid();
 
-            _output.WriteCharGrid(buffer, expected);
+            _output.WriteCharGrid(actual, expected);
 
-            buffer.Should().BeEquivalentTo(expected);
+            actual.Should().BeEquivalentTo(expected);
         }
     }
 }
