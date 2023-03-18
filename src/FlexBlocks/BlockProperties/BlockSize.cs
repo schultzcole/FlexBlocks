@@ -55,8 +55,7 @@ public readonly record struct UnboundedBlockSize(BlockLength Width, BlockLength 
 
     public static UnboundedBlockSize Zero { get; } = From(0, 0);
 
-    public static UnboundedBlockSize From(int? width, int? height) =>
-        new(BlockLength.From(width), BlockLength.From(height));
+    public static UnboundedBlockSize From(int? width, int? height) => new(width, height);
 
     public static UnboundedBlockSize From(BlockLength width, BlockLength height) => new(width, height);
 

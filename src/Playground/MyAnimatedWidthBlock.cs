@@ -62,9 +62,9 @@ internal static class BlockLengthExtensions
 {
     public static BlockLength Clamp(this BlockLength length, int min, int max)
     {
-        if (length.IsUnbounded) return BlockLength.From(max);
-        if (length > max) return BlockLength.From(max);
-        if (length < min) return BlockLength.From(min);
+        if (length.IsUnbounded) return max;
+        if (length > max) return max;
+        if (length < min) return min;
 
         return length;
     }

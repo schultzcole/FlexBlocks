@@ -34,6 +34,8 @@ public record struct BlockLength :
     /// <summary>Creates a new length with the given length value.</summary>
     public static BlockLength From(int? value) => new() { Value = value };
 
+    public static implicit operator BlockLength(int? val) => From(val);
+
     public BlockLength() { }
 
     /// <inheritdoc />
