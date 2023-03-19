@@ -38,17 +38,17 @@ var block = new BorderBlock
                 Border = Borders.Square,
                 Padding = new Padding(1, 3),
                 Content = new FixedSizeBlock
-                    // Content = new MyAnimatedWidthBlock
+                // Content = new MyAnimatedWidthBlock
+                {
+                    Size = UnboundedBlockSize.From(30, BlockLength.Unbounded),
+                    // MinWidth = 20,
+                    // MaxWidth = 60,
+                    // Interval = 20,
+                    Content = new TextBlock
                     {
-                        Size = UnboundedBlockSize.From(30, BlockLength.Unbounded),
-                        // MinWidth = 20,
-                        // MaxWidth = 60,
-                        // Interval = 20,
-                        Content = new TextBlock
-                        {
-                            Text = string.Join('\n', alphabet)
-                        }
+                        Text = string.Join('\n', alphabet)
                     }
+                }
             },
             new BorderBlock
             {
@@ -76,7 +76,7 @@ var block = new BorderBlock
                     {
                         HorizontalSizing = Sizing.Fill,
                         VerticalSizing = Sizing.Content,
-                        Wrapping = true,
+                        Wrapping = FlexWrapping.Wrap,
                         Contents = alphabet
                             .Select(x => new BorderBlock { Border = Borders.Square, Content = new TextBlock { Text = x } })
                             .Cast<UiBlock>()
