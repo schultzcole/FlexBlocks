@@ -9,6 +9,8 @@ namespace FlexBlocks;
 /// </summary>
 internal class BlockRenderer : IBlockContainer
 {
+    private const bool RETHROW_RENDER_ERRORS = true;
+
     private readonly FlexBlocksDriver _driver;
     private readonly RenderQueue _renderQueue = new();
 
@@ -32,9 +34,14 @@ internal class BlockRenderer : IBlockContainer
 
         child.Container = this;
 
-        child.Background?.Render(childBuffer);
-        child.Render(childBuffer);
-        child.Overlay?.Render(childBuffer);
+        try { child.Background?.Render(childBuffer); }
+        catch { if (RETHROW_RENDER_ERRORS) throw; }
+
+        try { child.Render(childBuffer); }
+        catch { if (RETHROW_RENDER_ERRORS) throw; }
+
+        try { child.Overlay?.Render(childBuffer); }
+        catch { if (RETHROW_RENDER_ERRORS) throw; }
     }
 
     /// <summary>Renders the root block to the given buffer, thereby rendering the whole block hierarchy.</summary>

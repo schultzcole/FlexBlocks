@@ -178,7 +178,17 @@ public sealed class FlexBlocksDriver
 
             // render loop
             var timer = new Timer(TimeSpan.FromMilliseconds(10));
-            timer.Elapsed += (_, _) => Render(false, quitTokenSource.Token);
+            timer.Elapsed += (_, _) =>
+            {
+                try
+                {
+                    Render(false, quitTokenSource.Token);
+                }
+                catch (Exception ex)
+                {
+                    ThreadPool.QueueUserWorkItem(_ => throw new Exception("Error in render loop", ex));
+                }
+            };
             timer.Start();
 
             // yield thread until program is quit (either externally via quitToken or via user-initiated kill signal)
@@ -188,14 +198,13 @@ public sealed class FlexBlocksDriver
         }
         catch (TaskCanceledException)
         {
-            // quit silently
+            Shutdown();
         }
-        finally
+        catch (Exception e)
         {
-            // return the console state to something resembling normalcy
-            Console.CursorVisible = true;
-            Console.SetCursorPosition(0, Height - 1);
-            Console.WriteLine();
+            Shutdown();
+            Console.Clear();
+            Console.WriteLine(e);
         }
     }
 
@@ -217,4 +226,12 @@ public sealed class FlexBlocksDriver
     /// <param name="rootBlock">The root block of this driver.</param>
     /// <returns>A task the completes when the driver has quit.</returns>
     public static Task Run(UiBlock rootBlock) => Run(rootBlock, CancellationToken.None);
+
+    private void Shutdown()
+    {
+        // return the console state to something resembling normalcy
+        Console.CursorVisible = true;
+        Console.SetCursorPosition(0, Height - 1);
+        Console.WriteLine();
+    }
 }
