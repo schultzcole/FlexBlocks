@@ -61,6 +61,8 @@ public readonly record struct UnboundedBlockSize(BlockLength Width, BlockLength 
 
     public static UnboundedBlockSize From(BlockSize blockSize) => From(blockSize.Width, blockSize.Height);
 
+    public static implicit operator UnboundedBlockSize(BlockSize blockSize) => From(blockSize);
+
     /// <summary>
     /// Constrains this desired block size to be no larger than the given block size.
     /// This necessarily means the resulting block size will not be infinite in either dimension.
