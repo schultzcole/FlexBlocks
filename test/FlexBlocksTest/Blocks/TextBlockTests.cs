@@ -13,11 +13,27 @@ public class TextBlockTests
     public class CalcMaxSize
     {
         [Fact]
-        public void Should_always_return_unbounded()
+        public void Should_return_height_one_when_no_linebreaks()
         {
-            var textBlock = new TextBlock();
+            var textBlock = new TextBlock { Text = "alpha bravo charlie" };
             var actualMaxSize = textBlock.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.Unbounded);
+            actualMaxSize.Should().Be(UnboundedBlockSize.From(19, 1));
+        }
+
+        [Fact]
+        public void Should_account_for_line_breaks()
+        {
+            var textBlock = new TextBlock { Text = "alpha bravo\ncharlie" };
+            var actualMaxSize = textBlock.CalcMaxSize();
+            actualMaxSize.Should().Be(UnboundedBlockSize.From(11, 2));
+        }
+
+        [Fact]
+        public void Should_account_for_tabs()
+        {
+            var textBlock = new TextBlock { Text = "alpha bravo\tcharlie" };
+            var actualMaxSize = textBlock.CalcMaxSize();
+            actualMaxSize.Should().Be(UnboundedBlockSize.From(22, 1));
         }
     }
 

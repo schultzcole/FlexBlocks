@@ -33,7 +33,12 @@ public class TextBlock : UiBlock
     private MeasureResult? _measureResult;
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize() => UnboundedBlockSize.Unbounded;
+    public override UnboundedBlockSize CalcMaxSize()
+    {
+        LayoutText(BlockSize.From(int.MaxValue, int.MaxValue));
+
+        return _measureResult?.Size() ?? UnboundedBlockSize.Zero;
+    }
 
     /// <inheritdoc />
     public override BlockSize CalcSize(BlockSize maxSize)
