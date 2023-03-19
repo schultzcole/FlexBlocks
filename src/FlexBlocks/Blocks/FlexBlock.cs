@@ -4,6 +4,8 @@ using FlexBlocks.BlockProperties;
 
 namespace FlexBlocks.Blocks;
 
+public enum FlexWrapping { NoWrap, Wrap }
+
 public class FlexBlock : AlignableBlock
 {
     public List<UiBlock>? Contents { get; set; }
@@ -11,7 +13,7 @@ public class FlexBlock : AlignableBlock
     /// <summary>
     /// Whether the contents of this block should wrap to the next row if they are too wide for the width of the parent.
     /// </summary>
-    public bool Wrapping { get; set; }
+    public FlexWrapping Wrapping { get; set; } = FlexWrapping.NoWrap;
 
     /// <inheritdoc />
     public override bool HasContent => Contents?.Count > 0;
@@ -32,7 +34,7 @@ public class FlexBlock : AlignableBlock
 
     /// <inheritdoc />
     protected override BlockSize? CalcContentSize(BlockSize maxSize) =>
-        Contents is null ? null : LayoutChildren(maxSize, null);
+        Contents is not null ? LayoutChildren(maxSize, null) : null;
 
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)
@@ -70,6 +72,55 @@ public class FlexBlock : AlignableBlock
         var unallocatedBlocksInCurrentRow = 0;
         var maxWidth = 0;
 
+        Span<BlockSize?> boundedSizes = stackalloc BlockSize?[childCount];
+        var i = 0;
+        for (; i < childCount; i++)
+        {
+            var block = Contents[i];
+            var maxSize = block.CalcMaxSize();
+
+            if (maxSize.Width.IsBounded)
+            {
+                var concreteSize = block.CalcSize(maxSize.Constrain(bufferSize));
+                boundedSizes[i] = concreteSize;
+                var width = concreteSize.Width;
+
+                var isOverflowing = allocatedWidthInCurrentRow + width > bufferSize.Width;
+                if (isOverflowing)
+                {
+                    if (Wrapping == FlexWrapping.NoWrap) break;
+
+                    // wrap to next row
+                    arrangeRow(boundedSizes, i - 1);
+
+                    if (yPos > bufferSize.Height) break;
+
+                    startOfCurrentRow = i;
+                    allocatedWidthInCurrentRow = width;
+                    unallocatedBlocksInCurrentRow = maxSize.Width.IsBounded ? 0 : 1;
+                }
+                else
+                {
+                    allocatedWidthInCurrentRow += width;
+                }
+            }
+            else
+            {
+                unallocatedBlocksInCurrentRow++;
+            }
+        }
+
+        if (startOfCurrentRow <= i)
+        {
+            // arrange the last non-overflowing row up until the end of blocks that were measured
+            arrangeRow(boundedSizes, i - 1);
+        }
+
+        return BlockSize.From(maxWidth, yPos);
+
+        ///////////////////////////////////////////////////////////////
+        // adds a row's worth of blocks to the final arrangement array.
+        ///////////////////////////////////////////////////////////////
         void arrangeRow(Span<BlockSize?> sizes, int endIndex)
         {
             var xPos = 0;
@@ -107,47 +158,5 @@ public class FlexBlock : AlignableBlock
             yPos += maxRowHeight;
             maxWidth = Math.Max(maxWidth, xPos);
         }
-
-        Span<BlockSize?> boundedSizes = stackalloc BlockSize?[childCount];
-        for (int i = 0; i < childCount; i++)
-        {
-            var block = Contents[i];
-            var maxSize = block.CalcMaxSize();
-
-            int width = 0;
-            if (maxSize.Width.IsBounded)
-            {
-                var concreteSize = block.CalcSize(maxSize.Constrain(bufferSize));
-                boundedSizes[i] = concreteSize;
-                width = concreteSize.Width;
-            }
-            else
-            {
-                unallocatedBlocksInCurrentRow++;
-            }
-
-            if (allocatedWidthInCurrentRow + width > bufferSize.Width)
-            {
-                // wrap to next row
-                arrangeRow(boundedSizes, i - 1);
-
-                if (yPos > bufferSize.Width) break;
-
-                startOfCurrentRow = i;
-                allocatedWidthInCurrentRow = width;
-                unallocatedBlocksInCurrentRow = maxSize.Width.IsBounded ? 0 : 1;
-            }
-            else
-            {
-                allocatedWidthInCurrentRow += width;
-            }
-        }
-
-        if (startOfCurrentRow <= childCount)
-        {
-            arrangeRow(boundedSizes, childCount - 1);
-        }
-
-        return BlockSize.From(maxWidth, yPos);
     }
 }

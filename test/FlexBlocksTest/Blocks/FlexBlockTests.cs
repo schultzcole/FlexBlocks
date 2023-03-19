@@ -120,7 +120,8 @@ public class FlexBlockTests
             };
             var maxSize = BlockSize.From(30, 1);
             var actualSize = block.CalcSize(maxSize);
-            actualSize.Width.Should().Be(20);
+            var expectedSize = BlockSize.From(20, 1);
+            actualSize.Should().Be(expectedSize);
         }
 
         [Fact]
@@ -137,7 +138,8 @@ public class FlexBlockTests
             };
             var maxSize = BlockSize.From(30, 1);
             var actualSize = block.CalcSize(maxSize);
-            actualSize.Width.Should().Be(18);
+            var expectedSize = BlockSize.From(18, 1);
+            actualSize.Should().Be(expectedSize);
         }
 
         [Fact]
@@ -145,7 +147,7 @@ public class FlexBlockTests
         {
             var block = new FlexBlock
             {
-                Wrapping = true,
+                Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock>
                 {
                     new FixedSizeBlock { Size = UnboundedBlockSize.From(5, 1) },
@@ -155,7 +157,8 @@ public class FlexBlockTests
             };
             var maxSize = BlockSize.From(20, 2);
             var actualSize = block.CalcSize(maxSize);
-            actualSize.Width.Should().Be(17);
+            var expectedSize = BlockSize.From(17, 2);
+            actualSize.Should().Be(expectedSize);
         }
 
         [Fact]
@@ -163,7 +166,7 @@ public class FlexBlockTests
         {
             var block = new FlexBlock
             {
-                Wrapping = true,
+                Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock>
                 {
                     new FixedSizeBlock { Size = UnboundedBlockSize.From(7, 1) },
@@ -173,7 +176,8 @@ public class FlexBlockTests
             };
             var maxSize = BlockSize.From(13, 2);
             var actualSize = block.CalcSize(maxSize);
-            actualSize.Width.Should().Be(13);
+            var expectedSize = BlockSize.From(13, 2);
+            actualSize.Should().Be(expectedSize);
         }
     }
 
@@ -321,12 +325,12 @@ public class FlexBlockTests
         }
 
         [Fact]
-        public void Should_not_render_horizontally_overflowing_children_if_they_are_too_wide_for_parent()
+        public void Should_not_render_horizontally_overflowing_children_if_they_are_too_wide_for_parent_with_nowrap()
         {
             var block = new FlexBlock
             {
                 Background = null,
-                Wrapping = false,
+                Wrapping = FlexWrapping.NoWrap,
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
@@ -336,7 +340,7 @@ public class FlexBlockTests
                     new BoundedBlock
                     {
                         Background = Patterns.Fill('2'),
-                        MaxSize = UnboundedBlockSize.From(3, 3)
+                        MaxSize = UnboundedBlockSize.From(3, 2)
                     },
                     new BoundedBlock
                     {
@@ -352,7 +356,7 @@ public class FlexBlockTests
             {
                 "111222××",
                 "111222××",
-                "×××222××",
+                "××××××××",
                 "××××××××",
             }.ToCharGrid();
 
@@ -367,7 +371,7 @@ public class FlexBlockTests
             var block = new FlexBlock
             {
                 Background = null,
-                Wrapping = true,
+                Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
@@ -413,7 +417,7 @@ public class FlexBlockTests
             var block = new FlexBlock
             {
                 Background = null,
-                Wrapping = true,
+                Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock> {
                     new BoundedBlock
                     {
@@ -455,7 +459,7 @@ public class FlexBlockTests
             var block = new FlexBlock
             {
                 Background = null,
-                Wrapping = true,
+                Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock>
                 {
                     new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(7, 1) },
@@ -472,6 +476,41 @@ public class FlexBlockTests
             {
                 "11111112222333",
                 "44444444555555",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_wrap_blocks_correctly_when_buffer_width_is_less_than_buffer_height()
+        {
+            var block = new FlexBlock
+            {
+                Background = null,
+                Wrapping = FlexWrapping.Wrap,
+                Contents = new List<UiBlock>
+                {
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(2, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(2, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(2, 3) },
+                }
+            };
+
+            var actual = BlockRenderTestHelper.RenderBlock(block, 3, 9);
+
+            var expected = new[]
+            {
+                "11×",
+                "11×",
+                "11×",
+                "22×",
+                "22×",
+                "22×",
+                "33×",
+                "33×",
+                "33×",
             }.ToCharGrid();
 
             _output.WriteCharGrid(actual, expected);
