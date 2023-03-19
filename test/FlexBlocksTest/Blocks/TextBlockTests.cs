@@ -259,7 +259,7 @@ public class TextBlockTests
         }
 
         [Fact]
-        public void Should_ellipsize_text_too_long_for_single_line_buffer()
+        public void Should_ellipsize_multi_word_text_too_long_for_single_line_buffer()
         {
             var textBlock = new TextBlock { Background = null, Text = "alpha bravo" };
 
@@ -267,7 +267,24 @@ public class TextBlockTests
 
             var expected = new []
             {
-                "alpha bra…",
+                "alpha…××××",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_ellipsize_single_word_too_long_for_single_line_buffer()
+        {
+            var textBlock = new TextBlock { Background = null, Text = "november" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 7, 1);
+
+            var expected = new []
+            {
+                "novemb…",
             }.ToCharGrid();
 
             _output.WriteCharGrid(actual, expected);
@@ -287,6 +304,24 @@ public class TextBlockTests
                 "alpha××××××××××",
                 "biotechnologica",
                 "l charlie××××××",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_wrap_mid_word_if_word_is_one_character_wider_than_buffer()
+        {
+            var textBlock = new TextBlock { Background = null, Text = "alpha" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 4, 2);
+
+            var expected = new []
+            {
+                "alph",
+                "a×××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(actual, expected);

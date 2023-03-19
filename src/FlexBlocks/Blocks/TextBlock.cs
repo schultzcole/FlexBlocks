@@ -72,6 +72,7 @@ public class TextBlock : UiBlock
         var currentRowStart = 0;      // index relative to start of string
         var endOfLastWordInRow = 0;   // index relative to start of current line
         var startOfLastWordInRow = 0; // index relative to start of current line
+        var verticalOverflow = false;
         for (var i = 0; i < expandedTextSpan.Length; i++)
         {
             var positionInRow = i - currentRowStart;
@@ -108,8 +109,22 @@ public class TextBlock : UiBlock
             var overflowingLine = positionInRow >= maxSize.Width;
             var isLastChar = i + 1 >= expandedTextSpan.Length;
 
+            if (overflowingLine && _measureResult.LineCount + 1 >= maxSize.Height)
+            {
+                // we're overflowing and this is the last line that will fit in the buffer
+                if (endOfLastWordInRow == 0)
+                {
+                    // if this row consists of just a single word, display as much of the word as we can
+                    endOfLastWordInRow = positionInRow - 1;
+                }
+
+                verticalOverflow = true;
+                break;
+            }
+
             if (overflowingLine && currentBreakability != Breakability.BreakAndDrop)
             {
+                positionInRow = 0;
                 int wrapPoint;
                 if (startOfLastWordInRow == 0)
                 {
@@ -128,21 +143,23 @@ public class TextBlock : UiBlock
                 currentRowStart = i;
                 endOfLastWordInRow = 0;
                 startOfLastWordInRow = 0;
-
-                if (_measureResult.LineCount >= maxSize.Height)
-                {
-                    // we've run out of lines to write to
-                    _measureResult.VerticalOverflow = true;
-                    break;
-                }
             }
-            else if (isLastChar && currentBreakability == Breakability.NoBreak)
+
+            if (isLastChar && currentBreakability == Breakability.NoBreak)
             {
                 endOfLastWordInRow = positionInRow + 1;
             }
         }
 
-        if (endOfLastWordInRow > 0)
+        // add the last line, with an ellipsis if we overflowed
+        if (verticalOverflow)
+        {
+            var lastLine = new char[endOfLastWordInRow + 1];
+            expandedText.Slice(currentRowStart, endOfLastWordInRow).CopyTo(lastLine);
+            lastLine[^1] = ELLIPSIS;
+            _measureResult.AddLine(lastLine);
+        }
+        else
         {
             _measureResult.AddLine(expandedText.Slice(currentRowStart, endOfLastWordInRow));
         }
@@ -267,15 +284,12 @@ public class TextBlock : UiBlock
     /// <summary>Stores computed text layout</summary>
     private class MeasureResult
     {
-        public bool VerticalOverflow { get; set; }
-
         private readonly List<ReadOnlyMemory<char>> _rawLines = new();
 
         public int LineCount => _rawLines.Count;
 
         public void ClearLines()
         {
-            VerticalOverflow = false;
             _rawLines.Clear();
         }
 
@@ -286,18 +300,6 @@ public class TextBlock : UiBlock
             for (var i = 0; i < _rawLines.Count; i++)
             {
                 _rawLines[i].Span.CopyTo(buffer.GetRowSpan(i));
-            }
-
-            if (VerticalOverflow)
-            {
-                var lastCharIndex = _rawLines[^1].Length;
-                var lastBufferLine = buffer.GetRowSpan(_rawLines.Count - 1);
-                if (lastCharIndex >= lastBufferLine.Length)
-                {
-                    lastCharIndex = lastBufferLine.Length - 1;
-                }
-
-                lastBufferLine[lastCharIndex] = ELLIPSIS;
             }
         }
 
