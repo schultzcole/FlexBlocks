@@ -517,5 +517,74 @@ public class FlexBlockTests
 
             actual.Should().BeEquivalentTo(expected);
         }
+
+        [Fact]
+        public void Should_render_children_vertically_when_flex_dir_is_vertical()
+        {
+            var block = new FlexBlock
+            {
+                Background = null,
+                Direction = FLexDirection.Vertical,
+                Contents = new List<UiBlock>
+                {
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(3, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(3, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(3, 3) },
+                }
+            };
+
+            var actual = BlockRenderTestHelper.RenderBlock(block, 9, 9);
+
+            var expected = new[]
+            {
+                "111××××××",
+                "111××××××",
+                "111××××××",
+                "222××××××",
+                "222××××××",
+                "222××××××",
+                "333××××××",
+                "333××××××",
+                "333××××××",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_wrap_children_to_top_of_next_column_when_flex_dir_is_vertical()
+        {
+            var block = new FlexBlock
+            {
+                Background = null,
+                Wrapping = FlexWrapping.Wrap,
+                Direction = FLexDirection.Vertical,
+                Contents = new List<UiBlock>
+                {
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(3, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(3, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(3, 3) },
+                }
+            };
+
+            var actual = BlockRenderTestHelper.RenderBlock(block, 9, 7);
+
+            var expected = new[]
+            {
+                "111333×××",
+                "111333×××",
+                "111333×××",
+                "222××××××",
+                "222××××××",
+                "222××××××",
+                "×××××××××",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
     }
 }
