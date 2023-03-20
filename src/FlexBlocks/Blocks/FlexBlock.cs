@@ -163,7 +163,7 @@ public class FlexBlock : AlignableBlock
                     var availableFlexLength =
                         (int)Math.Ceiling((float)remainingFlexLength / unallocatedBlocksInCurrentLine);
                     var block = Contents[i];
-                    var availableSize = BlockSize.From(availableFlexLength, availableCrossLength);
+                    var availableSize = MakeSizeInScreenBasis(availableFlexLength, availableCrossLength);
                     maybeSize = block.CalcSize(availableSize).Constrain(availableSize);
                     unallocatedBlocksInCurrentLine--;
                     allocatedLengthInCurrentLine += GetSizeInFlexBasis(maybeSize.Value).FlexLength;
