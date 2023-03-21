@@ -159,7 +159,7 @@ public class TextBlock : UiBlock
         // add the last line, with an ellipsis if we overflowed
         if (verticalOverflow)
         {
-            var lastLine = new char[endOfLastWordInRow + 1];
+            var lastLine = new char[Math.Min(maxSize.Width, endOfLastWordInRow + 1)];
             expandedText.Slice(currentRowStart, endOfLastWordInRow).CopyTo(lastLine);
             lastLine[^1] = ELLIPSIS;
             _measureResult.AddLine(lastLine);

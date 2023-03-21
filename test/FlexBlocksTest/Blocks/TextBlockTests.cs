@@ -344,6 +344,23 @@ public class TextBlockTests
 
             actual.Should().BeEquivalentTo(expected);
         }
+
+        [Fact]
+        public void Should_not_overflow_buffer_when_adding_ellipsis_when_wrap_happens_at_buffer_boundary()
+        {
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 5, 1);
+
+            var expected = new []
+            {
+                "alph…",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
     }
 
     public class PreprocessText
