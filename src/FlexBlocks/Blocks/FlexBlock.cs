@@ -109,7 +109,7 @@ public class FlexBlock : AlignableBlock
 
             if (maxFlexLength.IsBounded)
             {
-                var concreteSize = block.CalcSize(maxSize.Constrain(bufferSize));
+                var concreteSize = block.CalcSize(bufferSize);
                 boundedSizes[i] = concreteSize;
                 var (childFlexLength, _) = GetSizeInFlexBasis(concreteSize);
 
@@ -125,7 +125,7 @@ public class FlexBlock : AlignableBlock
 
                     startOfCurrentLine = i;
                     allocatedLengthInCurrentLine = childFlexLength;
-                    unallocatedBlocksInCurrentLine = maxFlexLength.IsBounded ? 0 : 1;
+                    unallocatedBlocksInCurrentLine = 0;
                 }
                 else
                 {
