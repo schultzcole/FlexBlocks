@@ -164,7 +164,7 @@ public sealed class FlexBlocksDriver
 
             Console.Clear();
             Console.CursorVisible = false;
-            Console.OutputEncoding = Encoding.Unicode;
+            Console.OutputEncoding = Encoding.UTF8;
 
             // on the off chance that the quitToken is canceled before now,
             // quit before bothering to do the work of rendering the first frame.
