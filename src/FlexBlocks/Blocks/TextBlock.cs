@@ -86,7 +86,13 @@ public class TextBlock : UiBlock
             // special character handling
             if (currentChar == NEWLINE)
             {
+                if (_measureResult.LineCount + 1 >= maxSize.Height)
+                {
+                    verticalOverflow = true;
+                    break;
+                }
                 _measureResult.AddLine(expandedText.Slice(currentRowStart, positionInRow));
+
                 currentRowStart = i + 1;
                 endOfLastWordInRow = 0;
                 startOfLastWordInRow = 0;

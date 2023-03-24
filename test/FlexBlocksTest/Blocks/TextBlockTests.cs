@@ -78,6 +78,14 @@ public class TextBlockTests
             var actualSize = textBlock.CalcSize(BlockSize.From(30, 3));
             actualSize.Should().Be(BlockSize.From(11, 2));
         }
+
+        [Fact]
+        public void Should_not_return_greater_height_than_will_fit_in_max_height_when_newline_precedes_vertical_overflow()
+        {
+            var textBlock = new TextBlock { Text = "alpha bravo\n\ncharlie delta" };
+            var actualSize = textBlock.CalcSize(BlockSize.From(7, 3));
+            actualSize.Should().Be(BlockSize.From(5, 3));
+        }
     }
 
     public class Render
@@ -355,6 +363,25 @@ public class TextBlockTests
             var expected = new []
             {
                 "alph…",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_ellipsize_text_with_a_newline_as_the_last_character_before_vertical_overflow()
+        {
+            var textBlock = new TextBlock { Background = null, Text = "alpha bravo\n\ncharlie delta" };
+
+            var actual = BlockRenderTestHelper.RenderBlock(textBlock, 7, 3);
+
+            var expected = new []
+            {
+                "alpha××",
+                "bravo××",
+                "…××××××",
             }.ToCharGrid();
 
             _output.WriteCharGrid(actual, expected);
