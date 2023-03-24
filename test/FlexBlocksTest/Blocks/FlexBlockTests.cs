@@ -36,12 +36,12 @@ public class FlexBlockTests
             var block = new FlexBlock {
                 Contents = new List<UiBlock>
                 {
-                    new BoundedBlock { Width = 13 },
-                    new BoundedBlock { Width = 7 },
+                    new BoundedBlock { Width = 13, Height = 1 },
+                    new BoundedBlock { Width = 7, Height = 1 },
                 }
             };
             var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Width.Should().Be(BlockLength.From(20));
+            actualMaxSize.Should().Be(UnboundedBlockSize.From(20, 1));
         }
 
         [Fact]
@@ -50,12 +50,12 @@ public class FlexBlockTests
             var block = new FlexBlock {
                 Contents = new List<UiBlock>
                 {
-                    new BoundedBlock { Width = 13 },
-                    new BoundedBlock { Width = BlockLength.Unbounded },
+                    new BoundedBlock { Width = 13, Height = 1 },
+                    new BoundedBlock { Width = BlockLength.Unbounded, Height = 1 },
                 }
             };
             var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Width.Should().Be(BlockLength.Unbounded);
+            actualMaxSize.Should().Be(UnboundedBlockSize.From(BlockLength.Unbounded, 1));
         }
 
         [Fact]
@@ -64,12 +64,12 @@ public class FlexBlockTests
             var block = new FlexBlock {
                 Contents = new List<UiBlock>
                 {
-                    new BoundedBlock { Height = 13 },
-                    new BoundedBlock { Height = 7 },
+                    new BoundedBlock { Height = 13, Width = 1 },
+                    new BoundedBlock { Height = 7, Width = 1 },
                 }
             };
             var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Height.Should().Be(BlockLength.From(13));
+            actualMaxSize.Should().Be(UnboundedBlockSize.From(2, BlockLength.From(13)));
         }
 
         [Fact]
@@ -78,12 +78,27 @@ public class FlexBlockTests
             var block = new FlexBlock {
                 Contents = new List<UiBlock>
                 {
-                    new BoundedBlock { Height = 13 },
-                    new BoundedBlock { Height = BlockLength.Unbounded },
+                    new BoundedBlock { Height = 13, Width = 1 },
+                    new BoundedBlock { Height = BlockLength.Unbounded, Width = 1 },
                 }
             };
             var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Height.Should().Be(BlockLength.Unbounded);
+            actualMaxSize.Should().Be(UnboundedBlockSize.From(2, BlockLength.Unbounded));
+        }
+
+        [Fact]
+        public void Should_return_correct_max_size_with_vertical_flex_direction()
+        {
+            var block = new FlexBlock {
+                Direction = FLexDirection.Vertical,
+                Contents = new List<UiBlock>
+                {
+                    new BoundedBlock { Height = 7, Width = 1 },
+                    new BoundedBlock { Height = 13, Width = 1 },
+                }
+            };
+            var actualMaxSize = block.CalcMaxSize();
+            actualMaxSize.Should().Be(UnboundedBlockSize.From(1, 20));
         }
     }
 

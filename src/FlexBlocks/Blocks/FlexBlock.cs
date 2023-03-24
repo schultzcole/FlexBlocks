@@ -30,12 +30,13 @@ public class FlexBlock : AlignableBlock
     protected override UnboundedBlockSize? CalcContentMaxSize() =>
         Contents?.Aggregate(
             UnboundedBlockSize.Zero,
-            static (maxSize, block) =>
+            (maxSize, block) =>
             {
-                var blockMaxSize = block.CalcMaxSize();
-                return UnboundedBlockSize.From(
-                    maxSize.Width + blockMaxSize.Width,
-                    BlockLength.Max(maxSize.Height, blockMaxSize.Height)
+                var maxSizeInFlexBasis = GetSizeInFlexBasis(maxSize);
+                var blockMaxSize = GetSizeInFlexBasis(block.CalcMaxSize());
+                return MakeUnboundedSizeInScreenBasis(
+                    maxSizeInFlexBasis.FlexLength + blockMaxSize.FlexLength,
+                    BlockLength.Max(maxSizeInFlexBasis.CrossLength, blockMaxSize.CrossLength)
                 );
             }
         );
@@ -218,11 +219,19 @@ public class FlexBlock : AlignableBlock
             _                        => throw new Exception($"Unknown FlexDirection: {Direction}")
         };
 
-    /// <summary>Creates a screen basis BufferSlice with the given size given in the flex basis.</summary>
+    /// <summary>Creates a screen basis BlockSize with the given size given in the flex basis.</summary>
     private BlockSize MakeSizeInScreenBasis(int flexLength, int crossLength) =>
         Direction switch {
             FLexDirection.Horizontal => new BlockSize(flexLength, crossLength),
             FLexDirection.Vertical   => new BlockSize(crossLength, flexLength),
+            _                        => throw new Exception($"Unknown FlexDirection: {Direction}")
+        };
+
+    /// <summary>Creates a screen basis UnboundedBlockSize with the given size given in the flex basis.</summary>
+    private UnboundedBlockSize MakeUnboundedSizeInScreenBasis(BlockLength flexLength, BlockLength crossLength) =>
+        Direction switch {
+            FLexDirection.Horizontal => new UnboundedBlockSize(flexLength, crossLength),
+            FLexDirection.Vertical   => new UnboundedBlockSize(crossLength, flexLength),
             _                        => throw new Exception($"Unknown FlexDirection: {Direction}")
         };
 }
