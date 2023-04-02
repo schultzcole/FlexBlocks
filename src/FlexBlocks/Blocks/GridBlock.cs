@@ -53,6 +53,8 @@ public class GridBlock : UiBlock
         ArrayPool<BufferSlice?>.Shared.Return(childArrangementArray);
     }
 
+    /// <summary>Calculates the size of each cell in the grid and positions each child within its cell.</summary>
+    /// <returns>The total size of the final layout.</returns>
     private BlockSize LayoutChildren(BlockSize bufferSize, scoped Span2D<BufferSlice?> childArrangement)
     {
         if (IsEmpty) return BlockSize.Zero;
@@ -135,6 +137,9 @@ public class GridBlock : UiBlock
         scoped Span<BlockLength> rowHeights
     )
     {
+        AllocateRemainingLength(bufferSize.Width, colWidths);
+        AllocateRemainingLength(bufferSize.Height, rowHeights);
+
         var numRows = contents.GetLength(0);
         var numCols = contents.GetLength(1);
 
@@ -144,21 +149,11 @@ public class GridBlock : UiBlock
             if (boundedSizes[row, col] is not null) continue;
 
             var block = contents[row, col]!;
-            var proportionalRemainingSize = CalcProportionalRemainingSize(bufferSize, colWidths, rowHeights);
-            var cellWidth = colWidths[col];
-            var cellHeight = rowHeights[row];
-            var width = cellWidth is { Value: { } w } ? w : proportionalRemainingSize.Width;
-            var height = cellHeight is { Value: { } h } ? h : proportionalRemainingSize.Height;
-            var concreteSize = block.CalcSize(BlockSize.From(width, height));
+            var cellWidth = colWidths[col].Value.GetValueOrDefault();
+            var cellHeight = rowHeights[row].Value.GetValueOrDefault();
+            var concreteSize = block.CalcSize(BlockSize.From(cellWidth, cellHeight));
 
             boundedSizes[row, col] = concreteSize;
-
-            colWidths[col] = cellWidth.IsBounded
-                ? BlockLength.Max(cellWidth, proportionalRemainingSize.Width)
-                : proportionalRemainingSize.Width;
-            rowHeights[row] = cellHeight.IsBounded
-                ? BlockLength.Max(cellHeight, proportionalRemainingSize.Height)
-                : proportionalRemainingSize.Height;
         }
     }
 
@@ -207,19 +202,8 @@ public class GridBlock : UiBlock
         return BlockSize.From(xPos, yPos);
     }
 
-    /// <summary>Calculates the size that should be allocated for an unbounded cell in both dimensions.</summary>
-    private static BlockSize CalcProportionalRemainingSize(
-        BlockSize totalSize,
-        scoped Span<BlockLength> colWidths,
-        scoped Span<BlockLength> rowHeights
-    ) => BlockSize.From(
-        CalcProportionalRemainingLength(totalSize.Width, colWidths),
-        CalcProportionalRemainingLength(totalSize.Height, rowHeights)
-    );
-
-    /// <summary>Calculates the length that should be allocated for an unbounded cell based on the remaining unallocated
-    /// length and number of remaining unbounded cells.</summary>
-    private static int CalcProportionalRemainingLength(int totalLength, scoped Span<BlockLength> cellLengths)
+    /// <summary>Proportionally distributes remaining length among unbounded cells.</summary>
+    private static void AllocateRemainingLength(int totalLength, scoped Span<BlockLength> cellLengths)
     {
         var remainingUnallocatedLength = totalLength;
         var remainingUnallocatedCellCount = 0;
@@ -235,8 +219,16 @@ public class GridBlock : UiBlock
             }
         }
 
-        if (remainingUnallocatedCellCount == 0) remainingUnallocatedCellCount = 1;
+        for (int i = 0; i < cellLengths.Length; i++)
+        {
+            if (remainingUnallocatedLength <= 0) break;
+            if (remainingUnallocatedCellCount <= 0) break;
+            if (cellLengths[i].IsBounded) continue;
 
-        return remainingUnallocatedLength / remainingUnallocatedCellCount;
+            var availableLength = (int)Math.Ceiling((float)remainingUnallocatedLength / remainingUnallocatedCellCount);
+            cellLengths[i] = availableLength;
+            remainingUnallocatedLength -= availableLength;
+            remainingUnallocatedCellCount--;
+        }
     }
 }
