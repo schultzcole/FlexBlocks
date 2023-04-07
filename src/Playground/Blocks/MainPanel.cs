@@ -39,7 +39,7 @@ public class MainPanel : CustomBlock
                             Direction = FLexDirection.Vertical,
                             Contents = new List<UiBlock>
                             {
-                                new ContentPanel(),
+                                new GridContentPanel(),
                                 new CommandPanel(alphabet),
                             }
                         },
