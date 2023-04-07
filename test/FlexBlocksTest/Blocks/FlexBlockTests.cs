@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
 using FlexBlocks.Blocks;
 using FlexBlocks.Renderables;
