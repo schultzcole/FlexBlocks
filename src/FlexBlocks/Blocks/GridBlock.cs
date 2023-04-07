@@ -15,7 +15,27 @@ public class GridBlock : UiBlock
         Contents is null || Contents.GetLength(0) == 0 || Contents.GetLength(1) == 0;
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize() { throw new NotImplementedException(); }
+    public override UnboundedBlockSize CalcMaxSize()
+    {
+        if (IsEmpty) return UnboundedBlockSize.Zero;
+
+        var numRows = Contents.GetLength(0);
+        var numCols = Contents.GetLength(1);
+
+        var width = BlockLength.Zero;
+        var height = BlockLength.Zero;
+        for (int row = 0; row < numRows; row++)
+        for (int col = 0; col < numCols; col++)
+        {
+            var block = Contents[row, col];
+            if (block is null) continue;
+            var blockSize = block.CalcMaxSize();
+            width += blockSize.Width;
+            height += blockSize.Height;
+        }
+
+        return UnboundedBlockSize.From(width, height);
+    }
 
     /// <inheritdoc />
     public override BlockSize CalcSize(BlockSize maxSize) => LayoutChildren(maxSize, Span2D<BufferSlice?>.Empty);
