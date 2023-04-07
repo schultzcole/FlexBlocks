@@ -31,6 +31,9 @@ public record struct BlockLength :
     /// <summary>An unbounded length.</summary>
     public static BlockLength Unbounded { get; } = new();
 
+    /// <summary>Zero length.</summary>
+    public static BlockLength Zero { get; } = From(0);
+
     /// <summary>Creates a new length with the given length value.</summary>
     public static BlockLength From(int? value) => new() { Value = value };
 
