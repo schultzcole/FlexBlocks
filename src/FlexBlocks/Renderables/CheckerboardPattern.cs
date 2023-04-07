@@ -23,7 +23,7 @@ public class CheckerboardPattern : Pattern
                 currentChar = (currentChar + 1) % 2;
             }
 
-            currentChar = row % 2;
+            currentChar = (row + 1) % 2;
         }
     }
 }
