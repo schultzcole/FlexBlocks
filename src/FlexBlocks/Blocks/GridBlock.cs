@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
 
@@ -13,6 +14,90 @@ public class GridBlock : UiBlock
     [MemberNotNullWhen(false, nameof(Contents))]
     public bool IsEmpty =>
         Contents is null || Contents.GetLength(0) == 0 || Contents.GetLength(1) == 0;
+
+    /// <summary>Adds a new column to this grid.</summary>
+    /// <param name="newColumn">The blocks to insert into the new column.</param>
+    [MemberNotNull(nameof(Contents))]
+    public void AddColumn(IReadOnlyList<UiBlock?> newColumn)
+    {
+        EnsureCapacity(Contents?.GetLength(1) + 1 ?? 1, newColumn.Count);
+        CopyColumnToContents(newColumn);
+    }
+
+    /// <summary>Adds a new column to this grid.</summary>
+    /// <param name="newColumn">The blocks to insert into the new column.</param>
+    [MemberNotNull(nameof(Contents))]
+    public void AddColumn(scoped Span<UiBlock?> newColumn)
+    {
+        EnsureCapacity(Contents?.GetLength(1) + 1 ?? 1, newColumn.Length);
+        CopyColumnToContents(newColumn);
+    }
+
+    /// <summary>Adds a new column to this grid.</summary>
+    /// <param name="newColumn">The blocks to insert into the new column.</param>
+    [MemberNotNull(nameof(Contents))]
+    public void AddColumn(params UiBlock?[] newColumn) => AddColumn(newColumn.AsSpan());
+
+    /// <summary>Ensures that the Content array is at least as large as the given width and height</summary>
+    [MemberNotNull(nameof(Contents))]
+    private void EnsureCapacity(int width, int height)
+    {
+        if (Contents is null)
+        {
+            Contents = new UiBlock?[height, width];
+            return;
+        }
+
+        Span2D<UiBlock?> contentSpan = Contents.AsSpan2D();
+
+        if (contentSpan.Width >= width && contentSpan.Height >= height) return;
+
+        var newContents = new UiBlock?[Math.Max(contentSpan.Height, height), Math.Max(contentSpan.Width, width)];
+
+        if (!contentSpan.IsEmpty)
+        {
+            var newContentSpan = newContents.AsSpan2D(0, 0, contentSpan.Height, contentSpan.Width);
+            contentSpan.CopyTo(newContentSpan);
+        }
+
+        Contents = newContents;
+    }
+
+    /// <summary>Copies a given column of blocks to the last column of the grid</summary>
+    /// <param name="column">the blocks to copy into the grid</param>
+    /// <exception cref="InvalidOperationException">If Contents is null or 0 in either dimension</exception>
+    private void CopyColumnToContents(scoped Span<UiBlock?> column)
+    {
+        if (IsEmpty) throw new InvalidOperationException("Cannot add column to empty Contents");
+        var columnSpan2D = column.AsSpan2D(column.Length, 1);
+        var contentSpan = Contents.AsSpan2D();
+        columnSpan2D.CopyTo(contentSpan.Slice(0, contentSpan.Width - 1, column.Length, 1));
+    }
+
+    /// <summary>Copies a given column of blocks to the last column of the grid</summary>
+    /// <param name="column">the blocks to copy into the grid</param>
+    /// <exception cref="InvalidOperationException">If Contents is null or 0 in either dimension</exception>
+    private void CopyColumnToContents(IReadOnlyList<UiBlock?> column)
+    {
+        if (IsEmpty) throw new InvalidOperationException("Cannot add column to empty Contents");
+        if (column is List<UiBlock?> or UiBlock?[])
+        {
+            var columnSpan = (column switch
+            {
+                List<UiBlock?> list => CollectionsMarshal.AsSpan(list),
+                UiBlock?[] arr      => arr.AsSpan(),
+                _                   => throw new UnreachableException("column must be List<UiBlock?> or UiBlock?[]")
+            });
+            CopyColumnToContents(columnSpan);
+        }
+        else
+        {
+            for (int i = 0; i < column.Count; i++)
+            {
+                Contents[i, Contents.GetLength(1)] = column[i];
+            }
+        }
+    }
 
     /// <inheritdoc />
     public override UnboundedBlockSize CalcMaxSize()
