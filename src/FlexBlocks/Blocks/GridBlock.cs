@@ -22,19 +22,27 @@ public class GridBlock : UiBlock
         var numRows = Contents.GetLength(0);
         var numCols = Contents.GetLength(1);
 
-        var width = BlockLength.Zero;
-        var height = BlockLength.Zero;
+        Span<BlockLength> colWidths = stackalloc BlockLength[numCols];
+        colWidths.Fill(0);
+        Span<BlockLength> rowHeights = stackalloc BlockLength[numRows];
+        rowHeights.Fill(0);
         for (int row = 0; row < numRows; row++)
         for (int col = 0; col < numCols; col++)
         {
             var block = Contents[row, col];
             if (block is null) continue;
+
             var blockSize = block.CalcMaxSize();
-            width += blockSize.Width;
-            height += blockSize.Height;
+            colWidths[col] = BlockLength.Max(colWidths[col], blockSize.Width);
+            rowHeights[row] = BlockLength.Max(rowHeights[row], blockSize.Height);
         }
 
-        return UnboundedBlockSize.From(width, height);
+        var totalWidth = BlockLength.Zero;
+        foreach (var width in colWidths) totalWidth += width;
+        var totalHeight = BlockLength.Zero;
+        foreach (var height in rowHeights) totalHeight += height;
+
+        return UnboundedBlockSize.From(totalWidth, totalHeight);
     }
 
     /// <inheritdoc />
