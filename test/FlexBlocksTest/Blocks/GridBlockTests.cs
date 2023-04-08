@@ -10,6 +10,104 @@ namespace FlexBlocksTest.Blocks;
 
 public class GridBlockTests
 {
+    public class CalcMaxSize
+    {
+        [Fact]
+        public void Should_return_zero_when_contents_null()
+        {
+            var block = new GridBlock();
+            var actual = block.CalcMaxSize();
+            actual.Should().Be(UnboundedBlockSize.Zero);
+        }
+
+        [Fact]
+        public void Should_return_zero_when_contents_has_zero_rows()
+        {
+            var block = new GridBlock { Contents = new UiBlock?[0, 1] };
+            var actual = block.CalcMaxSize();
+            actual.Should().Be(UnboundedBlockSize.Zero);
+        }
+
+        [Fact]
+        public void Should_return_zero_when_contents_has_zero_columns()
+        {
+            var block = new GridBlock { Contents = new UiBlock?[1, 0] };
+            var actual = block.CalcMaxSize();
+            actual.Should().Be(UnboundedBlockSize.Zero);
+        }
+
+        [Fact]
+        public void Should_return_zero_when_contents_has_row_and_column_but_no_blocks()
+        {
+            var block = new GridBlock { Contents = new UiBlock?[1, 1] };
+            var actual = block.CalcMaxSize();
+            actual.Should().Be(UnboundedBlockSize.Zero);
+        }
+
+        [Fact]
+        public void Should_return_bounded_size_when_all_children_are_bounded()
+        {
+            var block = new GridBlock
+            {
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(1, 2) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(3, 5) },
+                    },
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(8, 13) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(21, 34) },
+                    },
+                },
+            };
+            var actual = block.CalcMaxSize();
+            actual.Should().Be(UnboundedBlockSize.From(29, 39));
+        }
+
+        [Fact]
+        public void Should_return_unbounded_width_when_at_least_one_child_has_unbounded_width()
+        {
+            var block = new GridBlock
+            {
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(BlockLength.Unbounded, 2) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(3, 5) },
+                    },
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(8, 13) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(21, 34) },
+                    },
+                },
+            };
+            var actual = block.CalcMaxSize();
+            actual.Should().Be(UnboundedBlockSize.From(BlockLength.Unbounded, 39));
+        }
+
+        [Fact]
+        public void Should_return_unbounded_height_when_at_least_one_child_has_unbounded_height()
+        {
+            var block = new GridBlock
+            {
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(1, 2) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(3, 5) },
+                    },
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(8, BlockLength.Unbounded) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(21, 34) },
+                    },
+                },
+            };
+            var actual = block.CalcMaxSize();
+            actual.Should().Be(UnboundedBlockSize.From(29, BlockLength.Unbounded));
+        }
+    }
+
     public class CalcSize
     {
         [Fact]
@@ -23,7 +121,7 @@ public class GridBlockTests
         [Fact]
         public void Should_return_zero_when_contents_has_zero_rows()
         {
-            var block = new GridBlock { Contents = new UiBlock?[0,1] };
+            var block = new GridBlock { Contents = new UiBlock?[0, 1] };
             var actual = block.CalcSize(BlockSize.From(7, 4));
             actual.Should().Be(BlockSize.Zero);
         }
@@ -31,7 +129,7 @@ public class GridBlockTests
         [Fact]
         public void Should_return_zero_when_contents_has_zero_columns()
         {
-            var block = new GridBlock { Contents = new UiBlock?[1,0] };
+            var block = new GridBlock { Contents = new UiBlock?[1, 0] };
             var actual = block.CalcSize(BlockSize.From(7, 4));
             actual.Should().Be(BlockSize.Zero);
         }
@@ -39,7 +137,7 @@ public class GridBlockTests
         [Fact]
         public void Should_return_zero_when_contents_has_row_and_column_but_no_blocks()
         {
-            var block = new GridBlock { Contents = new UiBlock?[1,1] };
+            var block = new GridBlock { Contents = new UiBlock?[1, 1] };
             var actual = block.CalcSize(BlockSize.From(7, 4));
             actual.Should().Be(BlockSize.Zero);
         }
@@ -122,7 +220,7 @@ public class GridBlockTests
         [Fact]
         public void Should_render_nothing_when_contents_has_zero_rows()
         {
-            var block = new GridBlock { Contents = new UiBlock?[0,1] };
+            var block = new GridBlock { Contents = new UiBlock?[0, 1] };
 
             var actual = BlockRenderTestHelper.RenderBlock(block, 7, 4);
 
@@ -142,7 +240,7 @@ public class GridBlockTests
         [Fact]
         public void Should_render_nothing_when_contents_has_zero_columns()
         {
-            var block = new GridBlock { Contents = new UiBlock?[1,0] };
+            var block = new GridBlock { Contents = new UiBlock?[1, 0] };
 
             var actual = BlockRenderTestHelper.RenderBlock(block, 7, 4);
 
@@ -162,7 +260,7 @@ public class GridBlockTests
         [Fact]
         public void Should_render_nothing_when_contents_has_row_and_column_but_no_blocks()
         {
-            var block = new GridBlock { Contents = new UiBlock?[1,1] };
+            var block = new GridBlock { Contents = new UiBlock?[1, 1] };
 
             var actual = BlockRenderTestHelper.RenderBlock(block, 7, 4);
 
