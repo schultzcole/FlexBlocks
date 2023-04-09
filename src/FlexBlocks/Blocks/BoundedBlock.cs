@@ -9,7 +9,7 @@ namespace FlexBlocks.Blocks;
 /// Useful for applying a size constraint to a block that would normally be unbounded.
 /// </summary>
 [PublicAPI]
-public class BoundedBlock : UiBlock
+public sealed class BoundedBlock : UiBlock
 {
     [PublicAPI]
     public UiBlock? Content { get; set; }

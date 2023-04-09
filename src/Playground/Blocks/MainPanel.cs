@@ -25,7 +25,6 @@ public class MainPanel : CustomBlock
             },
             Border = Borders.Rounded,
             Padding = new Padding(1, 3),
-            HorizontalSizing = Sizing.Fill, VerticalSizing = Sizing.Fill,
             Content = new FlexBlock
             {
                 Contents = new List<UiBlock>

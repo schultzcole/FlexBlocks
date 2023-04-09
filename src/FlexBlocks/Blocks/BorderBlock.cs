@@ -4,10 +4,13 @@ using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks;
 
-/// <summary>A <see cref="ContentBlock"/> that optionally includes a border and padding around its content.</summary>
+/// <summary>A <see cref="UiBlock"/> that optionally includes a border and padding around its content.</summary>
 [PublicAPI]
-public class BorderBlock : ContentBlock
+public sealed class BorderBlock : UiBlock
 {
+    [PublicAPI]
+    public UiBlock? Content { get; set; }
+
     /// <summary>The type of border to render for this block</summary>
     [PublicAPI]
     public Border? Border { get; set; }
@@ -30,7 +33,7 @@ public class BorderBlock : ContentBlock
     /// <inheritdoc />
     public override UnboundedBlockSize CalcMaxSize()
     {
-        var contentMaxSize = base.CalcMaxSize();
+        var contentMaxSize = Content?.CalcMaxSize() ?? UnboundedBlockSize.Zero;
 
         var padding = EffectivePadding;
         return UnboundedBlockSize.From(
@@ -44,7 +47,7 @@ public class BorderBlock : ContentBlock
     {
         var padding = EffectivePadding;
         var maxContentSize = maxSize.ShrinkByPadding(padding);
-        var contentDesiredSize = base.CalcSize(maxContentSize).Constrain(maxContentSize);
+        var contentDesiredSize = (Content?.CalcSize(maxContentSize) ?? BlockSize.Zero).Constrain(maxContentSize);
 
         return BlockSize.From(
             contentDesiredSize.Width + padding.Left + padding.Right,
@@ -69,7 +72,7 @@ public class BorderBlock : ContentBlock
             width: maxContentSize.Width
         );
 
-        RenderContent(contentBuffer);
+        RenderChild(Content, contentBuffer);
     }
 
     /// <summary>Renders the border to the buffer.</summary>

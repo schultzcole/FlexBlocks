@@ -21,8 +21,7 @@ public class GridContentPanel : CustomBlock
                         Content = new BorderBlock
                         {
                             Border = Borders.Square,
-                            VerticalSizing = Sizing.Fill,
-                            HorizontalSizing = Sizing.Fill
+                            Content = new AlignableBlock { Sizing = Sizing.Fill }
                         },
                     },
                     new FixedSizeBlock { Background = Patterns.CheckerboardPattern('█', '▒'), Size = UnboundedBlockSize.From(EDGE_WIDTH, EDGE_HEIGHT) },
@@ -33,8 +32,7 @@ public class GridContentPanel : CustomBlock
                         Content = new BorderBlock
                         {
                             Border = Borders.Square,
-                            VerticalSizing = Sizing.Fill,
-                            HorizontalSizing = Sizing.Fill
+                            Content = new AlignableBlock { Sizing = Sizing.Fill }
                         },
                     },
                     new ContentPanel(),
@@ -43,8 +41,7 @@ public class GridContentPanel : CustomBlock
                         Content = new BorderBlock
                         {
                             Border = Borders.Square,
-                            VerticalSizing = Sizing.Fill,
-                            HorizontalSizing = Sizing.Fill
+                            Content = new AlignableBlock { Sizing = Sizing.Fill }
                         },
                     },
                 },
@@ -55,8 +52,7 @@ public class GridContentPanel : CustomBlock
                         Content = new BorderBlock
                         {
                             Border = Borders.Square,
-                            VerticalSizing = Sizing.Fill,
-                            HorizontalSizing = Sizing.Fill
+                            Content = new AlignableBlock { Sizing = Sizing.Fill }
                         },
                     },
                     new FixedSizeBlock { Background = Patterns.CheckerboardPattern('█', '▒'), Size = UnboundedBlockSize.From(EDGE_WIDTH, EDGE_HEIGHT) },

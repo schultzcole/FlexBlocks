@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
 using JetBrains.Annotations;
@@ -10,10 +11,14 @@ public enum FlexWrapping { NoWrap, Wrap }
 public enum FLexDirection { Horizontal, Vertical }
 
 [PublicAPI]
-public class FlexBlock : AlignableBlock
+public class FlexBlock : UiBlock
 {
     [PublicAPI]
     public List<UiBlock>? Contents { get; set; }
+
+    [MemberNotNullWhen(false, nameof(Contents))]
+    [PublicAPI]
+    public bool IsEmpty => Contents is null or { Count: <= 0 };
 
     /// <summary>
     /// Whether the contents of this block should wrap to the next line if they are too long to fit in the flex
@@ -29,11 +34,11 @@ public class FlexBlock : AlignableBlock
     public FLexDirection Direction { get; set; } = FLexDirection.Horizontal;
 
     /// <inheritdoc />
-    public override bool HasContent => Contents?.Count > 0;
+    public override UnboundedBlockSize CalcMaxSize()
+    {
+        if (IsEmpty) return UnboundedBlockSize.Zero;
 
-    /// <inheritdoc />
-    protected override UnboundedBlockSize? CalcContentMaxSize() =>
-        Contents?.Aggregate(
+        return Contents.Aggregate(
             UnboundedBlockSize.Zero,
             (maxSize, block) =>
             {
@@ -45,10 +50,11 @@ public class FlexBlock : AlignableBlock
                 );
             }
         );
+    }
 
     /// <inheritdoc />
-    protected override BlockSize? CalcContentSize(BlockSize maxSize) =>
-        Contents is not null ? LayoutChildren(maxSize, null) : null;
+    public override BlockSize CalcSize(BlockSize maxSize) =>
+        IsEmpty ? BlockSize.Zero : LayoutChildren(maxSize, null);
 
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)

@@ -10,7 +10,7 @@ namespace FlexBlocks.Blocks;
 /// Renders text.
 /// </summary>
 [PublicAPI]
-public class TextBlock : UiBlock
+public sealed class TextBlock : UiBlock
 {
     private string? _text;
 

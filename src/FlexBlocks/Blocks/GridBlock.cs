@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 namespace FlexBlocks.Blocks;
 
 [PublicAPI]
-public class GridBlock : UiBlock
+public sealed class GridBlock : UiBlock
 {
     [PublicAPI]
     public UiBlock?[,]? Contents { get; set; }

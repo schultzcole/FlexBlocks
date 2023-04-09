@@ -15,18 +15,19 @@ public class CommandPanel : CustomBlock
         Content = new BorderBlock
         {
             Border = Borders.Square,
-            Content = new FlexBlock
+            Content = new AlignableBlock
             {
                 HorizontalSizing = Sizing.Fill,
-                VerticalSizing = Sizing.Content,
-                HorizontalContentAlignment = Alignment.End,
-                Wrapping = FlexWrapping.Wrap,
-                Contents = commands
-                    .Select(x => new BorderBlock
-                        { Border = Borders.Square, Content = new TextBlock { Text = x } }
-                    )
-                    .Cast<UiBlock>()
-                    .ToList()
+                Content = new FlexBlock
+                {
+                    Wrapping = FlexWrapping.Wrap,
+                    Contents = commands
+                        .Select(x => new BorderBlock
+                            { Border = Borders.Square, Content = new TextBlock { Text = x } }
+                        )
+                        .Cast<UiBlock>()
+                        .ToList()
+                }
             }
         };
     }

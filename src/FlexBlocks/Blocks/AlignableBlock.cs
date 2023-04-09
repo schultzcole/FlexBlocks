@@ -5,22 +5,51 @@ using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks;
 
+public enum Sizing { Fill, Content }
+
+public enum Alignment { Start, Center, End }
+
 /// <summary>
 /// An abstract block that sizes itself and aligns content within itself based on its content.
 /// The exact nature of the content is determined by the subclass.
 /// </summary>
 [PublicAPI]
-public abstract class AlignableBlock : UiBlock
+public sealed class AlignableBlock : UiBlock
 {
     [PublicAPI]
     public Alignment HorizontalContentAlignment { get; set; } = Alignment.Start;
+
     [PublicAPI]
     public Alignment VerticalContentAlignment { get; set; } = Alignment.Start;
 
     [PublicAPI]
     public Sizing HorizontalSizing { get; set; } = Sizing.Content;
+
     [PublicAPI]
     public Sizing VerticalSizing { get; set; } = Sizing.Content;
+
+    [PublicAPI]
+    public Sizing Sizing
+    {
+        set
+        {
+            HorizontalSizing = value;
+            VerticalSizing = value;
+        }
+    }
+
+    [PublicAPI]
+    public UiBlock? Content { get; set; }
+
+    /// <inheritdoc />
+    public override void Render(Span2D<char> buffer)
+    {
+        if (Content is null) return;
+
+        var alignedBuffer = ComputeAlignedContentBuffer(buffer);
+
+        RenderChild(Content, alignedBuffer);
+    }
 
     /// <inheritdoc />
     public override RerenderMode GetRerenderModeForChild(UiBlock child)
@@ -31,13 +60,6 @@ public abstract class AlignableBlock : UiBlock
             : RerenderMode.InPlace;
     }
 
-    /// <summary>Whether this alignable block has any content to align.</summary>
-    [PublicAPI]
-    public abstract bool HasContent { get; }
-
-    /// <summary>Computes the max size of the content contained by this.</summary>
-    protected abstract UnboundedBlockSize? CalcContentMaxSize();
-
     /// <inheritdoc />
     public override UnboundedBlockSize CalcMaxSize()
     {
@@ -46,7 +68,7 @@ public abstract class AlignableBlock : UiBlock
             return UnboundedBlockSize.Unbounded;
         }
 
-        var contentSize = CalcContentMaxSize() ?? UnboundedBlockSize.Zero;
+        var contentSize = Content?.CalcMaxSize() ?? UnboundedBlockSize.Zero;
 
         return (HorizontalSizing, VerticalSizing) switch
         {
@@ -59,9 +81,6 @@ public abstract class AlignableBlock : UiBlock
         };
     }
 
-    /// <summary>Computes the size of this block's contents given a concrete maximum size.</summary>
-    protected abstract BlockSize? CalcContentSize(BlockSize maxSize);
-
     /// <inheritdoc />
     public override BlockSize CalcSize(BlockSize maxSize)
     {
@@ -70,7 +89,7 @@ public abstract class AlignableBlock : UiBlock
             return maxSize;
         }
 
-        var contentSize = CalcContentSize(maxSize) ?? BlockSize.Zero;
+        var contentSize = Content?.CalcSize(maxSize) ?? BlockSize.Zero;
 
         return (HorizontalSizing, VerticalSizing) switch
         {
@@ -85,12 +104,12 @@ public abstract class AlignableBlock : UiBlock
 
     /// <summary>Determines what subset of the total content buffer this block's content should be rendered to,
     /// according to the alignment settings.</summary>
-    protected Span2D<char> ComputeAlignedContentBuffer(Span2D<char> buffer)
+    private Span2D<char> ComputeAlignedContentBuffer(Span2D<char> buffer)
     {
-        if (!HasContent) return buffer;
+        if (Content is null) return buffer;
 
         var maxSize = buffer.BlockSize();
-        var contentSize = CalcContentSize(maxSize)!.Value.Constrain(maxSize);
+        var contentSize = Content.CalcSize(maxSize).Constrain(maxSize);
 
         var hDimension = ComputeAlignedDimension(maxSize.Width, contentSize.Width, HorizontalContentAlignment);
         var vDimension = ComputeAlignedDimension(maxSize.Height, contentSize.Height, VerticalContentAlignment);

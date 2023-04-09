@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace FlexBlocksTest.Blocks;
 
-public class ContentBlockTests
+public class AlignableBlockTests
 {
     public class CalcMaxSize
     {
@@ -25,7 +25,7 @@ public class ContentBlockTests
             int? expectedHeight
         )
         {
-            var block = new ContentBlock { HorizontalSizing = hSizing, VerticalSizing = vSizing };
+            var block = new AlignableBlock { HorizontalSizing = hSizing, VerticalSizing = vSizing };
             var actualMaxSize = block.CalcMaxSize();
             actualMaxSize.Should().Be(UnboundedBlockSize.From(expectedWidth, expectedHeight));
         }
@@ -43,7 +43,7 @@ public class ContentBlockTests
         )
         {
             var content = new BoundedBlock { MaxSize = UnboundedBlockSize.From(5, 7) };
-            var block = new ContentBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
+            var block = new AlignableBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
             var actualMaxSize = block.CalcMaxSize();
             actualMaxSize.Should().Be(UnboundedBlockSize.From(expectedWidth, expectedHeight));
         }
@@ -56,7 +56,7 @@ public class ContentBlockTests
         public void Should_return_correct_size_with_unbounded_size_content(Sizing hSizing, Sizing vSizing)
         {
             var content = new BoundedBlock { MaxSize = UnboundedBlockSize.Unbounded };
-            var block = new ContentBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
+            var block = new AlignableBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
             var actualMaxSize = block.CalcMaxSize();
             actualMaxSize.Should().Be(UnboundedBlockSize.Unbounded);
         }
@@ -77,7 +77,7 @@ public class ContentBlockTests
         )
         {
             var maxSize = BlockSize.From(13, 17);
-            var block = new ContentBlock { HorizontalSizing = hSizing, VerticalSizing = vSizing };
+            var block = new AlignableBlock { HorizontalSizing = hSizing, VerticalSizing = vSizing };
             var actualSize = block.CalcSize(maxSize);
             actualSize.Should().Be(BlockSize.From(expectedWidth, expectedHeight));
         }
@@ -97,7 +97,7 @@ public class ContentBlockTests
         {
             var maxSize = BlockSize.From(13, 17);
             var content = new BoundedBlock { MaxSize = UnboundedBlockSize.From(5, 7) };
-            var block = new ContentBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
+            var block = new AlignableBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
             var actualSize = block.CalcSize(maxSize);
             actualSize.Should().Be(BlockSize.From(expectedWidth, expectedHeight));
         }
@@ -111,7 +111,7 @@ public class ContentBlockTests
         {
             var maxSize = BlockSize.From(13, 17);
             var content = new BoundedBlock { MaxSize = UnboundedBlockSize.Unbounded };
-            var block = new ContentBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
+            var block = new AlignableBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
             var actualSize = block.CalcSize(maxSize);
             actualSize.Should().Be(BlockSize.From(13, 17));
         }
@@ -125,7 +125,7 @@ public class ContentBlockTests
         [Fact]
         public void Should_render_content_in_top_left_when_hAlign_is_start_and_vAlign_is_start()
         {
-            var block = new ContentBlock
+            var block = new AlignableBlock
             {
                 Background = null,
                 Content = new BoundedBlock
@@ -158,7 +158,7 @@ public class ContentBlockTests
         [Fact]
         public void Should_render_content_in_middle_right_when_hAlign_is_end_and_vAlign_is_center()
         {
-            var block = new ContentBlock
+            var block = new AlignableBlock
             {
                 Background = null,
                 Content = new BoundedBlock
@@ -191,7 +191,7 @@ public class ContentBlockTests
         [Fact]
         public void Should_render_content_in_bottom_center_when_hAlign_is_center_and_vAlign_is_end()
         {
-            var block = new ContentBlock
+            var block = new AlignableBlock
             {
                 Background = null,
                 Content = new BoundedBlock

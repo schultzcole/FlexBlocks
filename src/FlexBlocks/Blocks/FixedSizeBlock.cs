@@ -8,7 +8,7 @@ namespace FlexBlocks.Blocks;
 /// A block that always renders as the same size, regardless of its content
 /// </summary>
 [PublicAPI]
-public class FixedSizeBlock : UiBlock
+public sealed class FixedSizeBlock : UiBlock
 {
     [PublicAPI]
     public UiBlock? Content { get; set; }
