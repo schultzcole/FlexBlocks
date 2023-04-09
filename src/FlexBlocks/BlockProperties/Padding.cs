@@ -28,7 +28,4 @@ public record Padding(int Top, int Right, int Bottom, int Left)
 
     /// <summary>Returns a new padding with the given <paramref name="amount"/> added to each side.</summary>
     public Padding Expand(int amount) => new(Top + amount, Right + amount, Bottom + amount, Left + amount);
-
-    /// <summary>Creates a copy of this padding.</summary>
-    public Padding Copy() => this with { };
 }

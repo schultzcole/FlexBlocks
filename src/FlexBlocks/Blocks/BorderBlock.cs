@@ -14,9 +14,13 @@ public class BorderBlock : ContentBlock
 
     /// <summary>The total amount of padding around this block's content, including both border and padding.</summary>
     public Padding EffectivePadding =>
-        (Border is null)
-            ? Padding?.Copy() ?? Padding.Zero
-            : Padding?.Expand(1) ?? Padding.One;
+        (Border, Padding) switch
+        {
+            (null,     null    ) => Padding.Zero,
+            (null,     not null) => Padding,
+            (not null, null    ) => Padding.One,
+            (not null, not null) => Padding.Expand(1)
+        };
 
     /// <inheritdoc />
     public override UnboundedBlockSize CalcMaxSize()
