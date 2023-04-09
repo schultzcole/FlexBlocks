@@ -1,11 +1,13 @@
 ﻿using CommunityToolkit.HighPerformance;
 using FlexBlocks.Blocks;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Renderables.Debug;
 
 /// <summary>
 /// Overlays the number of times this renderable has been rendered in the top-left corner of the buffer.
 /// </summary>
+[PublicAPI]
 public sealed class RenderCountOverlay : IRenderable
 {
     private int _renderCount;

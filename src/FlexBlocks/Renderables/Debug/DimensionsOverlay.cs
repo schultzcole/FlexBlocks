@@ -1,11 +1,13 @@
 ﻿using CommunityToolkit.HighPerformance;
 using FlexBlocks.Blocks;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Renderables.Debug;
 
 /// <summary>
 /// Renders the current dimensions of the buffer to the buffer on the top and left sides
 /// </summary>
+[PublicAPI]
 public class DimensionsOverlay : IRenderable
 {
     public void Render(Span2D<char> buffer)

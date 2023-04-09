@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks;
 
@@ -8,12 +9,17 @@ namespace FlexBlocks.Blocks;
 /// An abstract block that sizes itself and aligns content within itself based on its content.
 /// The exact nature of the content is determined by the subclass.
 /// </summary>
+[PublicAPI]
 public abstract class AlignableBlock : UiBlock
 {
+    [PublicAPI]
     public Alignment HorizontalContentAlignment { get; set; } = Alignment.Start;
+    [PublicAPI]
     public Alignment VerticalContentAlignment { get; set; } = Alignment.Start;
 
+    [PublicAPI]
     public Sizing HorizontalSizing { get; set; } = Sizing.Content;
+    [PublicAPI]
     public Sizing VerticalSizing { get; set; } = Sizing.Content;
 
     /// <inheritdoc />
@@ -26,6 +32,7 @@ public abstract class AlignableBlock : UiBlock
     }
 
     /// <summary>Whether this alignable block has any content to align.</summary>
+    [PublicAPI]
     public abstract bool HasContent { get; }
 
     /// <summary>Computes the max size of the content contained by this.</summary>

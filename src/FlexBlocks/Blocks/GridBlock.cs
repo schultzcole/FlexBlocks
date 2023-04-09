@@ -4,20 +4,25 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks;
 
+[PublicAPI]
 public class GridBlock : UiBlock
 {
+    [PublicAPI]
     public UiBlock?[,]? Contents { get; set; }
 
     [MemberNotNullWhen(false, nameof(Contents))]
+    [PublicAPI]
     public bool IsEmpty =>
         Contents is null || Contents.GetLength(0) == 0 || Contents.GetLength(1) == 0;
 
     /// <summary>Adds a new column to this grid.</summary>
     /// <param name="newColumn">The blocks to insert into the new column.</param>
     [MemberNotNull(nameof(Contents))]
+    [PublicAPI]
     public void AddColumn(IReadOnlyList<UiBlock?> newColumn)
     {
         EnsureCapacity(Contents?.GetLength(1) + 1 ?? 1, newColumn.Count);
@@ -27,6 +32,7 @@ public class GridBlock : UiBlock
     /// <summary>Adds a new column to this grid.</summary>
     /// <param name="newColumn">The blocks to insert into the new column.</param>
     [MemberNotNull(nameof(Contents))]
+    [PublicAPI]
     public void AddColumn(scoped Span<UiBlock?> newColumn)
     {
         EnsureCapacity(Contents?.GetLength(1) + 1 ?? 1, newColumn.Length);
@@ -36,6 +42,7 @@ public class GridBlock : UiBlock
     /// <summary>Adds a new column to this grid.</summary>
     /// <param name="newColumn">The blocks to insert into the new column.</param>
     [MemberNotNull(nameof(Contents))]
+    [PublicAPI]
     public void AddColumn(params UiBlock?[] newColumn) => AddColumn(newColumn.AsSpan());
 
     /// <summary>Ensures that the Content array is at least as large as the given width and height</summary>

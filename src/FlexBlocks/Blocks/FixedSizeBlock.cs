@@ -1,29 +1,39 @@
 ﻿using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks;
 
 /// <summary>
 /// A block that always renders as the same size, regardless of its content
 /// </summary>
+[PublicAPI]
 public class FixedSizeBlock : UiBlock
 {
+    [PublicAPI]
     public UiBlock? Content { get; set; }
 
     /// <summary>The fixed size of this block.</summary>
+    [PublicAPI]
     public UnboundedBlockSize Size { get; set; }
 
     /// <summary>The desired width of this block.</summary>
+    [PublicAPI]
     public BlockLength Width
     {
+        [PublicAPI]
         get => Size.Width;
+        [PublicAPI]
         set => Size = Size with { Width = value };
     }
 
     /// <summary>The desired height of this block.</summary>
+    [PublicAPI]
     public BlockLength Height
     {
+        [PublicAPI]
         get => Size.Height;
+        [PublicAPI]
         set => Size = Size with { Height = value };
     }
 

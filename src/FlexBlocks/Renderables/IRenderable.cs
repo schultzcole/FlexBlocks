@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
 using FlexBlocks.Blocks;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Renderables;
 
@@ -7,6 +8,7 @@ namespace FlexBlocks.Renderables;
 /// Represents a thing that can be rendered to a 2D character buffer with no ability to influence the layout or size of
 /// the buffer, unlike a <see cref="UiBlock"/>.
 /// </summary>
+[PublicAPI]
 public interface IRenderable
 {
     /// <summary>Renders this object to a given render buffer.</summary>

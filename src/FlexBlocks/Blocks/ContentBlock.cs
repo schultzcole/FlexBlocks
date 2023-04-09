@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks;
 
@@ -11,8 +12,10 @@ public enum Alignment { Start, Center, End }
 /// A block type that contains another single block, can align that block within itself,
 /// and can either size itself to its content or grow to fill available space in either or both dimensions.
 /// </summary>
+[PublicAPI]
 public class ContentBlock : AlignableBlock
 {
+    [PublicAPI]
     public UiBlock? Content { get; set; }
 
     /// <inheritdoc />

@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks.Debug;
 
 /// <summary>Fills a block with random characters.</summary>
+[PublicAPI]
 public class RandomStringBlock : UiBlock
 {
     private const string VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

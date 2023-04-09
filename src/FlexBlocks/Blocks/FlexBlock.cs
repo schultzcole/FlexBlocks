@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks;
 
@@ -8,19 +9,23 @@ public enum FlexWrapping { NoWrap, Wrap }
 
 public enum FLexDirection { Horizontal, Vertical }
 
+[PublicAPI]
 public class FlexBlock : AlignableBlock
 {
+    [PublicAPI]
     public List<UiBlock>? Contents { get; set; }
 
     /// <summary>
     /// Whether the contents of this block should wrap to the next line if they are too long to fit in the flex
     /// dimension of the parent (as determined by the Direction).
     /// </summary>
+    [PublicAPI]
     public FlexWrapping Wrapping { get; set; } = FlexWrapping.NoWrap;
 
     /// <summary>
     /// The direction that children in this block should be arranged.
     /// </summary>
+    [PublicAPI]
     public FLexDirection Direction { get; set; } = FLexDirection.Horizontal;
 
     /// <inheritdoc />

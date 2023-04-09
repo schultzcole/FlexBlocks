@@ -9,5 +9,4 @@ namespace FlexBlocks;
 public class UnattachedUiBlockException : Exception
 {
     public UnattachedUiBlockException(string message) : base(message) { }
-    public UnattachedUiBlockException(string message, Exception inner) : base(message, inner) { }
 }

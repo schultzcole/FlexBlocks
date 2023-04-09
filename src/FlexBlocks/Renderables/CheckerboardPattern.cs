@@ -1,11 +1,14 @@
 ﻿using CommunityToolkit.HighPerformance;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Renderables;
 
 /// <summary>A pattern that alternates between two characters in a checkerboard pattern.</summary>
+[PublicAPI]
 public class CheckerboardPattern : Pattern
 {
     /// <summary>The chars with which to fill the render buffer.</summary>
+    [PublicAPI]
     public required (char, char) Characters { get; set; }
 
     /// <inheritdoc />

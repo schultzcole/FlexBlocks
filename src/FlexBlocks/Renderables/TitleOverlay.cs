@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.HighPerformance;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Renderables;
 
@@ -6,16 +7,19 @@ namespace FlexBlocks.Renderables;
 /// Renders text overlaid on the top row of a block.
 /// Will only render one line of text. If the text is too long for the width of the block, it will be truncated.
 /// </summary>
+[PublicAPI]
 public class TitleOverlay : IRenderable
 {
     /// <summary>
     /// The text to render for this block's title
     /// </summary>
+    [PublicAPI]
     public string? Title { get; set; }
 
     /// <summary>
     /// The offset to use to determine the horizontal positioning of the title text.
     /// </summary>
+    [PublicAPI]
     public Index Offset { get; set; } = 1;
 
     /// <inheritdoc />

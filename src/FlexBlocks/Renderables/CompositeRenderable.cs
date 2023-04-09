@@ -1,25 +1,30 @@
 ﻿using System.Collections;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.Blocks;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Renderables;
 
 /// <summary>
 /// Combines multiple renderables by layering them one on top of the other.
 /// </summary>
+[PublicAPI]
 public class CompositeRenderable : IRenderable, ICollection<IRenderable>
 {
     /// <summary>
     /// The renderables to layer on top of each other.
     /// Layers are rendered in the order they appear in the list, so higher indices have higher "priority".
     /// </summary>
+    [PublicAPI]
     public List<IRenderable> Layers { get; }
 
+    [PublicAPI]
     public CompositeRenderable()
     {
         Layers = new List<IRenderable>();
     }
 
+    [PublicAPI]
     public CompositeRenderable(List<IRenderable> layers)
     {
         Layers = layers;

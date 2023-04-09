@@ -2,12 +2,14 @@
 using System.Text;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.Blocks;
+using JetBrains.Annotations;
 using Nito.AsyncEx;
 using Timer = System.Timers.Timer;
 
 namespace FlexBlocks;
 
 /// <summary>The entrypoint of the FlexBlocks application.</summary>
+[PublicAPI]
 public sealed class FlexBlocksDriver
 {
     /// <summary>Optional custom max width</summary>
@@ -16,9 +18,11 @@ public sealed class FlexBlocksDriver
     private readonly int? _maxHeight;
 
     /// <summary>The width of the current render buffer.</summary>
+    [PublicAPI]
     public int Width { get; private set; }
 
     /// <summary>The height of the current render buffer.</summary>
+    [PublicAPI]
     public int Height { get; private set; }
 
     private readonly BlockRenderInfoCache _renderInfoCache = new();
@@ -40,6 +44,7 @@ public sealed class FlexBlocksDriver
     /// <param name="rootBlock">The top level ui block that will be rendered when this driver runs.</param>
     /// <param name="maxWidth">Optional maximum render buffer width.</param>
     /// <param name="maxHeight">Optional maximum render buffer height.</param>
+    [PublicAPI]
     public FlexBlocksDriver(UiBlock rootBlock, int? maxWidth = default, int? maxHeight = default)
     {
         _maxWidth = maxWidth;
@@ -148,6 +153,7 @@ public sealed class FlexBlocksDriver
     /// <summary>Starts the flex blocks driver.</summary>
     /// <param name="quitToken">Quits the program when canceled.</param>
     /// <returns>A task the completes when the driver has quit.</returns>
+    [PublicAPI]
     public async Task Run(CancellationToken quitToken)
     {
         try
@@ -210,12 +216,14 @@ public sealed class FlexBlocksDriver
 
     /// <summary>Starts the flex blocks driver.</summary>
     /// <returns>A task the completes when the driver has quit.</returns>
+    [PublicAPI]
     public Task Run() => Run(CancellationToken.None);
 
     /// <summary>Starts up a fresh flex blocks driver with the given root block.</summary>
     /// <param name="rootBlock">The root block of this driver.</param>
     /// <param name="quitToken">Quits the program when canceled.</param>
     /// <returns>A task the completes when the driver has quit.</returns>
+    [PublicAPI]
     public static async Task Run(UiBlock rootBlock, CancellationToken quitToken)
     {
         var driver = new FlexBlocksDriver(rootBlock);
@@ -225,6 +233,7 @@ public sealed class FlexBlocksDriver
     /// <summary>Starts up a fresh flex blocks driver with the given root block.</summary>
     /// <param name="rootBlock">The root block of this driver.</param>
     /// <returns>A task the completes when the driver has quit.</returns>
+    [PublicAPI]
     public static Task Run(UiBlock rootBlock) => Run(rootBlock, CancellationToken.None);
 
     private void Shutdown()

@@ -1,10 +1,13 @@
 ﻿using CommunityToolkit.HighPerformance;
 using FlexBlocks.Blocks;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Renderables.Debug;
 
+[PublicAPI]
 public sealed class FrametimeOverlay : IRenderable
 {
+    [PublicAPI]
     public bool ShowFps { get; set; }
 
     private long? _prevTimeTicks;

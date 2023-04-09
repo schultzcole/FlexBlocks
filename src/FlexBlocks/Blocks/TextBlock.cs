@@ -2,17 +2,20 @@
 using System.Globalization;
 using CommunityToolkit.HighPerformance;
 using FlexBlocks.BlockProperties;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.Blocks;
 
 /// <summary>
 /// Renders text.
 /// </summary>
+[PublicAPI]
 public class TextBlock : UiBlock
 {
     private string? _text;
 
     /// <summary>The text to display in this block</summary>
+    [PublicAPI]
     public string? Text
     {
         get => _text;
@@ -28,6 +31,7 @@ public class TextBlock : UiBlock
     }
 
     /// <summary>The number of spaces a tab character should expand to in the final text.</summary>
+    [PublicAPI]
     public uint TabWidth { get; set; } = 4;
 
     private MeasureResult? _measureResult;
