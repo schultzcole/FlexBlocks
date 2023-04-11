@@ -25,7 +25,7 @@ public sealed class GridBlock : UiBlock
     [PublicAPI]
     public void AddColumn(IReadOnlyList<UiBlock?> newColumn)
     {
-        EnsureCapacity(Contents?.GetLength(1) + 1 ?? 1, newColumn.Count);
+        EnsureCapacity(IsEmpty ? 1 : Contents.GetLength(1) + 1, newColumn.Count);
         CopyColumnToContents(newColumn);
     }
 
@@ -35,7 +35,7 @@ public sealed class GridBlock : UiBlock
     [PublicAPI]
     public void AddColumn(scoped Span<UiBlock?> newColumn)
     {
-        EnsureCapacity(Contents?.GetLength(1) + 1 ?? 1, newColumn.Length);
+        EnsureCapacity(IsEmpty ? 1 : Contents.GetLength(1) + 1, newColumn.Length);
         CopyColumnToContents(newColumn);
     }
 
@@ -44,6 +44,32 @@ public sealed class GridBlock : UiBlock
     [MemberNotNull(nameof(Contents))]
     [PublicAPI]
     public void AddColumn(params UiBlock?[] newColumn) => AddColumn(newColumn.AsSpan());
+
+    /// <summary>Adds a new row to this grid.</summary>
+    /// <param name="newRow">The blocks to insert into the new row.</param>
+    [MemberNotNull(nameof(Contents))]
+    [PublicAPI]
+    public void AddRow(IReadOnlyList<UiBlock?> newRow)
+    {
+        EnsureCapacity(newRow.Count, IsEmpty ? 1 : Contents.GetLength(0) + 1);
+        CopyRowToContents(newRow);
+    }
+
+    /// <summary>Adds a new row to this grid.</summary>
+    /// <param name="newRow">The blocks to insert into the new row.</param>
+    [MemberNotNull(nameof(Contents))]
+    [PublicAPI]
+    public void AddRow(scoped Span<UiBlock?> newRow)
+    {
+        EnsureCapacity(newRow.Length, IsEmpty ? 1 : Contents.GetLength(0) + 1);
+        CopyRowToContents(newRow);
+    }
+
+    /// <summary>Adds a new row to this grid.</summary>
+    /// <param name="newRow">The blocks to insert into the new row.</param>
+    [MemberNotNull(nameof(Contents))]
+    [PublicAPI]
+    public void AddRow(params UiBlock?[] newRow) => AddRow(newRow.AsSpan());
 
     /// <summary>Ensures that the Content array is at least as large as the given width and height</summary>
     [MemberNotNull(nameof(Contents))]
@@ -102,6 +128,42 @@ public sealed class GridBlock : UiBlock
             for (int i = 0; i < column.Count; i++)
             {
                 Contents[i, Contents.GetLength(1)] = column[i];
+            }
+        }
+    }
+
+    /// <summary>Copies a given row of blocks to the last row of the grid</summary>
+    /// <param name="row">the blocks to copy into the grid</param>
+    /// <exception cref="InvalidOperationException">If Contents is null or 0 in either dimension</exception>
+    private void CopyRowToContents(scoped Span<UiBlock?> row)
+    {
+        if (IsEmpty) throw new InvalidOperationException("Cannot add row to empty Contents");
+        var rowSpan2D = row.AsSpan2D(1, row.Length);
+        var contentSpan = Contents.AsSpan2D();
+        rowSpan2D.CopyTo(contentSpan.Slice(contentSpan.Height - 1, 0, 1, row.Length));
+    }
+
+    /// <summary>Copies a given row of blocks to the last row of the grid</summary>
+    /// <param name="row">the blocks to copy into the grid</param>
+    /// <exception cref="InvalidOperationException">If Contents is null or 0 in either dimension</exception>
+    private void CopyRowToContents(IReadOnlyList<UiBlock?> row)
+    {
+        if (IsEmpty) throw new InvalidOperationException("Cannot add row to empty Contents");
+        if (row is List<UiBlock?> or UiBlock?[])
+        {
+            var rowSpan = (row switch
+            {
+                List<UiBlock?> list => CollectionsMarshal.AsSpan(list),
+                UiBlock?[] arr      => arr.AsSpan(),
+                _                   => throw new UnreachableException("row must be List<UiBlock?> or UiBlock?[]")
+            });
+            CopyRowToContents(rowSpan);
+        }
+        else
+        {
+            for (int i = 0; i < row.Count; i++)
+            {
+                Contents[Contents.GetLength(1), i] = row[i];
             }
         }
     }
