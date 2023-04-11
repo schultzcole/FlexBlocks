@@ -12,22 +12,54 @@ public record Border(
     char BottomRight,
     char Bottom,
     char BottomLeft,
-    char Left)
+    char Left,
+    char InteriorVertical,
+    char InteriorHorizontal,
+    char TopT,
+    char RightT,
+    char BottomT,
+    char LeftT,
+    char InteriorJunction
+)
 {
     /// <summary>Creates a new Border where every side and corner uses the same character.</summary>
     [PublicAPI]
-    public Border(char all)
-        : this(all, all, all, all, all, all, all, all) { }
+    public Border(char all) : this(
+        TopLeft: all,
+        Top: all,
+        TopRight: all,
+        Right: all,
+        BottomRight: all,
+        Bottom: all,
+        BottomLeft: all,
+        Left: all,
+        InteriorVertical: all,
+        InteriorHorizontal: all,
+        TopT: all,
+        RightT: all,
+        BottomT: all,
+        LeftT: all,
+        InteriorJunction: all
+    ) { }
 
-    /// <summary>Creates a new Border where the corners are blank and the horizontal and vertical sides
+    /// <summary>Creates a new Border where junctions are blank and the horizontal and vertical sides
     /// use the given characters.</summary>
     [PublicAPI]
-    public Border(char horizontal, char vertical)
-        : this(' ', horizontal, ' ', vertical, ' ', horizontal, ' ', vertical) { }
-
-    /// <summary>Creates a new Border where each corner has a unique character and the horizontal and vertical sides
-    /// use the given characters.</summary>
-    [PublicAPI]
-    public Border(char topLeft, char topRight, char bottomRight, char bottomLeft, char horizontal, char vertical)
-        : this(topLeft, horizontal, topRight, vertical, bottomRight, horizontal, bottomLeft, vertical) { }
+    public Border(char horizontal, char vertical) : this(
+        TopLeft: ' ',
+        Top: horizontal,
+        TopRight: ' ',
+        Right: vertical,
+        BottomRight: ' ',
+        Bottom: horizontal,
+        BottomLeft: ' ',
+        Left: vertical,
+        InteriorVertical: vertical,
+        InteriorHorizontal: horizontal,
+        TopT: ' ',
+        RightT: ' ',
+        BottomT: ' ',
+        LeftT: ' ',
+        InteriorJunction: ' '
+    ) { }
 }
