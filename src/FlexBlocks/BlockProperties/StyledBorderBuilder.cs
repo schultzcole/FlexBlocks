@@ -30,7 +30,6 @@ public class StyledBorderBuilder
     private LineStyle _innerVert = Thin;
     private LineStyle _innerHoriz = Thin;
 
-    [PublicAPI]
     public StyledBorderBuilder All(LineStyle style)
     {
         _top = style;
@@ -42,7 +41,6 @@ public class StyledBorderBuilder
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder Outer(LineStyle style)
     {
         _top = style;
@@ -52,7 +50,6 @@ public class StyledBorderBuilder
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder Inner(LineStyle style)
     {
         _innerVert = style;
@@ -60,7 +57,6 @@ public class StyledBorderBuilder
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder Vertical(LineStyle style)
     {
         _right = style;
@@ -69,7 +65,6 @@ public class StyledBorderBuilder
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder Horizontal(LineStyle style)
     {
         _top = style;
@@ -78,7 +73,6 @@ public class StyledBorderBuilder
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder OuterVertical(LineStyle style)
     {
         _right = style;
@@ -86,7 +80,6 @@ public class StyledBorderBuilder
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder OuterHorizontal(LineStyle style)
     {
         _top = style;
@@ -94,42 +87,36 @@ public class StyledBorderBuilder
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder InnerVertical(LineStyle style)
     {
         _innerVert = style;
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder InnerHorizontal(LineStyle style)
     {
         _innerHoriz = style;
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder Top(LineStyle style)
     {
         _top = style;
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder Right(LineStyle style)
     {
         _right = style;
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder Bottom(LineStyle style)
     {
         _bottom = style;
         return this;
     }
 
-    [PublicAPI]
     public StyledBorderBuilder Left(LineStyle style)
     {
         _left = style;

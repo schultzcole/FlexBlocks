@@ -15,16 +15,13 @@ public class CompositeRenderable : IRenderable, ICollection<IRenderable>
     /// The renderables to layer on top of each other.
     /// Layers are rendered in the order they appear in the list, so higher indices have higher "priority".
     /// </summary>
-    [PublicAPI]
     public List<IRenderable> Layers { get; }
 
-    [PublicAPI]
     public CompositeRenderable()
     {
         Layers = new List<IRenderable>();
     }
 
-    [PublicAPI]
     public CompositeRenderable(List<IRenderable> layers)
     {
         Layers = layers;

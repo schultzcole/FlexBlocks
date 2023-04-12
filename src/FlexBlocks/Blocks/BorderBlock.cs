@@ -8,19 +8,15 @@ namespace FlexBlocks.Blocks;
 [PublicAPI]
 public sealed class BorderBlock : UiBlock
 {
-    [PublicAPI]
     public UiBlock? Content { get; set; }
 
     /// <summary>The type of border to render for this block</summary>
-    [PublicAPI]
     public Border? Border { get; set; }
 
     /// <summary>What padding, if any should exist between the border and the content</summary>
-    [PublicAPI]
     public Padding? Padding { get; set; }
 
     /// <summary>The total amount of padding around this block's content, including both border and padding.</summary>
-    [PublicAPI]
     public Padding EffectivePadding =>
         (Border, Padding) switch
         {

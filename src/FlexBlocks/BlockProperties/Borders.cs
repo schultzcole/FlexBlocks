@@ -6,7 +6,6 @@ namespace FlexBlocks.BlockProperties;
 public static class Borders
 {
     /// <summary>Renders all sides and corners as a filled block.</summary>
-    [PublicAPI]
     public static Border Block { get; } = new('█');
 
     /// <summary>Renders a border with straight edges and sharp, square corners.</summary>
@@ -16,7 +15,6 @@ public static class Borders
     /// ├──┼┤
     /// └──┴┘
     /// </code></example>
-    [PublicAPI]
     public static Border Square { get; } = new(
         TopLeft: '┌',
         Top: '─',
@@ -42,7 +40,6 @@ public static class Borders
     /// ├──┼┤
     /// ╰──┴╯
     /// </code></example>
-    [PublicAPI]
     public static Border Rounded { get; } = new(
         TopLeft: '╭',
         Top: '─',
@@ -62,6 +59,5 @@ public static class Borders
     );
 
     /// <summary>Creates a new StyledBorderBuilder</summary>
-    [PublicAPI]
     public static StyledBorderBuilder Builder() => new();
 }

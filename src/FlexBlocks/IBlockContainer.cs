@@ -25,7 +25,6 @@ public interface IBlockContainer
     /// Renders the given child block to the given buffer,
     /// registering the link between parent and child in this container.
     /// </summary>
-    [PublicAPI]
     public void RenderChild(UiBlock parent, UiBlock child, Span2D<char> childBuffer);
 
     /// <summary>
@@ -45,6 +44,5 @@ public interface IBlockContainer
     ///     </item>
     ///   </list>
     /// </param>
-    [PublicAPI]
     public void RequestRerender(UiBlock block, RerenderMode rerenderMode = RerenderMode.InPlace);
 }

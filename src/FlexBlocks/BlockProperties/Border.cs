@@ -23,7 +23,6 @@ public record Border(
 )
 {
     /// <summary>Creates a new Border where every side and corner uses the same character.</summary>
-    [PublicAPI]
     public Border(char all) : this(
         TopLeft: all,
         Top: all,
@@ -44,7 +43,6 @@ public record Border(
 
     /// <summary>Creates a new Border where junctions are blank and the horizontal and vertical sides
     /// use the given characters.</summary>
-    [PublicAPI]
     public Border(char horizontal, char vertical) : this(
         TopLeft: ' ',
         Top: horizontal,

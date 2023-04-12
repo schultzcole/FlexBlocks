@@ -16,7 +16,6 @@ public abstract class UiBlock
     /// This is especially important for blocks whose layout may change, as without a background,
     /// areas that are not explicitly overwritten will retain their previous content.
     /// </summary>
-    [PublicAPI]
     public Pattern? Background { get; set; } = Patterns.BlankPattern;
 
     /// <summary>
@@ -26,20 +25,17 @@ public abstract class UiBlock
     /// As a general rule, the overlay should be used for non-critical ui components such as debug
     /// information. There may of course be exceptions to this rule.
     /// </remarks>
-    [PublicAPI]
     public IRenderable? Overlay { get; set; }
 
     /// <summary>
     /// The container to which this Block belongs. Should be used to <see cref="IBlockContainer.RenderChild"/>
     /// Blocks in <see cref="Render"/>, or to <see cref="IBlockContainer.RequestRerender" />.
     /// </summary>
-    [PublicAPI]
     public IBlockContainer? Container { get; internal set; }
 
     /// <summary>
     /// Computes the maximum size in columns and rows that this block would take up, given infinite space.
     /// </summary>
-    [PublicAPI]
     public abstract UnboundedBlockSize CalcMaxSize();
 
     /// <summary>
@@ -47,7 +43,6 @@ public abstract class UiBlock
     /// </summary>
     /// <remarks>This is used to determine the size of the buffer that will be passed to <see cref="Render"/>.</remarks>
     /// <param name="maxSize">The maximum space available in which to render this Block.</param>
-    [PublicAPI]
     public abstract BlockSize CalcSize(BlockSize maxSize);
 
     /// <summary>Renders this Block to a given render buffer.</summary>
@@ -55,28 +50,24 @@ public abstract class UiBlock
     /// <see cref="IBlockContainer"/> that contains this block.</remarks>
     /// <param name="buffer">The buffer to render to. This buffer represents the full extent of the console window
     /// available to render this Block to.</param>
-    [PublicAPI]
     public abstract void Render(Span2D<char> buffer);
 
     /// <summary>
     /// Returns the rerender mode that should be used to rerender this UiBlock, given that
     /// the given child block is being rerendered with <see cref="RerenderMode.DesiredSizeChanged"/>.
     /// </summary>
-    [PublicAPI]
     public virtual RerenderMode GetRerenderModeForChild(UiBlock child) => RerenderMode.InPlace;
 
 
     /// <summary>
     /// Returns true if this block is eligible for a re-render (i.e. it has already been rendered at least once).
     /// </summary>
-    [PublicAPI]
     protected bool CanRequestRerender => Container is not null;
 
     /// <summary>Sends a request for this Block's container to rerender it.</summary>
     /// <exception cref="UnattachedUiBlockException">
     ///     Thrown if this method is called prior to the initial rendering of this block by a <see cref="IBlockContainer"/>.
     /// </exception>
-    [PublicAPI]
     protected void RequestRerender(RerenderMode rerenderMode = RerenderMode.InPlace)
     {
         EnsureContainer();
@@ -89,7 +80,6 @@ public abstract class UiBlock
     /// True if a rerender was successfully requested, otherwise False.
     /// A rerender request can fail if this <see cref="UiBlock" /> has not yet been rendered.
     /// </returns>
-    [PublicAPI]
     protected bool TryRequestRerender(RerenderMode rerenderMode = RerenderMode.InPlace)
     {
         if (Container is null) return false;
@@ -103,7 +93,6 @@ public abstract class UiBlock
     /// <exception cref="UnattachedUiBlockException">
     ///     Thrown if this method is called prior to the initial rendering of this block by a <see cref="IBlockContainer"/>.
     /// </exception>
-    [PublicAPI]
     protected void RenderChild(UiBlock child, Span2D<char> childBuffer)
     {
         EnsureContainer();
@@ -113,7 +102,6 @@ public abstract class UiBlock
 
     /// <summary>Ensures that <see cref="Container"/> has been set prior to a call that requires it.</summary>
     [MemberNotNull(nameof(Container))]
-    [PublicAPI]
     protected void EnsureContainer([CallerMemberName] string? caller = null)
     {
         if (Container is not null) return;

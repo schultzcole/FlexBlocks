@@ -20,35 +20,27 @@ public record struct BlockLength :
     IModulusOperators<BlockLength, int?, BlockLength>,
     IComparisonOperators<BlockLength, int?, bool>
 {
-    [PublicAPI]
     public int? Value { get; private init; }
 
     /// <summary>Whether this BlockLength is bounded.</summary>
     [MemberNotNullWhen(true, nameof(Value))]
-    [PublicAPI]
     public bool IsBounded => Value.HasValue;
 
     /// <summary>Whether this BlockLength is unbounded.</summary>
     [MemberNotNullWhen(false, nameof(Value))]
-    [PublicAPI]
     public bool IsUnbounded => !IsBounded;
 
     /// <summary>An unbounded length.</summary>
-    [PublicAPI]
     public static BlockLength Unbounded { get; } = new();
 
     /// <summary>Zero length.</summary>
-    [PublicAPI]
     public static BlockLength Zero { get; } = From(0);
 
     /// <summary>Creates a new length with the given length value.</summary>
-    [PublicAPI]
     public static BlockLength From(int? value) => new() { Value = value };
 
-    [PublicAPI]
     public static implicit operator BlockLength(int? val) => From(val);
 
-    [PublicAPI]
     public BlockLength() { }
 
     /// <inheritdoc />
@@ -57,9 +49,7 @@ public record struct BlockLength :
             ? $"{nameof(BlockLength)} {{ Unbounded }}"
             : $"{nameof(BlockLength)} {{ {nameof(Value)} = {Value} }}";
 
-    [PublicAPI]
     public static BlockLength Min(BlockLength left, BlockLength right) => left < right ? left : right;
-    [PublicAPI]
     public static BlockLength Max(BlockLength left, BlockLength right) => left > right ? left : right;
 
     /// <summary>Adds two block lengths. If either is unbounded, the result will be unbounded.</summary>

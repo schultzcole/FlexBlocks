@@ -13,13 +13,11 @@ public class TitleOverlay : IRenderable
     /// <summary>
     /// The text to render for this block's title
     /// </summary>
-    [PublicAPI]
     public string? Title { get; set; }
 
     /// <summary>
     /// The offset to use to determine the horizontal positioning of the title text.
     /// </summary>
-    [PublicAPI]
     public Index Offset { get; set; } = 1;
 
     /// <inheritdoc />

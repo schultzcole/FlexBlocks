@@ -16,19 +16,14 @@ public enum Alignment { Start, Center, End }
 [PublicAPI]
 public sealed class AlignableBlock : UiBlock
 {
-    [PublicAPI]
     public Alignment HorizontalContentAlignment { get; set; } = Alignment.Start;
 
-    [PublicAPI]
     public Alignment VerticalContentAlignment { get; set; } = Alignment.Start;
 
-    [PublicAPI]
     public Sizing HorizontalSizing { get; set; } = Sizing.Content;
 
-    [PublicAPI]
     public Sizing VerticalSizing { get; set; } = Sizing.Content;
 
-    [PublicAPI]
     public Sizing Sizing
     {
         set
@@ -38,7 +33,6 @@ public sealed class AlignableBlock : UiBlock
         }
     }
 
-    [PublicAPI]
     public UiBlock? Content { get; set; }
 
     /// <inheritdoc />

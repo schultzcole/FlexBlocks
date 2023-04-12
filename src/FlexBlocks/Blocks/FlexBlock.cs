@@ -13,24 +13,20 @@ public enum FLexDirection { Horizontal, Vertical }
 [PublicAPI]
 public class FlexBlock : UiBlock
 {
-    [PublicAPI]
     public List<UiBlock>? Contents { get; set; }
 
     [MemberNotNullWhen(false, nameof(Contents))]
-    [PublicAPI]
     public bool IsEmpty => Contents is null or { Count: <= 0 };
 
     /// <summary>
     /// Whether the contents of this block should wrap to the next line if they are too long to fit in the flex
     /// dimension of the parent (as determined by the Direction).
     /// </summary>
-    [PublicAPI]
     public FlexWrapping Wrapping { get; set; } = FlexWrapping.NoWrap;
 
     /// <summary>
     /// The direction that children in this block should be arranged.
     /// </summary>
-    [PublicAPI]
     public FLexDirection Direction { get; set; } = FLexDirection.Horizontal;
 
     /// <inheritdoc />

@@ -11,30 +11,22 @@ namespace FlexBlocks.Blocks;
 [PublicAPI]
 public sealed class BoundedBlock : UiBlock
 {
-    [PublicAPI]
     public UiBlock? Content { get; set; }
 
     /// <summary>The desired size of this block.</summary>
-    [PublicAPI]
     public UnboundedBlockSize MaxSize { get; set; }
 
     /// <summary>The desired width of this block.</summary>
-    [PublicAPI]
     public BlockLength Width
     {
-        [PublicAPI]
         get => MaxSize.Width;
-        [PublicAPI]
         set => MaxSize = MaxSize with { Width = value };
     }
 
     /// <summary>The desired height of this block.</summary>
-    [PublicAPI]
     public BlockLength Height
     {
-        [PublicAPI]
         get => MaxSize.Height;
-        [PublicAPI]
         set => MaxSize = MaxSize with { Height = value };
     }
 

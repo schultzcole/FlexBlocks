@@ -8,7 +8,6 @@ namespace FlexBlocks.Renderables;
 public class FillPattern : Pattern
 {
     /// <summary>The char with which to fill the render buffer.</summary>
-    [PublicAPI]
     public required char Character { get; set; }
 
     /// <inheritdoc />

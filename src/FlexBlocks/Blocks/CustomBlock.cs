@@ -11,7 +11,6 @@ namespace FlexBlocks.Blocks;
 [PublicAPI]
 public abstract class CustomBlock : UiBlock
 {
-    [PublicAPI]
     public abstract UiBlock Content { get; }
 
     /// <inheritdoc />

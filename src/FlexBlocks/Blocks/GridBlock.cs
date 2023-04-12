@@ -11,18 +11,15 @@ namespace FlexBlocks.Blocks;
 [PublicAPI]
 public sealed class GridBlock : UiBlock
 {
-    [PublicAPI]
     public UiBlock?[,]? Contents { get; set; }
 
     [MemberNotNullWhen(false, nameof(Contents))]
-    [PublicAPI]
     public bool IsEmpty =>
         Contents is null || Contents.GetLength(0) == 0 || Contents.GetLength(1) == 0;
 
     /// <summary>Adds a new column to this grid.</summary>
     /// <param name="newColumn">The blocks to insert into the new column.</param>
     [MemberNotNull(nameof(Contents))]
-    [PublicAPI]
     public void AddColumn(IReadOnlyList<UiBlock?> newColumn)
     {
         EnsureCapacity(IsEmpty ? 1 : Contents.GetLength(1) + 1, newColumn.Count);
@@ -32,7 +29,6 @@ public sealed class GridBlock : UiBlock
     /// <summary>Adds a new column to this grid.</summary>
     /// <param name="newColumn">The blocks to insert into the new column.</param>
     [MemberNotNull(nameof(Contents))]
-    [PublicAPI]
     public void AddColumn(scoped Span<UiBlock?> newColumn)
     {
         EnsureCapacity(IsEmpty ? 1 : Contents.GetLength(1) + 1, newColumn.Length);
@@ -42,13 +38,11 @@ public sealed class GridBlock : UiBlock
     /// <summary>Adds a new column to this grid.</summary>
     /// <param name="newColumn">The blocks to insert into the new column.</param>
     [MemberNotNull(nameof(Contents))]
-    [PublicAPI]
     public void AddColumn(params UiBlock?[] newColumn) => AddColumn(newColumn.AsSpan());
 
     /// <summary>Adds a new row to this grid.</summary>
     /// <param name="newRow">The blocks to insert into the new row.</param>
     [MemberNotNull(nameof(Contents))]
-    [PublicAPI]
     public void AddRow(IReadOnlyList<UiBlock?> newRow)
     {
         EnsureCapacity(newRow.Count, IsEmpty ? 1 : Contents.GetLength(0) + 1);
@@ -58,7 +52,6 @@ public sealed class GridBlock : UiBlock
     /// <summary>Adds a new row to this grid.</summary>
     /// <param name="newRow">The blocks to insert into the new row.</param>
     [MemberNotNull(nameof(Contents))]
-    [PublicAPI]
     public void AddRow(scoped Span<UiBlock?> newRow)
     {
         EnsureCapacity(newRow.Length, IsEmpty ? 1 : Contents.GetLength(0) + 1);
@@ -68,7 +61,6 @@ public sealed class GridBlock : UiBlock
     /// <summary>Adds a new row to this grid.</summary>
     /// <param name="newRow">The blocks to insert into the new row.</param>
     [MemberNotNull(nameof(Contents))]
-    [PublicAPI]
     public void AddRow(params UiBlock?[] newRow) => AddRow(newRow.AsSpan());
 
     /// <summary>Ensures that the Content array is at least as large as the given width and height</summary>
