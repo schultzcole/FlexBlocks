@@ -40,24 +40,4 @@ public record Border(
         LeftT: all,
         InteriorJunction: all
     ) { }
-
-    /// <summary>Creates a new Border where junctions are blank and the horizontal and vertical sides
-    /// use the given characters.</summary>
-    public Border(char horizontal, char vertical) : this(
-        TopLeft: ' ',
-        Top: horizontal,
-        TopRight: ' ',
-        Right: vertical,
-        BottomRight: ' ',
-        Bottom: horizontal,
-        BottomLeft: ' ',
-        Left: vertical,
-        InteriorVertical: vertical,
-        InteriorHorizontal: horizontal,
-        TopT: ' ',
-        RightT: ' ',
-        BottomT: ' ',
-        LeftT: ' ',
-        InteriorJunction: ' '
-    ) { }
 }
