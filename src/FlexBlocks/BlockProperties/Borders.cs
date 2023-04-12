@@ -60,4 +60,8 @@ public static class Borders
         LeftT: '├',
         InteriorJunction: '┼'
     );
+
+    /// <summary>Creates a new StyledBorderBuilder</summary>
+    [PublicAPI]
+    public static StyledBorderBuilder Builder() => new();
 }
