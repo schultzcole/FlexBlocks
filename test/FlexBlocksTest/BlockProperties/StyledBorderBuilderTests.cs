@@ -13,6 +13,9 @@ namespace FlexBlocksTest.BlockProperties;
 public class StyledBorderBuilderTests
 {
     [Theory]
+    [InlineData(TopLeft,     None,  None,  null)]
+    [InlineData(TopLeft,     None,  Thin,  '─')]
+    [InlineData(TopLeft,     Thin,  None,  '│')]
     [InlineData(TopLeft,     Thin,  Thin,  '┌')]
     [InlineData(TopRight,    Thick, Thin,  '┒')]
     [InlineData(BottomRight, Thin,  Thick, '┙')]
@@ -25,7 +28,7 @@ public class StyledBorderBuilderTests
         Corner corner,
         LineStyle vStyle,
         LineStyle hStyle,
-        char expected
+        char? expected
     )
     {
         var actual = StyledBorderBuilder.StyleCorner(corner, vStyle, hStyle);
@@ -33,6 +36,8 @@ public class StyledBorderBuilderTests
     }
 
     [Theory]
+    [InlineData(Horizontal, None,  null)]
+    [InlineData(Vertical,   None,  null)]
     [InlineData(Horizontal, Thin,  '─')]
     [InlineData(Vertical,   Thin,  '│')]
     [InlineData(Horizontal, Thick, '━')]
@@ -42,7 +47,7 @@ public class StyledBorderBuilderTests
     public void StyleEdge_should_return_correct_character(
         Edge edge,
         LineStyle style,
-        char expected
+        char? expected
     )
     {
         var actual = StyledBorderBuilder.StyleEdge(edge, style);
@@ -50,6 +55,9 @@ public class StyledBorderBuilderTests
     }
 
     [Theory]
+    [InlineData(None,  None,  null)]
+    [InlineData(None,  Thin,  '─')]
+    [InlineData(Thin,  None,  '│')]
     [InlineData(Thin,  Thin,  '┼')]
     [InlineData(Thin,  Thick, '┿')]
     [InlineData(Thick, Thin,  '╂')]
@@ -62,7 +70,7 @@ public class StyledBorderBuilderTests
     public void StyleCenterIntersection_should_return_correct_character(
         LineStyle vStyle,
         LineStyle hStyle,
-        char expected
+        char? expected
     )
     {
         var actual = StyledBorderBuilder.StyleCenterIntersection(vStyle, hStyle);
@@ -70,6 +78,9 @@ public class StyledBorderBuilderTests
     }
 
     [Theory]
+    [InlineData(Top,    None,  None,  null)]
+    [InlineData(Top,    None,  Thin,  '─')]
+    [InlineData(Top,    Thin,  None,  '│')]
     [InlineData(Top,    Thin,  Thin,  '┬')]
     [InlineData(Top,    Thin,  Thick, '┯')]
     [InlineData(Top,    Thick, Thin,  '┰')]
@@ -96,7 +107,7 @@ public class StyledBorderBuilderTests
         Side intersection,
         LineStyle vStyle,
         LineStyle hStyle,
-        char expected
+        char? expected
     )
     {
         var actual = StyledBorderBuilder.StyleSideIntersection(intersection, vStyle, hStyle);

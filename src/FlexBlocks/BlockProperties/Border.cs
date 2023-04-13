@@ -5,21 +5,21 @@ namespace FlexBlocks.BlockProperties;
 /// <summary>Defines a set of characters to use for each corner and side of a border.</summary>
 [PublicAPI]
 public record Border(
-    char TopLeft,
-    char Top,
-    char TopRight,
-    char Right,
-    char BottomRight,
-    char Bottom,
-    char BottomLeft,
-    char Left,
-    char InteriorVertical,
-    char InteriorHorizontal,
-    char TopT,
-    char RightT,
-    char BottomT,
-    char LeftT,
-    char InteriorJunction
+    char? TopLeft,
+    char? Top,
+    char? TopRight,
+    char? Right,
+    char? BottomRight,
+    char? Bottom,
+    char? BottomLeft,
+    char? Left,
+    char? InteriorVertical,
+    char? InteriorHorizontal,
+    char? TopT,
+    char? RightT,
+    char? BottomT,
+    char? LeftT,
+    char? InteriorJunction
 )
 {
     /// <summary>Creates a new Border where every side and corner uses the same character.</summary>
@@ -40,4 +40,11 @@ public record Border(
         LeftT: all,
         InteriorJunction: all
     ) { }
+
+    public Padding ToPadding() => new(
+        Top is null ? 0 : 1,
+        Right is null ? 0 : 1,
+        Bottom is null ? 0 : 1,
+        Left is null ? 0 : 1
+    );
 }

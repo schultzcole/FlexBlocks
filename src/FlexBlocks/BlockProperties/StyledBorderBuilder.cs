@@ -15,7 +15,7 @@ public enum Edge { Horizontal = '─', Vertical = '│' }
 public enum Side { Top = '┬', Right = '┤', Bottom = '┴', Left = '├' }
 
 [PublicAPI]
-public enum LineStyle { Thin, Thick, Dual }
+public enum LineStyle { None = -1, Thin, Thick, Dual }
 
 [PublicAPI]
 public class StyledBorderBuilder
@@ -23,12 +23,12 @@ public class StyledBorderBuilder
     private const char DUAL_CORNER_START = '╒';
     private const char DUAL_THREE_WAY_START = '╞';
 
-    private LineStyle _top = Thin;
-    private LineStyle _right = Thin;
-    private LineStyle _bottom = Thin;
-    private LineStyle _left = Thin;
-    private LineStyle _innerVert = Thin;
-    private LineStyle _innerHoriz = Thin;
+    private LineStyle _top = None;
+    private LineStyle _right = None;
+    private LineStyle _bottom = None;
+    private LineStyle _left = None;
+    private LineStyle _innerVert = None;
+    private LineStyle _innerHoriz = None;
 
     public StyledBorderBuilder All(LineStyle style)
     {
@@ -141,8 +141,15 @@ public class StyledBorderBuilder
         InteriorJunction:   StyleCenterIntersection(_innerVert, _innerHoriz)
     );
 
-    public static char StyleCorner(Corner corner, LineStyle verticalStyle, LineStyle horizontalStyle)
+    public static char? StyleCorner(Corner corner, LineStyle verticalStyle, LineStyle horizontalStyle)
     {
+        switch ((verticalStyle, horizontalStyle))
+        {
+            case (None, None): return null;
+            case (None, _):    return StyleEdge(Edge.Horizontal, horizontalStyle);
+            case (_, None):    return StyleEdge(Edge.Vertical,   verticalStyle);
+        }
+
         if (verticalStyle is not Dual && horizontalStyle is not Dual)
         {
             return (char)((int)corner + (2 * (int)verticalStyle) + (int)horizontalStyle);
@@ -150,7 +157,7 @@ public class StyledBorderBuilder
 
         int group = ((corner - TopLeft) / 4) * 3 + DUAL_CORNER_START;
 
-        return (verticalArmStyle: verticalStyle, horizontalArmStyle: horizontalStyle) switch
+        return (verticalStyle, horizontalStyle) switch
         {
             (Dual, Dual) => (char)(group + 2),
             (Dual, _)    => (char)(group + 1),
@@ -159,17 +166,21 @@ public class StyledBorderBuilder
         };
     }
 
-    public static char StyleEdge(Edge edge, LineStyle style) => style switch
+    public static char? StyleEdge(Edge edge, LineStyle style) => style switch
     {
+        None  => null,
         Thin  => (char)(edge),
         Thick => (char)(edge + 1),
         Dual  => (edge is Edge.Horizontal ? '═' : '║'),
         _     => throw new ArgumentOutOfRangeException(nameof(style), style, null)
     };
 
-    public static char StyleCenterIntersection(LineStyle verticalStyle, LineStyle horizontalStyle) =>
+    public static char? StyleCenterIntersection(LineStyle verticalStyle, LineStyle horizontalStyle) =>
         (verticalStyle, horizontalStyle) switch
         {
+            (None, None)   => null,
+            (None, _)      => StyleEdge(Edge.Horizontal, horizontalStyle),
+            (_, None)      => StyleEdge(Edge.Vertical,   verticalStyle),
             (Thin, Thin)   => '┼',
             (Thin, Thick)  => '┿',
             (Thick, Thin)  => '╂',
@@ -183,12 +194,15 @@ public class StyledBorderBuilder
             )
         };
 
-    public static char StyleSideIntersection(Side intersect, LineStyle verticalStyle, LineStyle horizontalStyle)
+    public static char? StyleSideIntersection(Side intersect, LineStyle verticalStyle, LineStyle horizontalStyle)
     {
         var group = ((intersect - Side.Left) / 8) * 3 + DUAL_THREE_WAY_START;
 
         return (verticalStyle, horizontalStyle) switch
         {
+            (None, None)   => null,
+            (None, _)      => StyleEdge(Edge.Horizontal, horizontalStyle),
+            (_, None)      => StyleEdge(Edge.Vertical,   verticalStyle),
             (Thin, Thin)   => (char)intersect,
             (Thin, Thick)  => (char)(intersect + (intersect > Side.Right ? 3 : 1)),
             (Thick, Thin)  => (char)(intersect + 4),

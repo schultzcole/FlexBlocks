@@ -20,10 +20,10 @@ public sealed class BorderBlock : UiBlock
     public Padding EffectivePadding =>
         (Border, Padding) switch
         {
-            (null,     null    ) => Padding.Zero,
+            (null,     null)     => Padding.Zero,
             (null,     not null) => Padding,
-            (not null, null    ) => Padding.One,
-            (not null, not null) => Padding.Expand(1)
+            (not null, null)     => Border.ToPadding(),
+            (not null, not null) => Padding + Border.ToPadding()
         };
 
     /// <inheritdoc />
@@ -79,26 +79,14 @@ public sealed class BorderBlock : UiBlock
         var lastRow = buffer.Height - 1;
         var lastCol = buffer.Width - 1;
 
-        buffer[0, 0] = Border.TopLeft;
-        buffer[0, lastCol] = Border.TopRight;
-        buffer[lastRow, 0] = Border.BottomLeft;
-        buffer[lastRow, lastCol] = Border.BottomRight;
+        if (Border.TopLeft     is { } tl) buffer[0, 0]             = tl;
+        if (Border.TopRight    is { } tr) buffer[0, lastCol]       = tr;
+        if (Border.BottomLeft  is { } bl) buffer[lastRow, 0]       = bl;
+        if (Border.BottomRight is { } br) buffer[lastRow, lastCol] = br;
 
-        var t = Border.Top;
-        var b = Border.Bottom;
-        var l = Border.Left;
-        var r = Border.Right;
-
-        for (int col = 1; col < lastCol; col++)
-        {
-            buffer[0, col] = t;
-            buffer[lastRow, col] = b;
-        }
-
-        for (int row = 1; row < lastRow; row++)
-        {
-            buffer[row, 0] = l;
-            buffer[row, lastCol] = r;
-        }
+        if (Border.Top is { } t) buffer.Slice(0,    1, 1, lastCol - 1).Fill(t);
+        if (Border.Bottom is { } b) buffer.Slice(lastRow, 1, 1, lastCol - 1).Fill(b);
+        if (Border.Left is { } l) buffer.Slice(1,   0, lastRow - 1, 1).Fill(l);
+        if (Border.Right is { } r) buffer.Slice(1,   lastCol, lastRow - 1, 1).Fill(r);
     }
 }

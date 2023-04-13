@@ -31,4 +31,11 @@ public record Padding(int Top, int Right, int Bottom, int Left)
 
     /// <summary>Returns a new padding with the given <paramref name="amount"/> added to each side.</summary>
     public Padding Expand(int amount) => new(Top + amount, Right + amount, Bottom + amount, Left + amount);
+
+    public static Padding operator +(Padding first, Padding second) => new(
+        first.Top + second.Top,
+        first.Right + second.Right,
+        first.Bottom + second.Bottom,
+        first.Left + second.Left
+    );
 }
