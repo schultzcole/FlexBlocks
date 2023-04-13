@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using CommunityToolkit.HighPerformance;
+using JetBrains.Annotations;
 
 namespace FlexBlocks.BlockProperties;
 
@@ -47,4 +48,20 @@ public record Border(
         Bottom is null ? 0 : 1,
         Left is null ? 0 : 1
     );
+
+    public void RenderOuter(Span2D<char> buffer)
+    {
+        var lastRow = buffer.Height - 1;
+        var lastCol = buffer.Width - 1;
+
+        if (TopLeft is { } tl) buffer[0, 0] = tl;
+        if (TopRight is { } tr) buffer[0, lastCol] = tr;
+        if (BottomLeft is { } bl) buffer[lastRow, 0] = bl;
+        if (BottomRight is { } br) buffer[lastRow, lastCol] = br;
+
+        if (Top is { } t) buffer.Slice(0,          1,       1,           lastCol - 1).Fill(t);
+        if (Bottom is { } b) buffer.Slice(lastRow, 1,       1,           lastCol - 1).Fill(b);
+        if (Left is { } l) buffer.Slice(1,         0,       lastRow - 1, 1).Fill(l);
+        if (Right is { } r) buffer.Slice(1,        lastCol, lastRow - 1, 1).Fill(r);
+    }
 }

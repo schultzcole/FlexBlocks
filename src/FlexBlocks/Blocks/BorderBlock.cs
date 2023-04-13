@@ -54,7 +54,7 @@ public sealed class BorderBlock : UiBlock
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)
     {
-        RenderBorder(buffer);
+        Border?.RenderOuter(buffer);
 
         if (Content is null) return;
 
@@ -69,24 +69,5 @@ public sealed class BorderBlock : UiBlock
         );
 
         RenderChild(Content, contentBuffer);
-    }
-
-    /// <summary>Renders the border to the buffer.</summary>
-    private void RenderBorder(Span2D<char> buffer)
-    {
-        if (Border is null) return;
-
-        var lastRow = buffer.Height - 1;
-        var lastCol = buffer.Width - 1;
-
-        if (Border.TopLeft     is { } tl) buffer[0, 0]             = tl;
-        if (Border.TopRight    is { } tr) buffer[0, lastCol]       = tr;
-        if (Border.BottomLeft  is { } bl) buffer[lastRow, 0]       = bl;
-        if (Border.BottomRight is { } br) buffer[lastRow, lastCol] = br;
-
-        if (Border.Top is { } t) buffer.Slice(0,    1, 1, lastCol - 1).Fill(t);
-        if (Border.Bottom is { } b) buffer.Slice(lastRow, 1, 1, lastCol - 1).Fill(b);
-        if (Border.Left is { } l) buffer.Slice(1,   0, lastRow - 1, 1).Fill(l);
-        if (Border.Right is { } r) buffer.Slice(1,   lastCol, lastRow - 1, 1).Fill(r);
     }
 }
