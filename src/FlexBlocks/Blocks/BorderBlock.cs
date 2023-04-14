@@ -32,10 +32,7 @@ public sealed class BorderBlock : UiBlock
         var contentMaxSize = Content?.CalcMaxSize() ?? UnboundedBlockSize.Zero;
 
         var padding = EffectivePadding;
-        return UnboundedBlockSize.From(
-            contentMaxSize.Width + padding.Left + padding.Right,
-            contentMaxSize.Height + padding.Top + padding.Bottom
-        );
+        return contentMaxSize.ExpandByPadding(padding);
     }
 
     /// <inheritdoc />
@@ -45,10 +42,7 @@ public sealed class BorderBlock : UiBlock
         var maxContentSize = maxSize.ShrinkByPadding(padding);
         var contentDesiredSize = (Content?.CalcSize(maxContentSize) ?? BlockSize.Zero).Constrain(maxContentSize);
 
-        return BlockSize.From(
-            contentDesiredSize.Width + padding.Left + padding.Right,
-            contentDesiredSize.Height + padding.Top + padding.Bottom
-        );
+        return contentDesiredSize.ExpandByPadding(padding);
     }
 
     /// <inheritdoc />

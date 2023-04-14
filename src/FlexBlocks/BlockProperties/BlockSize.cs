@@ -19,6 +19,12 @@ public readonly record struct BlockSize(int Width, int Height)
         Height - padding.Top - padding.Bottom
     );
 
+    /// <summary>Returns a new block size that is expanded by the amount of padding on each side.</summary>
+    public BlockSize ExpandByPadding(Padding padding) => From(
+        Width + padding.Left + padding.Right,
+        Height + padding.Top + padding.Bottom
+    );
+
     /// <summary>
     /// Returns a new BlockSize where the width and height are each reduced to those in
     /// <paramref name="maxSize"/> if the width and height in this BlockSize are larger than that.
@@ -65,6 +71,12 @@ public readonly record struct UnboundedBlockSize(BlockLength Width, BlockLength 
     public static UnboundedBlockSize From(BlockSize blockSize) => From(blockSize.Width, blockSize.Height);
 
     public static implicit operator UnboundedBlockSize(BlockSize blockSize) => From(blockSize);
+
+    /// <summary>Returns a new block size that is expanded by the amount of padding on each side.</summary>
+    public UnboundedBlockSize ExpandByPadding(Padding padding) => From(
+        Width + padding.Left + padding.Right,
+        Height + padding.Top + padding.Bottom
+    );
 
     /// <summary>
     /// Constrains this desired block size to be no larger than the given block size.
