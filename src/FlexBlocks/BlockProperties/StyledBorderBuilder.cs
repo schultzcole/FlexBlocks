@@ -178,9 +178,8 @@ public class StyledBorderBuilder
     public static char? StyleCenterIntersection(LineStyle verticalStyle, LineStyle horizontalStyle) =>
         (verticalStyle, horizontalStyle) switch
         {
-            (None, None)   => null,
-            (None, _)      => StyleEdge(Edge.Horizontal, horizontalStyle),
-            (_, None)      => StyleEdge(Edge.Vertical,   verticalStyle),
+            (None, _)      => null,
+            (_, None)      => null,
             (Thin, Thin)   => '┼',
             (Thin, Thick)  => '┿',
             (Thick, Thin)  => '╂',
@@ -196,13 +195,12 @@ public class StyledBorderBuilder
 
     public static char? StyleSideIntersection(Side intersect, LineStyle verticalStyle, LineStyle horizontalStyle)
     {
+        if (verticalStyle is None || horizontalStyle is None) return null;
+
         var group = ((intersect - Side.Left) / 8) * 3 + DUAL_THREE_WAY_START;
 
         return (verticalStyle, horizontalStyle) switch
         {
-            (None, None)   => null,
-            (None, _)      => StyleEdge(Edge.Horizontal, horizontalStyle),
-            (_, None)      => StyleEdge(Edge.Vertical,   verticalStyle),
             (Thin, Thin)   => (char)intersect,
             (Thin, Thick)  => (char)(intersect + (intersect > Side.Right ? 3 : 1)),
             (Thick, Thin)  => (char)(intersect + 4),

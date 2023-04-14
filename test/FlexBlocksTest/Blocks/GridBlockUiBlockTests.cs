@@ -190,6 +190,99 @@ public class GridBlockUiBlockTests
             var actual = block.CalcSize(BlockSize.From(20, 10));
             actual.Should().Be(BlockSize.From(9, 5));
         }
+
+        [Fact]
+        public void Should_return_size_of_first_column_and_row_if_additional_columns_or_rows_overflow()
+        {
+            var block = new GridBlock
+            {
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(5, 5) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(5, 5) }
+                    },
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(5, 5) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(5, 5) },
+                    }
+                }
+            };
+            var actual = block.CalcSize(BlockSize.From(9, 6));
+            actual.Should().Be(BlockSize.From(5, 5));
+        }
+
+        [Fact]
+        public void Should_return_size_including_full_exterior_borders()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.Square,
+                Contents = new UiBlock?[,] { { new FixedSizeBlock { Size = UnboundedBlockSize.From(2, 2) } } }
+            };
+
+            var actual = block.CalcSize(BlockSize.From(10, 8));
+            actual.Should().Be(BlockSize.From(4, 4));
+        }
+
+        [Fact]
+        public void Should_return_size_including_partial_exterior_borders()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.Builder().Top(LineStyle.Thin).Bottom(LineStyle.Thin).Build(),
+                Contents = new UiBlock?[,] { { new FixedSizeBlock { Size = UnboundedBlockSize.From(2, 2) } } }
+            };
+
+            var actual = block.CalcSize(BlockSize.From(10, 8));
+            actual.Should().Be(BlockSize.From(2, 4));
+        }
+
+        [Fact]
+        public void Should_return_size_with_multiple_rows_and_cols_including_exterior_and_interior_borders()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.Square,
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(5, 5) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(2, 2) }
+                    },
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(3, 3) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(4, 4) },
+                    }
+                }
+            };
+
+            var actual = block.CalcSize(BlockSize.From(15, 15));
+            actual.Should().Be(BlockSize.From(12, 12));
+        }
+
+        [Fact]
+        public void Should_return_size_with_multiple_rows_and_cols_including_exterior_borders()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.Builder().Outer(LineStyle.Thin).Build(),
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(5, 5) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(2, 2) }
+                    },
+                    {
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(3, 3) },
+                        new FixedSizeBlock { Size = UnboundedBlockSize.From(4, 4) },
+                    }
+                }
+            };
+
+            var actual = block.CalcSize(BlockSize.From(15, 15));
+            actual.Should().Be(BlockSize.From(11, 11));
+        }
     }
 
     public class Render
@@ -433,6 +526,79 @@ public class GridBlockUiBlockTests
                 "122223333",
                 "×22223333",
                 "×22223333",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_render_exterior_border()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.Square,
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('.'), Size = UnboundedBlockSize.From(3, 3) },
+                    },
+                }
+            };
+
+            var actual = BlockRenderTestHelper.RenderBlock(block, 6, 6);
+
+            var expected = new[]
+            {
+                "┌───┐×",
+                "│...│×",
+                "│...│×",
+                "│...│×",
+                "└───┘×",
+                "××××××",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_render_exterior_and_interior_borders()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.Square,
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(5, 5) },
+                        new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(2, 2) }
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(3, 3) },
+                        new FixedSizeBlock { Background = Patterns.Fill('4'), Size = UnboundedBlockSize.From(4, 4) },
+                    }
+                }
+            };
+
+            var actual = BlockRenderTestHelper.RenderBlock(block, 12, 12);
+
+            var expected = new[]
+            {
+                "┌─────┬────┐",
+                "│11111│22  │",
+                "│11111│22  │",
+                "│11111│    │",
+                "│11111│    │",
+                "│11111│    │",
+                "├─────┼────┤",
+                "│333  │4444│",
+                "│333  │4444│",
+                "│333  │4444│",
+                "│     │4444│",
+                "└─────┴────┘",
             }.ToCharGrid();
 
             _output.WriteCharGrid(actual, expected);

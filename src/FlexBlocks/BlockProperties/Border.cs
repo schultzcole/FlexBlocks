@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.HighPerformance;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.HighPerformance;
 using JetBrains.Annotations;
 
 namespace FlexBlocks.BlockProperties;
@@ -49,6 +50,12 @@ public record Border(
         Left is null ? 0 : 1
     );
 
+    public bool HasVerticalInterior =>
+        (InteriorVertical, TopT, BottomT, InteriorJunction) is not (null, null, null, null);
+
+    public bool HasHorizontalInterior =>
+        (InteriorHorizontal, LeftT, RightT, InteriorJunction) is not (null, null, null, null);
+
     public void RenderOuter(Span2D<char> buffer)
     {
         var lastRow = buffer.Height - 1;
@@ -59,9 +66,47 @@ public record Border(
         if (BottomLeft is { } bl) buffer[lastRow, 0] = bl;
         if (BottomRight is { } br) buffer[lastRow, lastCol] = br;
 
-        if (Top is { } t) buffer.Slice(0,          1,       1,           lastCol - 1).Fill(t);
+        if (Top is { } t)    buffer.Slice(0,       1,       1,           lastCol - 1).Fill(t);
         if (Bottom is { } b) buffer.Slice(lastRow, 1,       1,           lastCol - 1).Fill(b);
-        if (Left is { } l) buffer.Slice(1,         0,       lastRow - 1, 1).Fill(l);
-        if (Right is { } r) buffer.Slice(1,        lastCol, lastRow - 1, 1).Fill(r);
+        if (Left is { } l)   buffer.Slice(1,       0,       lastRow - 1, 1).Fill(l);
+        if (Right is { } r)  buffer.Slice(1,       lastCol, lastRow - 1, 1).Fill(r);
+    }
+
+    public void RenderInner(Span2D<char> buffer, Span<int> rowGaps, Span<int> colGaps)
+    {
+        if (InteriorHorizontal is { } ih)
+        {
+            foreach (var row in rowGaps)
+            {
+                buffer.Slice(row, 1, 1, buffer.Width - 2).Fill(ih);
+            }
+        }
+
+        if (InteriorVertical is { } iv)
+        {
+            foreach (var col in colGaps)
+            {
+                buffer.Slice(1, col, buffer.Height - 2, 1).Fill(iv);
+            }
+        }
+
+        if (!HasHorizontalInterior && !HasVerticalInterior) return;
+
+        foreach (var col in colGaps)
+        {
+            if (TopT is { } tt) buffer[0, col] = tt;
+            if (BottomT is { } bt) buffer[buffer.Height - 1, col] = bt;
+        }
+
+        foreach (var row in rowGaps)
+        {
+            if (LeftT is { } lt) buffer[row, 0] = lt;
+            if (RightT is { } rt) buffer[row, buffer.Width - 1] = rt;
+
+            foreach (var col in colGaps)
+            {
+                if (InteriorJunction is { } ij) buffer[row, col] = ij;
+            }
+        }
     }
 }

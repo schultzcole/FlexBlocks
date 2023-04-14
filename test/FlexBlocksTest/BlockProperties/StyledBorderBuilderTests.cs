@@ -56,8 +56,8 @@ public class StyledBorderBuilderTests
 
     [Theory]
     [InlineData(None,  None,  null)]
-    [InlineData(None,  Thin,  '─')]
-    [InlineData(Thin,  None,  '│')]
+    [InlineData(None,  Thin,  null)]
+    [InlineData(Thin,  None,  null)]
     [InlineData(Thin,  Thin,  '┼')]
     [InlineData(Thin,  Thick, '┿')]
     [InlineData(Thick, Thin,  '╂')]
@@ -79,8 +79,8 @@ public class StyledBorderBuilderTests
 
     [Theory]
     [InlineData(Top,    None,  None,  null)]
-    [InlineData(Top,    None,  Thin,  '─')]
-    [InlineData(Top,    Thin,  None,  '│')]
+    [InlineData(Top,    None,  Thin,  null)]
+    [InlineData(Top,    Thin,  None,  null)]
     [InlineData(Top,    Thin,  Thin,  '┬')]
     [InlineData(Top,    Thin,  Thick, '┯')]
     [InlineData(Top,    Thick, Thin,  '┰')]

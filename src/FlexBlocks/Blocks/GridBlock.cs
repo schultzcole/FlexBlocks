@@ -11,7 +11,11 @@ namespace FlexBlocks.Blocks;
 [PublicAPI]
 public sealed class GridBlock : UiBlock
 {
+    /// <summary>The blocks that make up the cells of this grid.</summary>
     public UiBlock?[,]? Contents { get; set; }
+
+    /// <summary>The border to show around the cells of this block.</summary>
+    public Border? Border { get; set; }
 
     [MemberNotNullWhen(false, nameof(Contents))]
     public bool IsEmpty =>
@@ -94,6 +98,7 @@ public sealed class GridBlock : UiBlock
     private void CopyColumnToContents(scoped Span<UiBlock?> column)
     {
         if (IsEmpty) throw new InvalidOperationException("Cannot add column to empty Contents");
+
         var columnSpan2D = column.AsSpan2D(column.Length, 1);
         var contentSpan = Contents.AsSpan2D();
         columnSpan2D.CopyTo(contentSpan.Slice(0, contentSpan.Width - 1, column.Length, 1));
@@ -105,6 +110,7 @@ public sealed class GridBlock : UiBlock
     private void CopyColumnToContents(IReadOnlyList<UiBlock?> column)
     {
         if (IsEmpty) throw new InvalidOperationException("Cannot add column to empty Contents");
+
         if (column is List<UiBlock?> or UiBlock?[])
         {
             var columnSpan = (column switch
@@ -130,6 +136,7 @@ public sealed class GridBlock : UiBlock
     private void CopyRowToContents(scoped Span<UiBlock?> row)
     {
         if (IsEmpty) throw new InvalidOperationException("Cannot add row to empty Contents");
+
         var rowSpan2D = row.AsSpan2D(1, row.Length);
         var contentSpan = Contents.AsSpan2D();
         rowSpan2D.CopyTo(contentSpan.Slice(contentSpan.Height - 1, 0, 1, row.Length));
@@ -141,6 +148,7 @@ public sealed class GridBlock : UiBlock
     private void CopyRowToContents(IReadOnlyList<UiBlock?> row)
     {
         if (IsEmpty) throw new InvalidOperationException("Cannot add row to empty Contents");
+
         if (row is List<UiBlock?> or UiBlock?[])
         {
             var rowSpan = (row switch
@@ -179,7 +187,7 @@ public sealed class GridBlock : UiBlock
             if (block is null) continue;
 
             var blockSize = block.CalcMaxSize();
-            colWidths[col] = BlockLength.Max(colWidths[col], blockSize.Width);
+            colWidths[col] = BlockLength.Max(colWidths[col],   blockSize.Width);
             rowHeights[row] = BlockLength.Max(rowHeights[row], blockSize.Height);
         }
 
@@ -192,7 +200,7 @@ public sealed class GridBlock : UiBlock
     }
 
     /// <inheritdoc />
-    public override BlockSize CalcSize(BlockSize maxSize) => LayoutChildren(maxSize, Span2D<BufferSlice?>.Empty);
+    public override BlockSize CalcSize(BlockSize maxSize) => LayoutChildren(maxSize);
 
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)
@@ -205,14 +213,16 @@ public sealed class GridBlock : UiBlock
         var totalCells = numRows * numCols;
         var childArrangementArray = ArrayPool<BufferSlice?>.Shared.Rent(totalCells);
         var childArrangement = childArrangementArray
-            .AsSpan(0, totalCells)
-            .AsSpan2D(numRows, numCols);
+                               .AsSpan(0, totalCells)
+                               .AsSpan2D(numRows, numCols);
         childArrangement.Fill(null);
 
-        LayoutChildren(buffer.BlockSize(), childArrangement);
+        LayoutChildren(buffer.BlockSize(), ref childArrangement);
 
-        for (int row = 0; row < numRows; row++)
-        for (int col = 0; col < numCols; col++)
+        if (Border is not null) RenderBorder(Border, childArrangement, buffer);
+
+        for (int row = 0; row < childArrangement.Height; row++)
+        for (int col = 0; col < childArrangement.Width; col++)
         {
             var slice = childArrangement[row, col];
             if (slice is null) continue;
@@ -227,9 +237,29 @@ public sealed class GridBlock : UiBlock
         ArrayPool<BufferSlice?>.Shared.Return(childArrangementArray);
     }
 
+    private void RenderBorder(Border border, Span2D<BufferSlice?> childArrangement, Span2D<char> buffer)
+    {
+        border.RenderOuter(buffer);
+
+        Span<int> rowGaps = stackalloc int[childArrangement.Height - 1];
+        Span<int> colGaps = stackalloc int[childArrangement.Width - 1];
+        for (int row = 1; row < childArrangement.Height; row++)
+        {
+            var slice = childArrangement[row, 0]!;
+            rowGaps[row - 1] = slice.Row - 1;
+        }
+        for (int col = 1; col < childArrangement.Width; col++)
+        {
+            var slice = childArrangement[0, col]!;
+            colGaps[col - 1] = slice.Column - 1;
+        }
+
+        border.RenderInner(buffer, rowGaps, colGaps);
+    }
+
     /// <summary>Calculates the size of each cell in the grid and positions each child within its cell.</summary>
     /// <returns>The total size of the final layout.</returns>
-    private BlockSize LayoutChildren(BlockSize bufferSize, scoped Span2D<BufferSlice?> childArrangement)
+    private BlockSize LayoutChildren(BlockSize bufferSize, ref Span2D<BufferSlice?> childArrangement)
     {
         if (IsEmpty) return BlockSize.Zero;
 
@@ -251,11 +281,17 @@ public sealed class GridBlock : UiBlock
         MeasureBoundedChildren(Contents, bufferSize, boundedSizes, colWidths, rowHeights);
         MeasureUnboundedChildren(Contents, bufferSize, boundedSizes, colWidths, rowHeights);
 
-        var size = ArrangeChildren(Contents, bufferSize, childArrangement, boundedSizes, rowHeights, colWidths);
+        var size = ArrangeChildren(Contents, bufferSize, Border, ref childArrangement, boundedSizes, rowHeights, colWidths);
 
         ArrayPool<BlockSize?>.Shared.Return(boundedSizesArray);
 
         return size;
+    }
+
+    private BlockSize LayoutChildren(BlockSize bufferSize)
+    {
+        var childArrangement = Span2D<BufferSlice?>.Empty;
+        return LayoutChildren(bufferSize, ref childArrangement);
     }
 
     /// <summary>Computes the column widths and row heights based from bounded children.</summary>
@@ -311,7 +347,7 @@ public sealed class GridBlock : UiBlock
         scoped Span<BlockLength> rowHeights
     )
     {
-        AllocateRemainingLength(bufferSize.Width, colWidths);
+        AllocateRemainingLength(bufferSize.Width,  colWidths);
         AllocateRemainingLength(bufferSize.Height, rowHeights);
 
         var numRows = contents.GetLength(0);
@@ -336,44 +372,62 @@ public sealed class GridBlock : UiBlock
     private static BlockSize ArrangeChildren(
         UiBlock?[,] contents,
         BlockSize bufferSize,
-        scoped Span2D<BufferSlice?> childArrangement,
+        Border? border,
+        ref Span2D<BufferSlice?> childArrangement,
         scoped Span2D<BlockSize?> boundedSizes,
         scoped Span<BlockLength> rowHeights,
         scoped Span<BlockLength> colWidths
     )
     {
+        var borderPadding = border?.ToPadding() ?? Padding.Zero;
         var numRows = contents.GetLength(0);
         var numCols = contents.GetLength(1);
-        var xPos = 0;
-        var yPos = 0;
+        var xPos = borderPadding.Left;
+        var yPos = borderPadding.Top;
+        var rightLimit = bufferSize.Width - borderPadding.Right;
+        var bottomLimit = bufferSize.Height - borderPadding.Bottom;
+        var vGap = (border?.HasVerticalInterior == true) ? 1 : 0;
+        var lastRow = numRows - 1;
+        var lastCol = numCols - 1;
+        var maxRow = 0;
+        var maxCol = 0;
         for (int row = 0; row < numRows; row++)
         {
             var rowHeight = rowHeights[row].Value ??
                 throw new UnreachableException("All rowHeights have been allocated by now");
-            if (yPos + rowHeight > bufferSize.Height) break;
+            if (row >= lastRow) vGap = 0;
+            if (yPos + rowHeight + vGap > bottomLimit) break;
 
-            xPos = 0;
+            xPos = borderPadding.Left;
+            var hGap = (border?.HasHorizontalInterior == true) ? 1 : 0;
             for (int col = 0; col < numCols; col++)
             {
                 var colWidth = colWidths[col].Value ??
                     throw new UnreachableException("All colWidths have been allocated by now");
-                if (xPos + colWidth > bufferSize.Width) break;
+                if (col >= lastCol) hGap = 0;
+                if (xPos + colWidth + hGap > rightLimit) break;
 
-                if (boundedSizes[row, col] is { } size)
+                if (!childArrangement.IsEmpty)
                 {
-                    if (!childArrangement.IsEmpty)
-                    {
-                        childArrangement[row, col] = new BufferSlice(xPos, yPos, size.Width, size.Height);
-                    }
+                    var size = boundedSizes[row, col];
+                    childArrangement[row, col] =
+                        new BufferSlice(xPos, yPos, size?.Width ?? colWidth, size?.Height ?? rowHeight);
                 }
 
-                xPos += colWidth;
+                maxCol = Math.Max(maxCol, col);
+                xPos += colWidth + hGap;
             }
 
-            yPos += rowHeight;
+            maxRow = Math.Max(maxRow, row);
+            yPos += rowHeight + vGap;
         }
 
-        return BlockSize.From(xPos, yPos);
+        if (!childArrangement.IsEmpty)
+        {
+            childArrangement = childArrangement.Slice(0, 0, maxRow + 1, maxCol + 1);
+        }
+
+        return BlockSize.From(xPos + borderPadding.Right, yPos + borderPadding.Bottom);
     }
 
     /// <summary>Proportionally distributes remaining length among unbounded cells.</summary>
@@ -397,6 +451,7 @@ public sealed class GridBlock : UiBlock
         {
             if (remainingUnallocatedLength <= 0) break;
             if (remainingUnallocatedCellCount <= 0) break;
+
             if (cellLengths[i].IsBounded) continue;
 
             var availableLength = (int)Math.Ceiling((float)remainingUnallocatedLength / remainingUnallocatedCellCount);
