@@ -68,8 +68,8 @@ public record Border(
 
         if (Top is { } t)    buffer.Slice(0,       1,       1,           lastCol - 1).Fill(t);
         if (Bottom is { } b) buffer.Slice(lastRow, 1,       1,           lastCol - 1).Fill(b);
-        if (Left is { } l)   buffer.Slice(1,       0,       lastRow - 1, 1).Fill(l);
-        if (Right is { } r)  buffer.Slice(1,       lastCol, lastRow - 1, 1).Fill(r);
+        if (Left is { } l)   buffer.Slice(1,       0,       lastRow - 1, 1          ).Fill(l);
+        if (Right is { } r)  buffer.Slice(1,       lastCol, lastRow - 1, 1          ).Fill(r);
     }
 
     public void RenderInner(Span2D<char> buffer, Span<int> rowGaps, Span<int> colGaps)
