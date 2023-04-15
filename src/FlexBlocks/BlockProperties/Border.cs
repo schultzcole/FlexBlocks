@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.HighPerformance;
+﻿using CommunityToolkit.HighPerformance;
 using JetBrains.Annotations;
 
 namespace FlexBlocks.BlockProperties;
@@ -51,10 +50,16 @@ public record Border(
     );
 
     public bool HasVerticalInterior =>
-        (InteriorVertical, TopT, BottomT, InteriorJunction) is not (null, null, null, null);
+        InteriorVertical is not null &&
+        TopT is not null &&
+        BottomT is not null &&
+        InteriorJunction is not null;
 
     public bool HasHorizontalInterior =>
-        (InteriorHorizontal, LeftT, RightT, InteriorJunction) is not (null, null, null, null);
+        InteriorHorizontal is not null &&
+        LeftT is not null &&
+        RightT is not null &&
+        InteriorJunction is not null;
 
     public void RenderOuter(Span2D<char> buffer)
     {
@@ -74,6 +79,8 @@ public record Border(
 
     public void RenderInner(Span2D<char> buffer, Span<int> rowGaps, Span<int> colGaps)
     {
+        if (!HasHorizontalInterior && !HasVerticalInterior) return;
+
         if (InteriorHorizontal is { } ih)
         {
             foreach (var row in rowGaps)
@@ -89,8 +96,6 @@ public record Border(
                 buffer.Slice(1, col, buffer.Height - 2, 1).Fill(iv);
             }
         }
-
-        if (!HasHorizontalInterior && !HasVerticalInterior) return;
 
         foreach (var col in colGaps)
         {
