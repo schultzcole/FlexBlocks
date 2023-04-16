@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlexBlocks", "src\FlexBlock
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlexBlocksTest", "test\FlexBlocksTest\FlexBlocksTest.csproj", "{67F50A9C-7935-47B4-B5E2-B142E27C5DF1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "bench\Benchmarks\Benchmarks.csproj", "{0BEA4DBD-C828-44D8-A453-6248B4EFD988}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{67F50A9C-7935-47B4-B5E2-B142E27C5DF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67F50A9C-7935-47B4-B5E2-B142E27C5DF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67F50A9C-7935-47B4-B5E2-B142E27C5DF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BEA4DBD-C828-44D8-A453-6248B4EFD988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BEA4DBD-C828-44D8-A453-6248B4EFD988}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BEA4DBD-C828-44D8-A453-6248B4EFD988}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BEA4DBD-C828-44D8-A453-6248B4EFD988}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
