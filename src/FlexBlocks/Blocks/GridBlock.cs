@@ -263,10 +263,12 @@ public sealed class GridBlock : UiBlock
     {
         if (IsEmpty) return BlockSize.Zero;
 
-        var numRows = Contents.GetLength(0);
-        var numCols = Contents.GetLength(1);
+        var contentSpan = Contents.AsSpan2D();
 
-        var totalCells = numRows * numCols;
+        var numRows = contentSpan.Height;
+        var numCols = contentSpan.Width;
+
+        var totalCells = (int)contentSpan.Length;
         var boundedSizesArray = ArrayPool<BlockSize?>.Shared.Rent(totalCells);
         Span2D<BlockSize?> boundedSizes = boundedSizesArray
             .AsSpan(0, totalCells)
@@ -278,10 +280,10 @@ public sealed class GridBlock : UiBlock
         Span<BlockLength> rowHeights = stackalloc BlockLength[numRows];
         rowHeights.Fill(0);
 
-        MeasureBoundedChildren(Contents, bufferSize, boundedSizes, colWidths, rowHeights);
-        MeasureUnboundedChildren(Contents, bufferSize, boundedSizes, colWidths, rowHeights);
+        MeasureBoundedChildren(contentSpan, bufferSize, boundedSizes, colWidths, rowHeights);
+        MeasureUnboundedChildren(contentSpan, bufferSize, boundedSizes, colWidths, rowHeights);
 
-        var size = ArrangeChildren(Contents, bufferSize, Border, ref childArrangement, boundedSizes, rowHeights, colWidths);
+        var size = ArrangeChildren(contentSpan, bufferSize, Border, ref childArrangement, boundedSizes, rowHeights, colWidths);
 
         ArrayPool<BlockSize?>.Shared.Return(boundedSizesArray);
 
@@ -296,17 +298,14 @@ public sealed class GridBlock : UiBlock
 
     /// <summary>Computes the column widths and row heights based from bounded children.</summary>
     private static void MeasureBoundedChildren(
-        UiBlock?[,] contents,
+        Span2D<UiBlock?> contents,
         BlockSize bufferSize,
         scoped Span2D<BlockSize?> boundedSizes,
         scoped Span<BlockLength> colWidths,
         scoped Span<BlockLength> rowHeights)
     {
-        var numRows = contents.GetLength(0);
-        var numCols = contents.GetLength(1);
-
-        for (int row = 0; row < numRows; row++)
-        for (int col = 0; col < numCols; col++)
+        for (int row = 0; row < contents.Height; row++)
+        for (int col = 0; col < contents.Width; col++)
         {
             var block = contents[row, col];
             if (block is null)
@@ -340,7 +339,7 @@ public sealed class GridBlock : UiBlock
 
     /// <summary>Computes remaining undecided column widths and row heights based on the unbounded children.</summary>
     private static void MeasureUnboundedChildren(
-        UiBlock?[,] contents,
+        Span2D<UiBlock?> contents,
         BlockSize bufferSize,
         scoped Span2D<BlockSize?> boundedSizes,
         scoped Span<BlockLength> colWidths,
@@ -350,11 +349,8 @@ public sealed class GridBlock : UiBlock
         AllocateRemainingLength(bufferSize.Width,  colWidths);
         AllocateRemainingLength(bufferSize.Height, rowHeights);
 
-        var numRows = contents.GetLength(0);
-        var numCols = contents.GetLength(1);
-
-        for (int row = 0; row < numRows; row++)
-        for (int col = 0; col < numCols; col++)
+        for (int row = 0; row < contents.Height; row++)
+        for (int col = 0; col < contents.Width; col++)
         {
             if (boundedSizes[row, col] is not null) continue;
 
@@ -370,7 +366,7 @@ public sealed class GridBlock : UiBlock
     /// <summary>Does the final arrangement of this grid's children based on the size of each child and the
     /// computed column widths and row heights.</summary>
     private static BlockSize ArrangeChildren(
-        UiBlock?[,] contents,
+        Span2D<UiBlock?> contents,
         BlockSize bufferSize,
         Border? border,
         ref Span2D<BufferSlice?> childArrangement,
@@ -380,8 +376,8 @@ public sealed class GridBlock : UiBlock
     )
     {
         var borderPadding = border?.ToPadding() ?? Padding.Zero;
-        var numRows = contents.GetLength(0);
-        var numCols = contents.GetLength(1);
+        var numRows = contents.Height;
+        var numCols = contents.Width;
         var xPos = borderPadding.Left;
         var yPos = borderPadding.Top;
         var rightLimit = bufferSize.Width - borderPadding.Right;
@@ -405,7 +401,11 @@ public sealed class GridBlock : UiBlock
                 var colWidth = colWidths[col].Value ??
                     throw new UnreachableException("All colWidths have been allocated by now");
                 if (col >= lastCol) hGap = 0;
-                if (xPos + colWidth + hGap > rightLimit) break;
+                if (xPos + colWidth + hGap > rightLimit)
+                {
+                    numCols = col + 1;
+                    break;
+                }
 
                 if (!childArrangement.IsEmpty)
                 {
