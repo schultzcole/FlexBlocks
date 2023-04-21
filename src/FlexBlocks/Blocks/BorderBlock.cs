@@ -11,7 +11,7 @@ public sealed class BorderBlock : UiBlock
     public UiBlock? Content { get; set; }
 
     /// <summary>The type of border to render for this block</summary>
-    public Border? Border { get; set; }
+    public IBorder? Border { get; set; }
 
     /// <summary>What padding, if any should exist between the border and the content</summary>
     public Padding? Padding { get; set; }
@@ -48,7 +48,7 @@ public sealed class BorderBlock : UiBlock
     /// <inheritdoc />
     public override void Render(Span2D<char> buffer)
     {
-        Border?.RenderOuter(buffer);
+        if (Border is not null) BorderRenderHelper.RenderOuter(Border, buffer);
 
         if (Content is null) return;
 

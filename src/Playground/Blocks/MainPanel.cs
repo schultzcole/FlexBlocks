@@ -23,7 +23,7 @@ public class MainPanel : CustomBlock
                 new FrametimeOverlay { ShowFps = true },
                 new TitleOverlay { Title = " FlexBlocks Demo ", Offset = 2 }
             },
-            Border = Borders.Rounded,
+            Border = Borders.Line,
             Padding = new Padding(1, 3),
             Content = new FlexBlock
             {

@@ -6,58 +6,34 @@ namespace FlexBlocks.BlockProperties;
 public static class Borders
 {
     /// <summary>Renders all sides and corners as a filled block.</summary>
-    public static Border Block { get; } = new('█');
+    public static IBorder Block { get; } = new SimpleBorder { Character = '█' };
 
     /// <summary>Renders a border with straight edges and sharp, square corners.</summary>
     /// <example><code>
-    /// ┌──┬┐
-    /// │  ││
-    /// ├──┼┤
-    /// └──┴┘
+    /// ┌──┬─┐
+    /// │  │ │
+    /// ├──┼─┤
+    /// └──┴─┘
     /// </code></example>
-    public static Border Square { get; } = new(
-        TopLeft: '┌',
-        Top: '─',
-        TopRight: '┐',
-        Right: '│',
-        BottomRight: '┘',
-        Bottom: '─',
-        BottomLeft: '└',
-        Left: '│',
-        InteriorVertical: '│',
-        InteriorHorizontal: '─',
-        TopT: '┬',
-        RightT: '┤',
-        BottomT: '┴',
-        LeftT: '├',
-        InteriorJunction: '┼'
-    );
+    public static IBorder Line { get; } = new LineBorderBuilder().All(LineStyle.Thin).Build();
 
-    /// <summary>Renders a border with straight edges and rounded corners.</summary>
+    /// <summary>Renders a thick-lined border.</summary>
     /// <example><code>
-    /// ╭──┬╮
-    /// │  ││
-    /// ├──┼┤
-    /// ╰──┴╯
+    /// ┏━━┳━┓
+    /// ┃  ┃ ┃
+    /// ┣━━╋━┫
+    /// ┗━━┻━┛
     /// </code></example>
-    public static Border Rounded { get; } = new(
-        TopLeft: '╭',
-        Top: '─',
-        TopRight: '╮',
-        Right: '│',
-        BottomRight: '╯',
-        Bottom: '─',
-        BottomLeft: '╰',
-        Left: '│',
-        InteriorVertical: '│',
-        InteriorHorizontal: '─',
-        TopT: '┬',
-        RightT: '┤',
-        BottomT: '┴',
-        LeftT: '├',
-        InteriorJunction: '┼'
-    );
+    public static IBorder ThickLine { get; } = new LineBorderBuilder().All(LineStyle.Thick).Build();
 
-    /// <summary>Creates a new StyledBorderBuilder</summary>
-    public static StyledBorderBuilder Builder() => new();
+    /// <summary>Renders a border with doubled edges.</summary>
+    /// <example><code>
+    /// ╔══╦═╗
+    /// ║  ║ ║
+    /// ╠══╬═╣
+    /// ╚══╩═╝
+    /// </code></example>
+    public static IBorder DoubleLine { get; } = new LineBorderBuilder().All(LineStyle.Dual).Build();
+
+    public static LineBorderBuilder LineBuilder() => new();
 }

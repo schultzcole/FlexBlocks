@@ -15,7 +15,7 @@ public class SidebarPanel : CustomBlock
         Content = new BorderBlock
         {
             Overlay = new TitleOverlay { Title = "Sidebar", Offset = 2 },
-            Border = Borders.Square,
+            Border = Borders.Line,
             Padding = new Padding(1, 3),
             Content = new FixedSizeBlock
             {

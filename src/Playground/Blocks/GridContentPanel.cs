@@ -20,7 +20,7 @@ public class GridContentPanel : CustomBlock
                         Size = UnboundedBlockSize.From(BlockLength.Unbounded, EDGE_HEIGHT),
                         Content = new BorderBlock
                         {
-                            Border = Borders.Square,
+                            Border = Borders.Line,
                             Content = new AlignableBlock { Sizing = Sizing.Fill }
                         },
                     },
@@ -31,7 +31,7 @@ public class GridContentPanel : CustomBlock
                         Size = UnboundedBlockSize.From(EDGE_WIDTH, BlockLength.Unbounded),
                         Content = new BorderBlock
                         {
-                            Border = Borders.Square,
+                            Border = Borders.Line,
                             Content = new AlignableBlock { Sizing = Sizing.Fill }
                         },
                     },
@@ -40,7 +40,7 @@ public class GridContentPanel : CustomBlock
                         Size = UnboundedBlockSize.From(EDGE_WIDTH, BlockLength.Unbounded),
                         Content = new BorderBlock
                         {
-                            Border = Borders.Square,
+                            Border = Borders.Line,
                             Content = new AlignableBlock { Sizing = Sizing.Fill }
                         },
                     },
@@ -51,7 +51,7 @@ public class GridContentPanel : CustomBlock
                         Size = UnboundedBlockSize.From(BlockLength.Unbounded, EDGE_HEIGHT),
                         Content = new BorderBlock
                         {
-                            Border = Borders.Square,
+                            Border = Borders.Line,
                             Content = new AlignableBlock { Sizing = Sizing.Fill }
                         },
                     },

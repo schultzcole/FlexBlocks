@@ -24,7 +24,7 @@ public class BorderBlockTests
         [Fact]
         public void Should_return_one_when_border_and_no_padding()
         {
-            var block = new BorderBlock { Border = Borders.Square };
+            var block = new BorderBlock { Border = Borders.Line };
             var actual = block.EffectivePadding;
             var expected = new Padding(1, 1, 1, 1);
             actual.Should().Be(expected);
@@ -44,7 +44,7 @@ public class BorderBlockTests
         {
             var block = new BorderBlock
             {
-                Border = Borders.Square,
+                Border = Borders.Line,
                 Padding = new Padding(1, 2, 3, 4)
             };
             var actual = block.EffectivePadding;
@@ -57,7 +57,7 @@ public class BorderBlockTests
         {
             var block = new BorderBlock
             {
-                Border = Borders.Builder().Top(LineStyle.Thin).Right(LineStyle.Thin).Bottom(LineStyle.Thin).Build()
+                Border = Borders.LineBuilder().Top(LineStyle.Thin).Right(LineStyle.Thin).Bottom(LineStyle.Thin).Build()
             };
             var actual = block.EffectivePadding;
             var expected = new Padding(1, 1, 1, 0);
@@ -97,7 +97,7 @@ public class BorderBlockTests
         {
             var block = new BorderBlock
             {
-                Border = Borders.Square,
+                Border = Borders.Line,
                 Content = new AlignableBlock { Background = Patterns.Fill('.'), Sizing = Sizing.Fill }
             };
 
@@ -121,7 +121,7 @@ public class BorderBlockTests
         {
             var block = new BorderBlock
             {
-                Border = Borders.Builder().All(LineStyle.Thin).Right(LineStyle.None).Build(),
+                Border = Borders.LineBuilder().All(LineStyle.Thin).Right(LineStyle.None).Build(),
                 Content = new AlignableBlock { Background = Patterns.Fill('.'), Sizing = Sizing.Fill }
             };
 
@@ -145,7 +145,7 @@ public class BorderBlockTests
         {
             var block = new BorderBlock
             {
-                Border = Borders.Builder().Top(LineStyle.Thin).Left(LineStyle.Thin).Build(),
+                Border = Borders.LineBuilder().Top(LineStyle.Thin).Left(LineStyle.Thin).Build(),
                 Content = new AlignableBlock { Background = Patterns.Fill('.'), Sizing = Sizing.Fill }
             };
 

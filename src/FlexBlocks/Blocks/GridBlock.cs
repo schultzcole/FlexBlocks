@@ -15,7 +15,7 @@ public sealed class GridBlock : UiBlock
     public UiBlock?[,]? Contents { get; set; }
 
     /// <summary>The border to show around the cells of this block.</summary>
-    public Border? Border { get; set; }
+    public IBorder? Border { get; set; }
 
     [MemberNotNullWhen(false, nameof(Contents))]
     public bool IsEmpty =>
@@ -237,9 +237,9 @@ public sealed class GridBlock : UiBlock
         ArrayPool<BufferSlice?>.Shared.Return(childArrangementArray);
     }
 
-    private void RenderBorder(Border border, Span2D<BufferSlice?> childArrangement, Span2D<char> buffer)
+    private void RenderBorder(IBorder border, Span2D<BufferSlice?> childArrangement, Span2D<char> buffer)
     {
-        border.RenderOuter(buffer);
+        BorderRenderHelper.RenderOuter(border, buffer);
 
         Span<int> rowGaps = stackalloc int[childArrangement.Height - 1];
         Span<int> colGaps = stackalloc int[childArrangement.Width - 1];
@@ -254,7 +254,7 @@ public sealed class GridBlock : UiBlock
             colGaps[col - 1] = slice.Column - 1;
         }
 
-        border.RenderInner(buffer, rowGaps, colGaps);
+        BorderRenderHelper.RenderInner(border, buffer, rowGaps, colGaps);
     }
 
     /// <summary>Calculates the size of each cell in the grid and positions each child within its cell.</summary>
@@ -368,7 +368,7 @@ public sealed class GridBlock : UiBlock
     private static BlockSize ArrangeChildren(
         Span2D<UiBlock?> contents,
         BlockSize bufferSize,
-        Border? border,
+        IBorder? border,
         ref Span2D<BufferSlice?> childArrangement,
         scoped Span2D<BlockSize?> boundedSizes,
         scoped Span<BlockLength> rowHeights,
@@ -382,7 +382,7 @@ public sealed class GridBlock : UiBlock
         var yPos = borderPadding.Top;
         var rightLimit = bufferSize.Width - borderPadding.Right;
         var bottomLimit = bufferSize.Height - borderPadding.Bottom;
-        var vGap = (border?.HasVerticalInterior == true) ? 1 : 0;
+        var vGap = (border?.InnerEdge(BorderInnerEdge.Horizontal) is not null) ? 1 : 0;
         var lastRow = numRows - 1;
         var lastCol = numCols - 1;
         var maxRow = 0;
@@ -395,7 +395,7 @@ public sealed class GridBlock : UiBlock
             if (yPos + rowHeight + vGap > bottomLimit) break;
 
             xPos = borderPadding.Left;
-            var hGap = (border?.HasHorizontalInterior == true) ? 1 : 0;
+            var hGap = (border?.InnerEdge(BorderInnerEdge.Vertical) is not null) ? 1 : 0;
             for (int col = 0; col < numCols; col++)
             {
                 var colWidth = colWidths[col].Value ??

@@ -217,7 +217,7 @@ public class GridBlockUiBlockTests
         {
             var block = new GridBlock
             {
-                Border = Borders.Square,
+                Border = Borders.Line,
                 Contents = new UiBlock?[,] { { new FixedSizeBlock { Size = UnboundedBlockSize.From(2, 2) } } }
             };
 
@@ -230,7 +230,7 @@ public class GridBlockUiBlockTests
         {
             var block = new GridBlock
             {
-                Border = Borders.Builder().Top(LineStyle.Thin).Bottom(LineStyle.Thin).Build(),
+                Border = Borders.LineBuilder().Top(LineStyle.Thin).Bottom(LineStyle.Thin).Build(),
                 Contents = new UiBlock?[,] { { new FixedSizeBlock { Size = UnboundedBlockSize.From(2, 2) } } }
             };
 
@@ -243,7 +243,7 @@ public class GridBlockUiBlockTests
         {
             var block = new GridBlock
             {
-                Border = Borders.Square,
+                Border = Borders.Line,
                 Contents = new UiBlock?[,]
                 {
                     {
@@ -266,7 +266,7 @@ public class GridBlockUiBlockTests
         {
             var block = new GridBlock
             {
-                Border = Borders.Builder().Outer(LineStyle.Thin).Build(),
+                Border = Borders.LineBuilder().Outer(LineStyle.Thin).Build(),
                 Contents = new UiBlock?[,]
                 {
                     {
@@ -538,7 +538,7 @@ public class GridBlockUiBlockTests
         {
             var block = new GridBlock
             {
-                Border = Borders.Square,
+                Border = Borders.Line,
                 Contents = new UiBlock?[,]
                 {
                     {
@@ -569,7 +569,7 @@ public class GridBlockUiBlockTests
         {
             var block = new GridBlock
             {
-                Border = Borders.Square,
+                Border = Borders.Line,
                 Contents = new UiBlock?[,]
                 {
                     {

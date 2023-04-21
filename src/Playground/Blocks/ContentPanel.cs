@@ -11,7 +11,7 @@ public class ContentPanel : CustomBlock
         new BorderBlock
         {
             Overlay = new TitleOverlay { Title = "Content", Offset = ^2 },
-            Border = Borders.Square,
+            Border = Borders.Line,
             Padding = new Padding(1, 7),
             Content = new FixedSizeBlock
             {

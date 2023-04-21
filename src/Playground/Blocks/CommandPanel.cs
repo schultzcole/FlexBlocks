@@ -14,7 +14,7 @@ public class CommandPanel : CustomBlock
     {
         Content = new BorderBlock
         {
-            Border = Borders.Square,
+            Border = Borders.Line,
             Content = new AlignableBlock
             {
                 HorizontalSizing = Sizing.Fill,
@@ -23,7 +23,7 @@ public class CommandPanel : CustomBlock
                     Wrapping = FlexWrapping.Wrap,
                     Contents = commands
                         .Select(x => new BorderBlock
-                            { Border = Borders.Square, Content = new TextBlock { Text = x } }
+                            { Border = Borders.Line, Content = new TextBlock { Text = x } }
                         )
                         .Cast<UiBlock>()
                         .ToList()
