@@ -280,10 +280,27 @@ public sealed class GridBlock : UiBlock
         Span<BlockLength> rowHeights = stackalloc BlockLength[numRows];
         rowHeights.Fill(0);
 
-        MeasureBoundedChildren(contentSpan, bufferSize, boundedSizes, colWidths, rowHeights);
-        MeasureUnboundedChildren(contentSpan, bufferSize, boundedSizes, colWidths, rowHeights);
+        var borderPadding = Border?.ToPadding() ?? Padding.Zero;
 
-        var size = ArrangeChildren(contentSpan, bufferSize, Border, ref childArrangement, boundedSizes, rowHeights, colWidths);
+        var innerBufferSize = bufferSize.ShrinkByPadding(borderPadding);
+        MeasureBoundedChildren(contentSpan, innerBufferSize, boundedSizes, colWidths, rowHeights);
+
+        var vGap = (Border?.InnerEdge(BorderInnerEdge.Horizontal) is not null) ? 1 : 0;
+        var hGap = (Border?.InnerEdge(BorderInnerEdge.Vertical) is not null) ? 1 : 0;
+
+        MeasureUnboundedChildren(contentSpan, innerBufferSize, vGap, hGap, boundedSizes, colWidths, rowHeights);
+
+        var size = ArrangeChildren(
+            contentSpan,
+            bufferSize,
+            borderPadding,
+            vGap,
+            hGap,
+            ref childArrangement,
+            boundedSizes,
+            rowHeights,
+            colWidths
+        );
 
         ArrayPool<BlockSize?>.Shared.Return(boundedSizesArray);
 
@@ -341,13 +358,15 @@ public sealed class GridBlock : UiBlock
     private static void MeasureUnboundedChildren(
         Span2D<UiBlock?> contents,
         BlockSize bufferSize,
+        int vGap,
+        int hGap,
         scoped Span2D<BlockSize?> boundedSizes,
         scoped Span<BlockLength> colWidths,
         scoped Span<BlockLength> rowHeights
     )
     {
-        AllocateRemainingLength(bufferSize.Width,  colWidths);
-        AllocateRemainingLength(bufferSize.Height, rowHeights);
+        AllocateRemainingLength(bufferSize.Width, vGap, colWidths);
+        AllocateRemainingLength(bufferSize.Height, hGap, rowHeights);
 
         for (int row = 0; row < contents.Height; row++)
         for (int col = 0; col < contents.Width; col++)
@@ -368,40 +387,37 @@ public sealed class GridBlock : UiBlock
     private static BlockSize ArrangeChildren(
         Span2D<UiBlock?> contents,
         BlockSize bufferSize,
-        IBorder? border,
+        Padding padding,
+        int vGap,
+        int hGap,
         ref Span2D<BufferSlice?> childArrangement,
         scoped Span2D<BlockSize?> boundedSizes,
         scoped Span<BlockLength> rowHeights,
         scoped Span<BlockLength> colWidths
     )
     {
-        var borderPadding = border?.ToPadding() ?? Padding.Zero;
         var numRows = contents.Height;
         var numCols = contents.Width;
-        var xPos = borderPadding.Left;
-        var yPos = borderPadding.Top;
-        var rightLimit = bufferSize.Width - borderPadding.Right;
-        var bottomLimit = bufferSize.Height - borderPadding.Bottom;
-        var vGap = (border?.InnerEdge(BorderInnerEdge.Horizontal) is not null) ? 1 : 0;
-        var lastRow = numRows - 1;
-        var lastCol = numCols - 1;
+        var xPos = padding.Left;
+        var yPos = padding.Top;
+        var rightLimit = bufferSize.Width - padding.Right;
+        var bottomLimit = bufferSize.Height - padding.Bottom;
         var maxRow = 0;
         var maxCol = 0;
         for (int row = 0; row < numRows; row++)
         {
             var rowHeight = rowHeights[row].Value ??
                 throw new UnreachableException("All rowHeights have been allocated by now");
-            if (row >= lastRow) vGap = 0;
-            if (yPos + rowHeight + vGap > bottomLimit) break;
+            var colGap = (row >= numRows - 1) ? 0 : vGap;
+            if (yPos + rowHeight + colGap > bottomLimit) break;
 
-            xPos = borderPadding.Left;
-            var hGap = (border?.InnerEdge(BorderInnerEdge.Vertical) is not null) ? 1 : 0;
+            xPos = padding.Left;
             for (int col = 0; col < numCols; col++)
             {
                 var colWidth = colWidths[col].Value ??
                     throw new UnreachableException("All colWidths have been allocated by now");
-                if (col >= lastCol) hGap = 0;
-                if (xPos + colWidth + hGap > rightLimit)
+                var rowGap = (col >= numCols - 1) ? 0 : hGap;
+                if (xPos + colWidth + rowGap > rightLimit)
                 {
                     numCols = col + 1;
                     break;
@@ -415,11 +431,11 @@ public sealed class GridBlock : UiBlock
                 }
 
                 maxCol = Math.Max(maxCol, col);
-                xPos += colWidth + hGap;
+                xPos += colWidth + rowGap;
             }
 
             maxRow = Math.Max(maxRow, row);
-            yPos += rowHeight + vGap;
+            yPos += rowHeight + colGap;
         }
 
         if (!childArrangement.IsEmpty)
@@ -427,19 +443,22 @@ public sealed class GridBlock : UiBlock
             childArrangement = childArrangement.Slice(0, 0, maxRow + 1, maxCol + 1);
         }
 
-        return BlockSize.From(xPos + borderPadding.Right, yPos + borderPadding.Bottom);
+        return BlockSize.From(xPos + padding.Right, yPos + padding.Bottom);
     }
 
     /// <summary>Proportionally distributes remaining length among unbounded cells.</summary>
-    private static void AllocateRemainingLength(int totalLength, scoped Span<BlockLength> cellLengths)
+    private static void AllocateRemainingLength(int totalLength, int gap, scoped Span<BlockLength> cellLengths)
     {
         var remainingUnallocatedLength = totalLength;
         var remainingUnallocatedCellCount = 0;
-        foreach (var len in cellLengths)
+        var lastIndex = cellLengths.Length - 1;
+        for (var i = 0; i < cellLengths.Length; i++)
         {
+            var len = cellLengths[i];
             if (len.IsBounded)
             {
                 remainingUnallocatedLength -= len.Value.Value;
+                if (i <= lastIndex) remainingUnallocatedLength -= gap;
             }
             else
             {
@@ -447,12 +466,14 @@ public sealed class GridBlock : UiBlock
             }
         }
 
-        for (int i = 0; i < cellLengths.Length; i++)
+        for (int i = 0; remainingUnallocatedCellCount > 0 && i < cellLengths.Length; i++)
         {
-            if (remainingUnallocatedLength <= 0) break;
-            if (remainingUnallocatedCellCount <= 0) break;
-
             if (cellLengths[i].IsBounded) continue;
+            if (remainingUnallocatedLength <= 0)
+            {
+                cellLengths[i] = 0;
+                continue;
+            }
 
             var availableLength = (int)Math.Ceiling((float)remainingUnallocatedLength / remainingUnallocatedCellCount);
             cellLengths[i] = availableLength;

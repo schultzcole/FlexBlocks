@@ -565,7 +565,7 @@ public class GridBlockUiBlockTests
         }
 
         [Fact]
-        public void Should_render_exterior_and_interior_borders()
+        public void Should_render_exterior_and_interior_borders_with_fixed_size_children()
         {
             var block = new GridBlock
             {
@@ -599,6 +599,55 @@ public class GridBlockUiBlockTests
                 "│333  │4444│",
                 "│     │4444│",
                 "└─────┴────┘",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_render_exterior_and_interior_borders_with_unbounded_children()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.Line,
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 2, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('2'), Width = BlockLength.Unbounded, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 2, Height = 2 },
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('4'), Width = 2, Height = BlockLength.Unbounded },
+                        new FixedSizeBlock { Background = Patterns.Fill('5'), Size = UnboundedBlockSize.Unbounded },
+                        new FixedSizeBlock { Background = Patterns.Fill('6'), Width = 2, Height = BlockLength.Unbounded },
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('7'), Width = 2, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('8'), Width = BlockLength.Unbounded, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('9'), Width = 2, Height = 2 },
+                    },
+                },
+            };
+
+            var actual = BlockRenderTestHelper.RenderBlock(block, 12, 12);
+
+            var expected = new[]
+            {
+                "┌──┬────┬──┐",
+                "│11│2222│33│",
+                "│11│2222│33│",
+                "├──┼────┼──┤",
+                "│44│5555│66│",
+                "│44│5555│66│",
+                "│44│5555│66│",
+                "│44│5555│66│",
+                "├──┼────┼──┤",
+                "│77│8888│99│",
+                "│77│8888│99│",
+                "└──┴────┴──┘",
             }.ToCharGrid();
 
             _output.WriteCharGrid(actual, expected);
