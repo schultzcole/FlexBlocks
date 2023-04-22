@@ -6,6 +6,8 @@ namespace FlexBlocksTest.Utils;
 
 public static class BlockRenderTestHelper
 {
+    private const char BLANK = '×';
+
     /// <summary>
     /// Creates a render buffer of the given size and renders the given block into the buffer.
     /// </summary>
@@ -14,7 +16,7 @@ public static class BlockRenderTestHelper
     {
         var buffer = new char[height, width];
         var bufferSpan = buffer.AsSpan2D();
-        bufferSpan.Fill('×');
+        bufferSpan.Fill(BLANK);
 
         var rootBlock = new FixedSizeBlock { Background = null, Size = UnboundedBlockSize.From(width, height), Content = block };
 

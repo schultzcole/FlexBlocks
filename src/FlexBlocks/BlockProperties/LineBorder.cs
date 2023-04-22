@@ -97,10 +97,13 @@ public class LineBorder : IBorder
     /// <inheritdoc />
     public char? OuterJunction(BorderOuterEdge edge, BorderAccent outerAccent, BorderAccent innerAccent)
     {
+        var innerEdge = edge.IntersectingInnerEdge();
         var outerStyle = AccentOrDefault(outerAccent, StyleForBorderEdge(edge));
-        var innerStyle = AccentOrDefault(innerAccent, StyleForBorderInnerEdge(edge.IntersectingInnerEdge()));
+        var innerStyle = AccentOrDefault(innerAccent, StyleForBorderInnerEdge(innerEdge));
 
-        if (outerStyle is None || innerStyle is None) return null;
+        if (outerStyle is None && innerStyle is None) return null;
+        if (outerStyle is None) return InnerEdge(innerEdge, innerAccent);
+        if (innerStyle is None) return InnerEdge(innerEdge, outerAccent);
 
         var (vStyle, hStyle) = edge switch
         {
@@ -109,7 +112,7 @@ public class LineBorder : IBorder
             _ => throw new ArgumentOutOfRangeException(nameof(edge), edge, null)
         };
 
-        LineSideJunction intersect = edge switch
+        var intersect = edge switch
         {
             BorderOuterEdge.Top    => LineSideJunction.Top,
             BorderOuterEdge.Right  => LineSideJunction.Right,
@@ -122,13 +125,13 @@ public class LineBorder : IBorder
 
         return (vStyle, hStyle) switch
         {
-            (Thin, Thin)   => (char)intersect,
-            (Thin, Thick)  => (char)(intersect + (intersect > LineSideJunction.Right ? 3 : 1)),
+            (Thin,  Thin)  => (char)intersect,
+            (Thin,  Thick) => (char)(intersect + (intersect > LineSideJunction.Right ? 3 : 1)),
             (Thick, Thin)  => (char)(intersect + 4),
             (Thick, Thick) => (char)(intersect + 7),
-            (Dual, Dual)   => (char)(group + 2),
-            (Dual, _)      => (char)(group + 1),
-            (_, Dual)      => (char)group,
+            (Dual,  Dual)  => (char)(group + 2),
+            (Dual,  _)     => (char)(group + 1),
+            (_,     Dual)  => (char)group,
             _ => throw new InvalidOperationException(
                 $"Either {nameof(vStyle)} ({vStyle}) or {nameof(hStyle)} ({hStyle}) are invalid"
             )
