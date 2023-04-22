@@ -9,53 +9,29 @@ public class GridContentPanel : CustomBlock
     private const int EDGE_HEIGHT = 5;
     private const int EDGE_WIDTH = 11;
 
+    private static readonly Pattern cornerBackground = Patterns.CheckerboardPattern('█', '▒');
+
     public override UiBlock Content { get; } =
         new GridBlock
         {
+            Overlay = new TitleOverlay { Title = "Content", Offset = ^(EDGE_WIDTH + 4) },
+            Border = Borders.Line,
             Contents = new UiBlock[,]
             {
                 {
-                    new FixedSizeBlock { Background = Patterns.CheckerboardPattern('█', '▒'), Size = UnboundedBlockSize.From(EDGE_WIDTH, EDGE_HEIGHT) },
-                    new FixedSizeBlock {
-                        Size = UnboundedBlockSize.From(BlockLength.Unbounded, EDGE_HEIGHT),
-                        Content = new BorderBlock
-                        {
-                            Border = Borders.Line,
-                            Content = new AlignableBlock { Sizing = Sizing.Fill }
-                        },
-                    },
-                    new FixedSizeBlock { Background = Patterns.CheckerboardPattern('█', '▒'), Size = UnboundedBlockSize.From(EDGE_WIDTH, EDGE_HEIGHT) },
+                    new FixedSizeBlock { Background = cornerBackground, Width = EDGE_WIDTH, Height = EDGE_HEIGHT },
+                    new FixedSizeBlock { Width = BlockLength.Unbounded, Height = EDGE_HEIGHT },
+                    new FixedSizeBlock { Background = cornerBackground, Width = EDGE_WIDTH, Height = EDGE_HEIGHT },
                 },
                 {
-                    new FixedSizeBlock {
-                        Size = UnboundedBlockSize.From(EDGE_WIDTH, BlockLength.Unbounded),
-                        Content = new BorderBlock
-                        {
-                            Border = Borders.Line,
-                            Content = new AlignableBlock { Sizing = Sizing.Fill }
-                        },
-                    },
+                    new FixedSizeBlock { Width = EDGE_WIDTH, Height = BlockLength.Unbounded },
                     new ContentPanel(),
-                    new FixedSizeBlock {
-                        Size = UnboundedBlockSize.From(EDGE_WIDTH, BlockLength.Unbounded),
-                        Content = new BorderBlock
-                        {
-                            Border = Borders.Line,
-                            Content = new AlignableBlock { Sizing = Sizing.Fill }
-                        },
-                    },
+                    new FixedSizeBlock { Width = EDGE_WIDTH, Height = BlockLength.Unbounded },
                 },
                 {
-                    new FixedSizeBlock { Background = Patterns.CheckerboardPattern('█', '▒'), Size = UnboundedBlockSize.From(EDGE_WIDTH, EDGE_HEIGHT) },
-                    new FixedSizeBlock {
-                        Size = UnboundedBlockSize.From(BlockLength.Unbounded, EDGE_HEIGHT),
-                        Content = new BorderBlock
-                        {
-                            Border = Borders.Line,
-                            Content = new AlignableBlock { Sizing = Sizing.Fill }
-                        },
-                    },
-                    new FixedSizeBlock { Background = Patterns.CheckerboardPattern('█', '▒'), Size = UnboundedBlockSize.From(EDGE_WIDTH, EDGE_HEIGHT) },
+                    new FixedSizeBlock { Background = cornerBackground, Width = EDGE_WIDTH, Height = EDGE_HEIGHT },
+                    new FixedSizeBlock { Width = BlockLength.Unbounded, Height = EDGE_HEIGHT },
+                    new FixedSizeBlock { Background = cornerBackground, Width = EDGE_WIDTH, Height = EDGE_HEIGHT },
                 },
             }
         };
