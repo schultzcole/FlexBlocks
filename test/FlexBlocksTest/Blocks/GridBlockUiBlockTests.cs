@@ -762,5 +762,53 @@ public class GridBlockUiBlockTests
 
             actual.Should().BeEquivalentTo(expected);
         }
+
+        [Fact]
+        public void Should_render_interior_borders_in_only_one_direction()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.LineBuilder().InnerVertical(LineStyle.Thin).Accent(LineStyle.Dual).Build(),
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 3, Height = 1 },
+                        new FixedSizeBlock { Background = Patterns.Fill('2'), Width = 3, Height = 1 },
+                        new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 3, Height = 1 },
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('4'), Width = 3, Height = 1 },
+                        new FixedSizeBlock { Background = Patterns.Fill('5'), Width = 3, Height = 1 },
+                        new FixedSizeBlock { Background = Patterns.Fill('6'), Width = 3, Height = 1 },
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('7'), Width = 3, Height = 1 },
+                        new FixedSizeBlock { Background = Patterns.Fill('8'), Width = 3, Height = 1 },
+                        new FixedSizeBlock { Background = Patterns.Fill('9'), Width = 3, Height = 1 },
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('0'), Width = 3, Height = 1 },
+                        new FixedSizeBlock { Background = Patterns.Fill('A'), Width = 3, Height = 1 },
+                        new FixedSizeBlock { Background = Patterns.Fill('B'), Width = 3, Height = 1 },
+                    },
+                },
+                AccentRows = new List<Index> { 0 },
+            };
+
+            var actual = BlockRenderTestHelper.RenderBlock(block, 11, 5);
+
+            var expected = new[]
+            {
+                "111│222│333",
+                "═══╪═══╪═══",
+                "444│555│666",
+                "777│888│999",
+                "000│AAA│BBB",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
     }
 }
