@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.HighPerformance;
+using static FlexBlocks.BlockProperties.BorderAccent;
 using static FlexBlocks.BlockProperties.BorderInnerEdge;
 using static FlexBlocks.BlockProperties.BorderOuterCorner;
 using static FlexBlocks.BlockProperties.BorderOuterEdge;
@@ -24,65 +25,134 @@ public static class BorderRenderHelper
     }
 
 
-    public static void RenderInner(IBorder border, Span2D<char> buffer, Span<int> rowGaps, Span<int> colGaps)
+    public static void RenderInner(
+        IBorder border,
+        Span2D<char> buffer,
+        Span<(int index, BorderAccent accent)> rowBorders,
+        Span<(int index, BorderAccent accent)> colBorders
+    )
     {
-        var maybeVert = border.InnerEdge(Vertical);
-        var maybeHoriz = border.InnerEdge(Horizontal);
+        RenderInnerLines(border, buffer, Vertical,   colBorders);
+        RenderInnerLines(border, buffer, Horizontal, rowBorders);
 
-        if (maybeVert is null && maybeHoriz is null) return;
+        RenderOuterJunctions(border, buffer, Top,    colBorders);
+        RenderOuterJunctions(border, buffer, Bottom, colBorders);
+        RenderOuterJunctions(border, buffer, Left,   rowBorders);
+        RenderOuterJunctions(border, buffer, Right,  rowBorders);
 
-        if (maybeVert is { } vert)
+        RenderInnerJunctions(border, buffer, rowBorders, colBorders);
+    }
+
+    private static void RenderInnerLines(
+        IBorder border,
+        Span2D<char> buffer,
+        BorderInnerEdge edge,
+        Span<(int index, BorderAccent accent)> indices
+    )
+    {
+        var maybeLine = border.InnerEdge(edge);
+        var maybeAccentLine = border.InnerEdge(edge, Accent);
+
+        if (maybeLine is null && maybeAccentLine is null) return;
+
+        foreach (var (index, accent) in indices)
         {
-            foreach (var col in colGaps)
+            var columnSlice = edge switch
             {
-                buffer.Slice(1, col, buffer.Height - 2, 1).Fill(vert);
-            }
-        }
+                Vertical   => buffer.Slice(1, index, buffer.Height - 2, 1),
+                Horizontal => buffer.Slice(index, 1, 1, buffer.Width - 2),
+                _          => throw new ArgumentOutOfRangeException(nameof(edge), edge, null)
+            };
 
-        if (maybeHoriz is { } horiz)
-        {
-            foreach (var row in rowGaps)
+            if (
+                accent switch
+                {
+                    Normal => maybeLine,
+                    Accent => maybeAccentLine,
+                    _                   => null
+                } is { } c
+            )
             {
-                buffer.Slice(row, 1, 1, buffer.Width - 2).Fill(horiz);
-            }
-        }
-
-        RenderOuterJunction(border, Top, buffer, colGaps);
-        RenderOuterJunction(border, Bottom, buffer, colGaps);
-        RenderOuterJunction(border, Left, buffer, rowGaps);
-        RenderOuterJunction(border, Right, buffer, rowGaps);
-
-        if (border.InnerJunction() is { } junction)
-        {
-            foreach (var row in rowGaps)
-            foreach (var col in colGaps)
-            {
-                buffer[row, col] = junction;
+                columnSlice.Fill(c);
             }
         }
     }
 
-    private static void RenderOuterJunction(IBorder border, BorderOuterEdge edge, Span2D<char> buffer, Span<int> indices)
+    private static void RenderOuterJunctions(
+        IBorder border,
+        Span2D<char> buffer,
+        BorderOuterEdge edge,
+        Span<(int index, BorderAccent accent)> indices
+    )
     {
-        if (border.OuterJunction(edge) is not {} junction) return;
+        var maybeJunction = border.OuterJunction(edge);
+        var maybeAccentJunction = border.OuterJunction(edge, Normal, Accent);
 
-        switch (edge)
+        if (maybeJunction is null && maybeAccentJunction is null) return;
+
+        var lastCol = buffer.Width - 1;
+        var lastRow = buffer.Height - 1;
+        foreach (var (index, accent) in indices)
         {
-            case Top:
-                foreach (var index in indices) buffer[0, index] = junction;
-                break;
-            case Right:
-                var lastCol = buffer.Width - 1;
-                foreach (var index in indices) buffer[index, lastCol] = junction;
-                break;
-            case Bottom:
-                var lastRow = buffer.Height - 1;
-                foreach (var index in indices) buffer[lastRow, index] = junction;
-                break;
-            case Left:
-                foreach (var index in indices) buffer[index, 0] = junction;
-                break;
-            default: throw new ArgumentOutOfRangeException(nameof(edge), edge, null);
+            var junction = accent switch
+            {
+                Normal => maybeJunction,
+                Accent => maybeAccentJunction,
+                _                   => null
+            };
+            if (junction is not { } j) continue;
+
+            var loc = edge switch
+            {
+                Top    => buffer.Slice(0, index, 1, 1),
+                Right  => buffer.Slice(index, lastCol, 1, 1),
+                Bottom => buffer.Slice(lastRow, index, 1, 1),
+                Left   => buffer.Slice(index, 0, 1, 1),
+                _      => throw new ArgumentOutOfRangeException(nameof(edge), edge, null)
+            };
+
+            loc.Fill(j);
+        }
+    }
+
+    private static void RenderInnerJunctions(
+        IBorder border,
+        Span2D<char> buffer,
+        Span<(int index, BorderAccent accent)> rowBorders,
+        Span<(int index, BorderAccent accent)> colBorders
+    )
+    {
+        var maybeJunction            = border.InnerJunction(Normal, Normal);
+        var maybeVertAccentJunction  = border.InnerJunction(Accent, Normal);
+        var maybeHorizAccentJunction = border.InnerJunction(Normal, Accent);
+        var maybeAccentJunction      = border.InnerJunction(Accent, Accent);
+
+        if (
+            maybeJunction is null &&
+            maybeVertAccentJunction is null &&
+            maybeHorizAccentJunction is null &&
+            maybeAccentJunction is null
+        )
+        {
+            return;
+        }
+
+        foreach (var (row, horizAccent) in rowBorders)
+        foreach (var (col, vertAccent) in colBorders)
+        {
+            if (
+                (vertAccent, horizAccent) switch
+                {
+                    (Normal, Normal) => maybeJunction,
+                    (Accent, Normal) => maybeVertAccentJunction,
+                    (Normal, Accent) => maybeHorizAccentJunction,
+                    (Accent, Accent) => maybeAccentJunction,
+                    _                => null
+                } is { } j
+            )
+            {
+                buffer[row, col] = j;
+            }
         }
     }
 }

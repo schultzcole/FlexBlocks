@@ -17,6 +17,18 @@ public sealed class GridBlock : UiBlock
     /// <summary>The border to show around the cells of this block.</summary>
     public IBorder? Border { get; set; }
 
+    /// <summary>
+    /// The rows that should render an accented border next to them. If the index is from end, the accented border is
+    /// rendered before the corresponding row, otherwise it is rendered after the corresponding row.
+    /// </summary>
+    public List<Index>? AccentRows { get; set; }
+
+    /// <summary>
+    /// The columns that should render an accented border next to them. If the index is from end, the accented border is
+    /// rendered before the corresponding column, otherwise it is rendered after the corresponding column.
+    /// </summary>
+    public List<Index>? AccentColumns { get; set; }
+
     [MemberNotNullWhen(false, nameof(Contents))]
     public bool IsEmpty =>
         Contents is null || Contents.GetLength(0) == 0 || Contents.GetLength(1) == 0;
@@ -241,18 +253,24 @@ public sealed class GridBlock : UiBlock
     {
         BorderRenderHelper.RenderOuter(border, buffer);
 
-        Span<int> rowGaps = stackalloc int[childArrangement.Height - 1];
-        Span<int> colGaps = stackalloc int[childArrangement.Width - 1];
+        Span<(int index, BorderAccent accent)> rowGaps =
+            stackalloc (int index, BorderAccent accent)[childArrangement.Height - 1];
+        Span<(int index, BorderAccent accent)> colGaps =
+            stackalloc (int index, BorderAccent accent)[childArrangement.Width - 1];
         for (int row = 1; row < childArrangement.Height; row++)
         {
             var slice = childArrangement[row, 0]!;
-            rowGaps[row - 1] = slice.Row - 1;
+            rowGaps[row - 1] = (slice.Row - 1, default);
         }
+
         for (int col = 1; col < childArrangement.Width; col++)
         {
             var slice = childArrangement[0, col]!;
-            colGaps[col - 1] = slice.Column - 1;
+            colGaps[col - 1] = (slice.Column - 1, default);
         }
+
+        foreach (var row in AccentRows ?? Enumerable.Empty<Index>()) rowGaps[row].accent = BorderAccent.Accent;
+        foreach (var col in AccentColumns ?? Enumerable.Empty<Index>()) colGaps[col].accent = BorderAccent.Accent;
 
         BorderRenderHelper.RenderInner(border, buffer, rowGaps, colGaps);
     }
@@ -271,8 +289,8 @@ public sealed class GridBlock : UiBlock
         var totalCells = (int)contentSpan.Length;
         var boundedSizesArray = ArrayPool<BlockSize?>.Shared.Rent(totalCells);
         Span2D<BlockSize?> boundedSizes = boundedSizesArray
-            .AsSpan(0, totalCells)
-            .AsSpan2D(numRows, numCols);
+                                          .AsSpan(0, totalCells)
+                                          .AsSpan2D(numRows, numCols);
         boundedSizes.Fill(null);
 
         Span<BlockLength> colWidths = stackalloc BlockLength[numCols];
@@ -365,7 +383,7 @@ public sealed class GridBlock : UiBlock
         scoped Span<BlockLength> rowHeights
     )
     {
-        AllocateRemainingLength(bufferSize.Width, vGap, colWidths);
+        AllocateRemainingLength(bufferSize.Width,  vGap, colWidths);
         AllocateRemainingLength(bufferSize.Height, hGap, rowHeights);
 
         for (int row = 0; row < contents.Height; row++)
@@ -469,6 +487,7 @@ public sealed class GridBlock : UiBlock
         for (int i = 0; remainingUnallocatedCellCount > 0 && i < cellLengths.Length; i++)
         {
             if (cellLengths[i].IsBounded) continue;
+
             if (remainingUnallocatedLength <= 0)
             {
                 cellLengths[i] = 0;

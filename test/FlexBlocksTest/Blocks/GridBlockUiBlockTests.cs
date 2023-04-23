@@ -1,4 +1,6 @@
-﻿using FlexBlocks.BlockProperties;
+﻿using System;
+using System.Collections.Generic;
+using FlexBlocks.BlockProperties;
 using FlexBlocks.Blocks;
 using FlexBlocks.Renderables;
 using FlexBlocksTest.Utils;
@@ -697,6 +699,63 @@ public class GridBlockUiBlockTests
                 "│77│8888│99│",
                 "│77│8888│99│",
                 "└──┴────┴──┘",
+            }.ToCharGrid();
+
+            _output.WriteCharGrid(actual, expected);
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void Should_render_borders_with_interior_accent()
+        {
+            var block = new GridBlock
+            {
+                Border = Borders.LineBuilder().All(LineStyle.Thin).Accent(LineStyle.Dual).Build(),
+                Contents = new UiBlock?[,]
+                {
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 3, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('2'), Width = 3, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 3, Height = 2 },
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('4'), Width = 3, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('5'), Width = 3, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('6'), Width = 3, Height = 2 },
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('7'), Width = 3, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('8'), Width = 3, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('9'), Width = 3, Height = 2 },
+                    },
+                    {
+                        new FixedSizeBlock { Background = Patterns.Fill('0'), Width = 3, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('A'), Width = 3, Height = 2 },
+                        new FixedSizeBlock { Background = Patterns.Fill('B'), Width = 3, Height = 2 },
+                    },
+                },
+                AccentRows = new List<Index> { 0, ^1 },
+                AccentColumns = new List<Index> { 1 },
+            };
+
+            var actual = BlockRenderTestHelper.RenderBlock(block, 13, 13);
+
+            var expected = new[]
+            {
+                "┌───┬───╥───┐",
+                "│111│222║333│",
+                "│111│222║333│",
+                "╞═══╪═══╬═══╡",
+                "│444│555║666│",
+                "│444│555║666│",
+                "├───┼───╫───┤",
+                "│777│888║999│",
+                "│777│888║999│",
+                "╞═══╪═══╬═══╡",
+                "│000│AAA║BBB│",
+                "│000│AAA║BBB│",
+                "└───┴───╨───┘",
             }.ToCharGrid();
 
             _output.WriteCharGrid(actual, expected);
