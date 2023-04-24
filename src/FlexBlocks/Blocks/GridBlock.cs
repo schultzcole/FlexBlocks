@@ -294,8 +294,8 @@ public sealed class GridBlock : UiBlock
         boundedSizes.Fill(null);
 
         Span<BlockLength> colWidths = stackalloc BlockLength[numCols];
-        colWidths.Fill(0);
         Span<BlockLength> rowHeights = stackalloc BlockLength[numRows];
+        colWidths.Fill(0);
         rowHeights.Fill(0);
 
         var borderPadding = Border?.ToPadding() ?? Padding.Zero;
@@ -311,15 +311,8 @@ public sealed class GridBlock : UiBlock
 
         if (Border is not null) CalculateGaps(Border, colAccents, rowAccents, colGaps, rowGaps);
 
-        MeasureUnboundedChildren(
-            contentSpan,
-            innerBufferSize,
-            boundedSizes,
-            colWidths,
-            rowHeights,
-            colGaps,
-            rowGaps
-        );
+        AllocateRemainingLength(innerBufferSize.Width,  colWidths,  colGaps);
+        AllocateRemainingLength(innerBufferSize.Height, rowHeights, rowGaps);
 
         var size = ArrangeChildren(
             contentSpan,
@@ -387,34 +380,6 @@ public sealed class GridBlock : UiBlock
         }
     }
 
-    /// <summary>Computes remaining undecided column widths and row heights based on the unbounded children.</summary>
-    private static void MeasureUnboundedChildren(
-        Span2D<UiBlock?> contents,
-        BlockSize bufferSize,
-        scoped Span2D<BlockSize?> boundedSizes,
-        scoped Span<BlockLength> colWidths,
-        scoped Span<BlockLength> rowHeights,
-        scoped Span<int> colGaps,
-        scoped Span<int> rowGaps
-    )
-    {
-        AllocateRemainingLength(bufferSize.Width,  colWidths, colGaps);
-        AllocateRemainingLength(bufferSize.Height, rowHeights, rowGaps);
-
-        for (int row = 0; row < contents.Height; row++)
-        for (int col = 0; col < contents.Width; col++)
-        {
-            if (boundedSizes[row, col] is not null) continue;
-
-            var block = contents[row, col]!;
-            var cellWidth = colWidths[col].Value.GetValueOrDefault();
-            var cellHeight = rowHeights[row].Value.GetValueOrDefault();
-            var concreteSize = block.CalcSize(BlockSize.From(cellWidth, cellHeight));
-
-            boundedSizes[row, col] = concreteSize;
-        }
-    }
-
     /// <summary>Does the final arrangement of this grid's children based on the size of each child and the
     /// computed column widths and row heights.</summary>
     private static BlockSize ArrangeChildren(
@@ -431,6 +396,7 @@ public sealed class GridBlock : UiBlock
         scoped Span<int> rowGaps
     )
     {
+        var writeArrangement = !childArrangement.IsEmpty;
         var numRows = contents.Height;
         var numCols = contents.Width;
         var xPos = padding.Left;
@@ -458,11 +424,12 @@ public sealed class GridBlock : UiBlock
                     break;
                 }
 
-                if (!childArrangement.IsEmpty)
+                if (writeArrangement)
                 {
                     var size = boundedSizes[row, col];
-                    childArrangement[row, col] =
-                        new BufferSlice(xPos, yPos, size?.Width ?? colWidth, size?.Height ?? rowHeight);
+                    var width = size?.Width ?? colWidth;
+                    var height = size?.Height ?? rowHeight;
+                    childArrangement[row, col] = new BufferSlice(xPos, yPos, width, height);
                 }
 
                 maxCol = Math.Max(maxCol, col);
@@ -473,10 +440,7 @@ public sealed class GridBlock : UiBlock
             yPos += rowHeight + rowGap;
         }
 
-        if (!childArrangement.IsEmpty)
-        {
-            childArrangement = childArrangement.Slice(0, 0, maxRow + 1, maxCol + 1);
-        }
+        if (writeArrangement) childArrangement = childArrangement.Slice(0, 0, maxRow + 1, maxCol + 1);
 
         return BlockSize.From(xPos + padding.Right, yPos + padding.Bottom);
     }
@@ -495,19 +459,11 @@ public sealed class GridBlock : UiBlock
         for (var i = 0; i < cellCount; i++)
         {
             var len = cellLengths[i];
-            if (len.IsBounded)
-            {
-                remainingUnallocatedLength -= len.Value.Value;
-            }
-            else
-            {
-                remainingUnallocatedCellCount++;
-            }
 
-            if (i < lastIndex)
-            {
-                remainingUnallocatedLength -= cellGaps[i];
-            }
+            if (len.IsBounded) remainingUnallocatedLength -= len.Value.Value;
+            else               remainingUnallocatedCellCount++;
+
+            if (i < lastIndex) remainingUnallocatedLength -= cellGaps[i];
         }
 
         for (int i = 0; remainingUnallocatedCellCount > 0 && i < cellCount; i++)
