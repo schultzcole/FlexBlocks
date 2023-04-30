@@ -242,7 +242,7 @@ public sealed class GridBlock : UiBlock
             var block = Contents[row, col];
             if (block is null) continue;
 
-            var childBuffer = buffer.Slice(slice.Row, slice.Column, slice.Height, slice.Width);
+            var childBuffer = buffer.Slice(slice);
             RenderChild(block, childBuffer);
         }
 

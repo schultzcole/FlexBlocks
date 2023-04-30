@@ -67,9 +67,9 @@ public class FlexBlock : UiBlock
             var child = Contents[i];
             var size = childArrangement[i];
 
-            if (size is null) continue;
+            if (size is null || size.IsEmpty) continue;
 
-            var childBuffer = buffer.Slice(size.Row, size.Column, size.Height, size.Width);
+            var childBuffer = buffer.Slice(size);
             RenderChild(child, childBuffer);
         }
 

@@ -73,7 +73,7 @@ internal class BlockRenderer : IBlockContainer
                 if (SetContainsAncestor(parent, queue)) continue;
 
                 var slice = renderInfo.BufferSlice;
-                var slicedBuffer = buffer.Slice(slice.Row, slice.Column, slice.Height, slice.Width);
+                var slicedBuffer = buffer.Slice(slice);
                 token.ThrowIfCancellationRequested();
                 RenderBlock(renderInfo.Parent, block, slicedBuffer);
             }
