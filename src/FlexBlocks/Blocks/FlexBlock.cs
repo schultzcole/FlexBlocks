@@ -30,20 +30,16 @@ public class FlexBlock : UiBlock
     public FLexDirection Direction { get; set; } = FLexDirection.Horizontal;
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize()
+    public override BlockBounds GetBounds()
     {
-        if (IsEmpty) return UnboundedBlockSize.Zero;
+        if (IsEmpty) return BlockBounds.Bounded;
 
         return Contents.Aggregate(
-            UnboundedBlockSize.Zero,
-            (maxSize, block) =>
+            BlockBounds.Bounded,
+            (bounds, block) =>
             {
-                var maxSizeInFlexBasis = GetSizeInFlexBasis(maxSize);
-                var blockMaxSize = GetSizeInFlexBasis(block.CalcMaxSize());
-                return MakeUnboundedSizeInScreenBasis(
-                    maxSizeInFlexBasis.FlexLength + blockMaxSize.FlexLength,
-                    BlockLength.Max(maxSizeInFlexBasis.CrossLength, blockMaxSize.CrossLength)
-                );
+                var blockBounds = block.GetBounds();
+                return BlockBounds.Max(bounds, blockBounds);
             }
         );
     }
@@ -112,10 +108,10 @@ public class FlexBlock : UiBlock
         for (; i < childCount; i++)
         {
             var block = Contents[i];
-            var maxSize = block.CalcMaxSize();
-            var (maxFlexLength, _) = GetSizeInFlexBasis(maxSize);
+            var blockBounds = block.GetBounds();
+            var (flexBounding, _) = GetBoundsInFlexBasis(blockBounds);
 
-            if (maxFlexLength.IsBounded)
+            if (flexBounding == Bounding.Bounded)
             {
                 var concreteSize = block.CalcSize(bufferSize);
                 boundedSizes[i] = concreteSize;
@@ -208,12 +204,12 @@ public class FlexBlock : UiBlock
         _                        => throw new Exception($"Unknown FlexDirection: {Direction}")
     };
 
-    /// <summary>Returns the dimensions of the given screen-basis UnboundedBlockSize transformed to flex-basis.</summary>
-    private (BlockLength FlexLength, BlockLength CrossLength) GetSizeInFlexBasis(UnboundedBlockSize size) =>
+    /// <summary>Returns the bounds of the given screen-basis block bounds transformed to flex-basis.</summary>
+    private (Bounding FlexBounds, Bounding CrossBounds) GetBoundsInFlexBasis(BlockBounds bounds) =>
         Direction switch
         {
-            FLexDirection.Horizontal => (size.Width, size.Height),
-            FLexDirection.Vertical   => (size.Height, size.Width),
+            FLexDirection.Horizontal => (bounds.Horizontal, bounds.Vertical),
+            FLexDirection.Vertical   => (bounds.Vertical, bounds.Horizontal),
             _                        => throw new Exception($"Unknown FlexDirection: {Direction}")
         };
 

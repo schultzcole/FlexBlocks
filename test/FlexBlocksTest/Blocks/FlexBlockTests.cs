@@ -11,26 +11,26 @@ namespace FlexBlocksTest.Blocks;
 
 public class FlexBlockTests
 {
-    public class CalcMaxSize
+    public class GetBounds
     {
         [Fact]
-        public void Should_return_zero_if_contents_is_null()
+        public void Should_return_bounded_if_contents_is_null()
         {
             var block = new FlexBlock { Contents = null };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.Zero);
+            var actualMaxSize = block.GetBounds();
+            actualMaxSize.Should().Be(BlockBounds.Bounded);
         }
 
         [Fact]
-        public void Should_return_zero_if_contents_is_empty()
+        public void Should_return_bounded_if_contents_is_empty()
         {
             var block = new FlexBlock { Contents = new List<UiBlock>() };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.Zero);
+            var actualMaxSize = block.GetBounds();
+            actualMaxSize.Should().Be(BlockBounds.Bounded);
         }
 
         [Fact]
-        public void Should_return_sum_of_contents_widths_when_all_are_bounded()
+        public void Should_return_bounded_when_all_are_bounded()
         {
             var block = new FlexBlock {
                 Contents = new List<UiBlock>
@@ -39,36 +39,22 @@ public class FlexBlockTests
                     new BoundedBlock { Width = 7, Height = 1 },
                 }
             };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(20, 1));
+            var actualMaxSize = block.GetBounds();
+            actualMaxSize.Should().Be(BlockBounds.Bounded);
         }
 
         [Fact]
-        public void Should_return_unbounded_when_at_least_one_child_is_unbounded()
+        public void Should_return_unbounded_width_when_at_least_one_child_is_unbounded()
         {
             var block = new FlexBlock {
                 Contents = new List<UiBlock>
                 {
-                    new BoundedBlock { Width = 13, Height = 1 },
-                    new BoundedBlock { Width = BlockLength.Unbounded, Height = 1 },
+                    new FixedSizeBlock { Width = 13, Height = 1 },
+                    new FixedSizeBlock { Width = BlockLength.Unbounded, Height = 1 },
                 }
             };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(BlockLength.Unbounded, 1));
-        }
-
-        [Fact]
-        public void Should_return_height_of_tallest_child()
-        {
-            var block = new FlexBlock {
-                Contents = new List<UiBlock>
-                {
-                    new BoundedBlock { Height = 13, Width = 1 },
-                    new BoundedBlock { Height = 7, Width = 1 },
-                }
-            };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(2, BlockLength.From(13)));
+            var actualBounds = block.GetBounds();
+            actualBounds.Should().Be(BlockBounds.From(Bounding.Unbounded, Bounding.Bounded));
         }
 
         [Fact]
@@ -77,27 +63,12 @@ public class FlexBlockTests
             var block = new FlexBlock {
                 Contents = new List<UiBlock>
                 {
-                    new BoundedBlock { Height = 13, Width = 1 },
-                    new BoundedBlock { Height = BlockLength.Unbounded, Width = 1 },
+                    new FixedSizeBlock { Height = 13, Width = 1 },
+                    new FixedSizeBlock { Height = BlockLength.Unbounded, Width = 1 },
                 }
             };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(2, BlockLength.Unbounded));
-        }
-
-        [Fact]
-        public void Should_return_correct_max_size_with_vertical_flex_direction()
-        {
-            var block = new FlexBlock {
-                Direction = FLexDirection.Vertical,
-                Contents = new List<UiBlock>
-                {
-                    new BoundedBlock { Height = 7, Width = 1 },
-                    new BoundedBlock { Height = 13, Width = 1 },
-                }
-            };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(1, 20));
+            var actualMaxSize = block.GetBounds();
+            actualMaxSize.Should().Be(BlockBounds.From(Bounding.Bounded, Bounding.Unbounded));
         }
     }
 
@@ -207,13 +178,8 @@ public class FlexBlockTests
             {
                 Background = null,
                 Contents = new List<UiBlock> {
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('1'),
-                        MaxSize = UnboundedBlockSize.Unbounded
-                    },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.Unbounded },
                 },
-
             };
 
             var actual = BlockRenderTestHelper.RenderBlock(block, 8, 4);
@@ -238,16 +204,8 @@ public class FlexBlockTests
             {
                 Background = null,
                 Contents = new List<UiBlock> {
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('1'),
-                        MaxSize = UnboundedBlockSize.Unbounded
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('2'),
-                        MaxSize = UnboundedBlockSize.Unbounded
-                    },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.Unbounded },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.Unbounded },
                 },
 
             };
@@ -274,16 +232,8 @@ public class FlexBlockTests
             {
                 Background = null,
                 Contents = new List<UiBlock> {
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('1'),
-                        MaxSize = UnboundedBlockSize.From(2, BlockLength.Unbounded)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('2'),
-                        MaxSize = UnboundedBlockSize.Unbounded
-                    },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 2, Height = BlockLength.Unbounded },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.Unbounded },
                 },
 
             };
@@ -310,16 +260,8 @@ public class FlexBlockTests
             {
                 Background = null,
                 Contents = new List<UiBlock> {
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('1'),
-                        MaxSize = UnboundedBlockSize.From(2, 2)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('2'),
-                        MaxSize = UnboundedBlockSize.Unbounded
-                    },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 2, Height = 2 },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.Unbounded },
                 },
             };
 
@@ -346,21 +288,9 @@ public class FlexBlockTests
                 Background = null,
                 Wrapping = FlexWrapping.NoWrap,
                 Contents = new List<UiBlock> {
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('1'),
-                        MaxSize = UnboundedBlockSize.From(3, 2)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('2'),
-                        MaxSize = UnboundedBlockSize.From(3, 2)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('3'),
-                        MaxSize = UnboundedBlockSize.From(7, 2)
-                    },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 3, Height = 2 },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Width = 3, Height = 2 },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 7, Height = 2 },
                 },
             };
 
@@ -387,26 +317,10 @@ public class FlexBlockTests
                 Background = null,
                 Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock> {
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('1'),
-                        MaxSize = UnboundedBlockSize.From(3, 2)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('2'),
-                        MaxSize = UnboundedBlockSize.From(3, 3)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('3'),
-                        MaxSize = UnboundedBlockSize.From(6, 2)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('4'),
-                        MaxSize = UnboundedBlockSize.From(2, 1)
-                    },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 3, Height = 2 },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Width = 3, Height = 3 },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 6, Height = 2 },
+                    new FixedSizeBlock { Background = Patterns.Fill('4'), Width = 2, Height = 1 },
                 },
             };
 
@@ -433,21 +347,9 @@ public class FlexBlockTests
                 Background = null,
                 Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock> {
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('1'),
-                        MaxSize = UnboundedBlockSize.From(3, 2)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('2'),
-                        MaxSize = UnboundedBlockSize.From(3, 3)
-                    },
-                    new BoundedBlock
-                    {
-                        Background = Patterns.Fill('3'),
-                        MaxSize = UnboundedBlockSize.From(7, 2)
-                    },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 3, Height = 2 },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Width = 3, Height = 3 },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 7, Height = 2 },
                 },
             };
 
@@ -476,11 +378,11 @@ public class FlexBlockTests
                 Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock>
                 {
-                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(7, 1) },
-                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(BlockLength.Unbounded, 1) },
-                    new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(BlockLength.Unbounded, 1) },
-                    new FixedSizeBlock { Background = Patterns.Fill('4'), Size = UnboundedBlockSize.From(8, 1) },
-                    new FixedSizeBlock { Background = Patterns.Fill('5'), Size = UnboundedBlockSize.From(BlockLength.Unbounded, 1) },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 7, Height = 1 },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Width = BlockLength.Unbounded, Height = 1 },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Width = BlockLength.Unbounded, Height = 1 },
+                    new FixedSizeBlock { Background = Patterns.Fill('4'), Width = 8, Height = 1 },
+                    new FixedSizeBlock { Background = Patterns.Fill('5'), Width = BlockLength.Unbounded, Height = 1 },
                 }
             };
 
@@ -506,9 +408,9 @@ public class FlexBlockTests
                 Wrapping = FlexWrapping.Wrap,
                 Contents = new List<UiBlock>
                 {
-                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(2, 3) },
-                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(2, 3) },
-                    new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(2, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 2, Height = 3 },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Width = 2, Height = 3 },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 2, Height = 3 },
                 }
             };
 
@@ -541,9 +443,9 @@ public class FlexBlockTests
                 Direction = FLexDirection.Vertical,
                 Contents = new List<UiBlock>
                 {
-                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(3, 3) },
-                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(3, 3) },
-                    new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(3, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 3, Height = 3 },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Width = 3, Height = 3 },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 3, Height = 3 },
                 }
             };
 
@@ -612,9 +514,9 @@ public class FlexBlockTests
                 Direction = FLexDirection.Vertical,
                 Contents = new List<UiBlock>
                 {
-                    new FixedSizeBlock { Background = Patterns.Fill('1'), Size = UnboundedBlockSize.From(3, 3) },
-                    new FixedSizeBlock { Background = Patterns.Fill('2'), Size = UnboundedBlockSize.From(3, 3) },
-                    new FixedSizeBlock { Background = Patterns.Fill('3'), Size = UnboundedBlockSize.From(3, 3) },
+                    new FixedSizeBlock { Background = Patterns.Fill('1'), Width = 3, Height = 3 },
+                    new FixedSizeBlock { Background = Patterns.Fill('2'), Width = 3, Height = 3 },
+                    new FixedSizeBlock { Background = Patterns.Fill('3'), Width = 3, Height = 3 },
                 }
             };
 

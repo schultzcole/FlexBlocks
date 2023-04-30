@@ -27,13 +27,7 @@ public sealed class BorderBlock : UiBlock
         };
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize()
-    {
-        var contentMaxSize = Content?.CalcMaxSize() ?? UnboundedBlockSize.Zero;
-
-        var padding = EffectivePadding;
-        return contentMaxSize.ExpandByPadding(padding);
-    }
+    public override BlockBounds GetBounds() => Content?.GetBounds() ?? BlockBounds.Bounded;
 
     /// <inheritdoc />
     public override BlockSize CalcSize(BlockSize maxSize)

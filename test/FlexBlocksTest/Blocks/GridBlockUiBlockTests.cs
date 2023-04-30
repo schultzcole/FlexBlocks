@@ -12,42 +12,42 @@ namespace FlexBlocksTest.Blocks;
 
 public class GridBlockUiBlockTests
 {
-    public class CalcMaxSize
+    public class GetBounds
     {
         [Fact]
-        public void Should_return_zero_when_contents_null()
+        public void Should_return_bounded_when_contents_null()
         {
             var block = new GridBlock();
-            var actual = block.CalcMaxSize();
-            actual.Should().Be(UnboundedBlockSize.Zero);
+            var actual = block.GetBounds();
+            actual.Should().Be(BlockBounds.Bounded);
         }
 
         [Fact]
-        public void Should_return_zero_when_contents_has_zero_rows()
+        public void Should_return_bounded_when_contents_has_zero_rows()
         {
             var block = new GridBlock { Contents = new UiBlock?[0, 1] };
-            var actual = block.CalcMaxSize();
-            actual.Should().Be(UnboundedBlockSize.Zero);
+            var actual = block.GetBounds();
+            actual.Should().Be(BlockBounds.Bounded);
         }
 
         [Fact]
-        public void Should_return_zero_when_contents_has_zero_columns()
+        public void Should_return_bounded_when_contents_has_zero_columns()
         {
             var block = new GridBlock { Contents = new UiBlock?[1, 0] };
-            var actual = block.CalcMaxSize();
-            actual.Should().Be(UnboundedBlockSize.Zero);
+            var actual = block.GetBounds();
+            actual.Should().Be(BlockBounds.Bounded);
         }
 
         [Fact]
-        public void Should_return_zero_when_contents_has_row_and_column_but_no_blocks()
+        public void Should_return_bounded_when_contents_has_row_and_column_but_no_blocks()
         {
             var block = new GridBlock { Contents = new UiBlock?[1, 1] };
-            var actual = block.CalcMaxSize();
-            actual.Should().Be(UnboundedBlockSize.Zero);
+            var actual = block.GetBounds();
+            actual.Should().Be(BlockBounds.Bounded);
         }
 
         [Fact]
-        public void Should_return_bounded_size_when_all_children_are_bounded()
+        public void Should_return_bounded_when_all_children_are_bounded()
         {
             var block = new GridBlock
             {
@@ -63,8 +63,8 @@ public class GridBlockUiBlockTests
                     },
                 },
             };
-            var actual = block.CalcMaxSize();
-            actual.Should().Be(UnboundedBlockSize.From(29, 39));
+            var actual = block.GetBounds();
+            actual.Should().Be(BlockBounds.Bounded);
         }
 
         [Fact]
@@ -84,8 +84,8 @@ public class GridBlockUiBlockTests
                     },
                 },
             };
-            var actual = block.CalcMaxSize();
-            actual.Should().Be(UnboundedBlockSize.From(BlockLength.Unbounded, 39));
+            var actual = block.GetBounds();
+            actual.Should().Be(BlockBounds.From(Bounding.Unbounded, Bounding.Bounded));
         }
 
         [Fact]
@@ -105,8 +105,8 @@ public class GridBlockUiBlockTests
                     },
                 },
             };
-            var actual = block.CalcMaxSize();
-            actual.Should().Be(UnboundedBlockSize.From(29, BlockLength.Unbounded));
+            var actual = block.GetBounds();
+            actual.Should().Be(BlockBounds.From(Bounding.Bounded, Bounding.Unbounded));
         }
     }
 

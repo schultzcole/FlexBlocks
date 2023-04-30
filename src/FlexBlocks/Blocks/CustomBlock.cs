@@ -14,7 +14,7 @@ public abstract class CustomBlock : UiBlock
     public abstract UiBlock Content { get; }
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize() => Content.CalcMaxSize();
+    public override BlockBounds GetBounds() => Content.GetBounds();
 
     /// <inheritdoc />
     public override BlockSize CalcSize(BlockSize maxSize) => Content.CalcSize(maxSize);

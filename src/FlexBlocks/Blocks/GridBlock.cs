@@ -181,34 +181,30 @@ public sealed class GridBlock : UiBlock
     }
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize()
+    public override BlockBounds GetBounds()
     {
-        if (IsEmpty) return UnboundedBlockSize.Zero;
+        if (IsEmpty) return BlockBounds.Bounded;
 
         var numRows = Contents.GetLength(0);
         var numCols = Contents.GetLength(1);
 
-        Span<BlockLength> colWidths = stackalloc BlockLength[numCols];
-        colWidths.Fill(0);
-        Span<BlockLength> rowHeights = stackalloc BlockLength[numRows];
-        rowHeights.Fill(0);
+        var horizBounding = Bounding.Bounded;
+        var vertBounding = Bounding.Bounded;
+
         for (int row = 0; row < numRows; row++)
         for (int col = 0; col < numCols; col++)
         {
             var block = Contents[row, col];
             if (block is null) continue;
 
-            var blockSize = block.CalcMaxSize();
-            colWidths[col] = BlockLength.Max(colWidths[col],   blockSize.Width);
-            rowHeights[row] = BlockLength.Max(rowHeights[row], blockSize.Height);
+            var blockSize = block.GetBounds();
+            horizBounding = BoundingExtensions.Max(blockSize.Horizontal, horizBounding);
+            vertBounding = BoundingExtensions.Max(blockSize.Vertical, vertBounding);
+
+            if (horizBounding == Bounding.Unbounded && vertBounding == Bounding.Unbounded) break;
         }
 
-        var totalWidth = BlockLength.Zero;
-        foreach (var width in colWidths) totalWidth += width;
-        var totalHeight = BlockLength.Zero;
-        foreach (var height in rowHeights) totalHeight += height;
-
-        return UnboundedBlockSize.From(totalWidth, totalHeight);
+        return BlockBounds.From(horizBounding, vertBounding);
     }
 
     /// <inheritdoc />
@@ -357,9 +353,9 @@ public sealed class GridBlock : UiBlock
                 continue;
             }
 
-            var maxSize = block.CalcMaxSize();
+            var bounds = block.GetBounds();
 
-            if (maxSize.Width.IsUnbounded && maxSize.Height.IsUnbounded)
+            if (bounds.IsUnbounded)
             {
                 colWidths[col] = BlockLength.Unbounded;
                 rowHeights[row] = BlockLength.Unbounded;
@@ -368,15 +364,15 @@ public sealed class GridBlock : UiBlock
 
             var concreteSize = block.CalcSize(bufferSize);
 
-            colWidths[col] = maxSize.Width.IsBounded
+            colWidths[col] = bounds.Horizontal == Bounding.Bounded
                 ? BlockLength.Max(colWidths[col], concreteSize.Width)
                 : BlockLength.Unbounded;
 
-            rowHeights[row] = maxSize.Height.IsBounded
+            rowHeights[row] = bounds.Vertical == Bounding.Bounded
                 ? BlockLength.Max(rowHeights[row], concreteSize.Height)
                 : BlockLength.Unbounded;
 
-            if (maxSize.IsBounded) boundedSizes[row, col] = concreteSize;
+            if (bounds.IsBounded) boundedSizes[row, col] = concreteSize;
         }
     }
 

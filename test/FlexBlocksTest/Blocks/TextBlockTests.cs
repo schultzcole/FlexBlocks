@@ -10,30 +10,18 @@ namespace FlexBlocksTest.Blocks;
 
 public class TextBlockTests
 {
-    public class CalcMaxSize
+    public class GetBounds
     {
-        [Fact]
-        public void Should_return_height_one_when_no_linebreaks()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("alpha bravo charlie")]
+        [InlineData("alpha bravo\ncharlie")]
+        [InlineData("alpha bravo\tcharlie")]
+        public void Should_return_bounded(string? text)
         {
-            var textBlock = new TextBlock { Text = "alpha bravo charlie" };
-            var actualMaxSize = textBlock.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(19, 1));
-        }
-
-        [Fact]
-        public void Should_account_for_line_breaks()
-        {
-            var textBlock = new TextBlock { Text = "alpha bravo\ncharlie" };
-            var actualMaxSize = textBlock.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(11, 2));
-        }
-
-        [Fact]
-        public void Should_account_for_tabs()
-        {
-            var textBlock = new TextBlock { Text = "alpha bravo\tcharlie" };
-            var actualMaxSize = textBlock.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(22, 1));
+            var textBlock = new TextBlock { Text = text };
+            var actualMaxSize = textBlock.GetBounds();
+            actualMaxSize.Should().Be(BlockBounds.Bounded);
         }
     }
 

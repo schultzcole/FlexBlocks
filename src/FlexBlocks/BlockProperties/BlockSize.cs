@@ -70,6 +70,8 @@ public readonly record struct UnboundedBlockSize(BlockLength Width, BlockLength 
 
     public static UnboundedBlockSize From(BlockSize blockSize) => From(blockSize.Width, blockSize.Height);
 
+    public BlockBounds ToBounds() => new(Width.ToBounding(), Height.ToBounding());
+
     public static implicit operator UnboundedBlockSize(BlockSize blockSize) => From(blockSize);
 
     /// <summary>Returns a new block size that is expanded by the amount of padding on each side.</summary>

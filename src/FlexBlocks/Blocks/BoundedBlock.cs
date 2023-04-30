@@ -13,17 +13,23 @@ public sealed class BoundedBlock : UiBlock
 {
     public UiBlock? Content { get; set; }
 
-    /// <summary>The desired size of this block.</summary>
+    /// <summary>The desired maximum size of this block.</summary>
     public UnboundedBlockSize MaxSize { get; set; }
 
-    /// <summary>The desired width of this block.</summary>
+    /// <summary>
+    /// The desired width of this block.
+    /// If <see cref="BlockLength.Unbounded"/>, the contents will not be constrained in width.
+    /// </summary>
     public BlockLength Width
     {
         get => MaxSize.Width;
         set => MaxSize = MaxSize with { Width = value };
     }
 
-    /// <summary>The desired height of this block.</summary>
+    /// <summary>
+    /// The desired height of this block.
+    /// If <see cref="BlockLength.Unbounded"/>, the contents will not be constrained in height.
+    /// </summary>
     public BlockLength Height
     {
         get => MaxSize.Height;
@@ -31,18 +37,23 @@ public sealed class BoundedBlock : UiBlock
     }
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize() =>
-        Content is not null
-            ? Content.CalcMaxSize().Constrain(MaxSize)
-            : MaxSize;
+    public override BlockBounds GetBounds()
+    {
+        if (Content is null) return BlockBounds.Bounded;
+
+        var contentBounds = Content.GetBounds();
+        var maxBounds = MaxSize.ToBounds();
+
+        return BlockBounds.Min(contentBounds, maxBounds);
+    }
 
     /// <inheritdoc />
     public override BlockSize CalcSize(BlockSize maxSize)
     {
+        if (Content is null) return BlockSize.Zero;
+
         var boundedSize = maxSize.Constrain(MaxSize);
-        return Content is not null
-            ? Content.CalcSize(boundedSize).Constrain(boundedSize)
-            : boundedSize;
+        return Content.CalcSize(boundedSize).Constrain(boundedSize);
     }
 
     /// <inheritdoc />

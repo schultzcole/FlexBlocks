@@ -41,6 +41,8 @@ public record struct BlockLength :
 
     public static implicit operator BlockLength(int? val) => From(val);
 
+    public Bounding ToBounding() => IsUnbounded ? Bounding.Unbounded : Bounding.Bounded;
+
     public BlockLength() { }
 
     /// <inheritdoc />

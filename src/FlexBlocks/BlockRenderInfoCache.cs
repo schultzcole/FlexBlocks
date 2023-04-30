@@ -66,6 +66,3 @@ internal class BlockRenderInfo
     public UiBlock? Parent { get; set; }
     public required BufferSlice BufferSlice { get; set; }
 }
-
-/// <summary>Stores information about the slice of the main render buffer that a particular block occupies.</summary>
-internal record BufferSlice(int Column, int Row, int Width, int Height);

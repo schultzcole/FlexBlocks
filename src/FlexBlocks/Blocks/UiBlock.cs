@@ -33,10 +33,8 @@ public abstract class UiBlock
     /// </summary>
     public IBlockContainer? Container { get; internal set; }
 
-    /// <summary>
-    /// Computes the maximum size in columns and rows that this block would take up, given infinite space.
-    /// </summary>
-    public abstract UnboundedBlockSize CalcMaxSize();
+    /// <summary>Indicates whether this block will grow to fill its parent or if it is bounded by its own content.</summary>
+    public abstract BlockBounds GetBounds();
 
     /// <summary>
     /// Computes the size in columns and rows that this block will take up when rendered, given a concrete maximum size.

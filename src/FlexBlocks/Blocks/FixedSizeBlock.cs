@@ -30,7 +30,7 @@ public sealed class FixedSizeBlock : UiBlock
     }
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize() => Size;
+    public override BlockBounds GetBounds() => Size.ToBounds();
 
     /// <inheritdoc />
     public override BlockSize CalcSize(BlockSize maxSize) => maxSize.Constrain(Size);

@@ -55,20 +55,20 @@ public sealed class AlignableBlock : UiBlock
     }
 
     /// <inheritdoc />
-    public override UnboundedBlockSize CalcMaxSize()
+    public override BlockBounds GetBounds()
     {
         if (HorizontalSizing == Sizing.Fill && VerticalSizing == Sizing.Fill)
         {
-            return UnboundedBlockSize.Unbounded;
+            return BlockBounds.Unbounded;
         }
 
-        var contentSize = Content?.CalcMaxSize() ?? UnboundedBlockSize.Zero;
+        var contentBounds = Content?.GetBounds() ?? BlockBounds.Bounded;
 
         return (HorizontalSizing, VerticalSizing) switch
         {
-            (Sizing.Content, Sizing.Content) => contentSize,
-            (Sizing.Content, Sizing.Fill)    => contentSize with { Height = BlockLength.Unbounded },
-            (Sizing.Fill, Sizing.Content)    => contentSize with { Width = BlockLength.Unbounded },
+            (Sizing.Content, Sizing.Content) => contentBounds,
+            (Sizing.Content, Sizing.Fill)    => contentBounds with { Vertical = Bounding.Unbounded },
+            (Sizing.Fill, Sizing.Content)    => contentBounds with { Horizontal = Bounding.Unbounded },
 
             // (Fill, Fill) case is covered above
             _ => throw new UnreachableException($"Unknown sizing values. H={HorizontalSizing}, V={VerticalSizing}")

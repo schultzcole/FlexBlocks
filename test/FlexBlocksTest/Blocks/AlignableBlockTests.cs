@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.HighPerformance;
-using FlexBlocks.BlockProperties;
+﻿using FlexBlocks.BlockProperties;
 using FlexBlocks.Blocks;
 using FlexBlocks.Renderables;
 using FlexBlocksTest.Utils;
@@ -11,54 +10,51 @@ namespace FlexBlocksTest.Blocks;
 
 public class AlignableBlockTests
 {
-    public class CalcMaxSize
+    public class GetBounds
     {
         [Theory]
-        [InlineData(Sizing.Fill, Sizing.Fill, null, null)]
-        [InlineData(Sizing.Content, Sizing.Fill, 0, null)]
-        [InlineData(Sizing.Fill, Sizing.Content, null, 0)]
-        [InlineData(Sizing.Content, Sizing.Content, 0, 0)]
+        [InlineData(Sizing.Fill,    Sizing.Fill,    Bounding.Unbounded, Bounding.Unbounded)]
+        [InlineData(Sizing.Content, Sizing.Fill,    Bounding.Bounded,   Bounding.Unbounded)]
+        [InlineData(Sizing.Fill,    Sizing.Content, Bounding.Unbounded, Bounding.Bounded)]
+        [InlineData(Sizing.Content, Sizing.Content, Bounding.Bounded,   Bounding.Bounded)]
         public void Should_return_correct_size_with_no_content(
             Sizing hSizing,
             Sizing vSizing,
-            int? expectedWidth,
-            int? expectedHeight
+            Bounding expectedHoriz,
+            Bounding expectedVert
         )
         {
             var block = new AlignableBlock { HorizontalSizing = hSizing, VerticalSizing = vSizing };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(expectedWidth, expectedHeight));
+            var actualBounds = block.GetBounds();
+            actualBounds.Should().Be(BlockBounds.From(expectedHoriz, expectedVert));
         }
 
         [Theory]
-        [InlineData(Sizing.Fill, Sizing.Fill, null, null)]
-        [InlineData(Sizing.Content, Sizing.Fill, 5, null)]
-        [InlineData(Sizing.Fill, Sizing.Content, null, 7)]
-        [InlineData(Sizing.Content, Sizing.Content, 5, 7)]
+        [InlineData(Sizing.Fill,    Sizing.Fill,    Bounding.Unbounded, Bounding.Unbounded)]
+        [InlineData(Sizing.Content, Sizing.Fill,    Bounding.Bounded,   Bounding.Unbounded)]
+        [InlineData(Sizing.Fill,    Sizing.Content, Bounding.Unbounded, Bounding.Bounded)]
+        [InlineData(Sizing.Content, Sizing.Content, Bounding.Bounded,   Bounding.Bounded)]
         public void Should_return_correct_size_with_fixed_size_content(
             Sizing hSizing,
             Sizing vSizing,
-            int? expectedWidth,
-            int? expectedHeight
+            Bounding expectedHoriz,
+            Bounding expectedVert
         )
         {
-            var content = new BoundedBlock { MaxSize = UnboundedBlockSize.From(5, 7) };
+            var content = new FixedSizeBlock { Width = 5, Height = 7 };
             var block = new AlignableBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.From(expectedWidth, expectedHeight));
+            var actualBounds = block.GetBounds();
+            actualBounds.Should().Be(BlockBounds.From(expectedHoriz, expectedVert));
         }
 
         [Theory]
-        [InlineData(Sizing.Fill, Sizing.Fill)]
-        [InlineData(Sizing.Content, Sizing.Fill)]
-        [InlineData(Sizing.Fill, Sizing.Content)]
-        [InlineData(Sizing.Content, Sizing.Content)]
+        [CombinatorialData]
         public void Should_return_correct_size_with_unbounded_size_content(Sizing hSizing, Sizing vSizing)
         {
-            var content = new BoundedBlock { MaxSize = UnboundedBlockSize.Unbounded };
+            var content = new FixedSizeBlock { Size = UnboundedBlockSize.Unbounded };
             var block = new AlignableBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
-            var actualMaxSize = block.CalcMaxSize();
-            actualMaxSize.Should().Be(UnboundedBlockSize.Unbounded);
+            var actualBounds = block.GetBounds();
+            actualBounds.Should().Be(BlockBounds.Unbounded);
         }
     }
 
@@ -76,9 +72,8 @@ public class AlignableBlockTests
             int expectedHeight
         )
         {
-            var maxSize = BlockSize.From(13, 17);
             var block = new AlignableBlock { HorizontalSizing = hSizing, VerticalSizing = vSizing };
-            var actualSize = block.CalcSize(maxSize);
+            var actualSize = block.CalcSize(BlockSize.From(13, 17));
             actualSize.Should().Be(BlockSize.From(expectedWidth, expectedHeight));
         }
 
@@ -95,10 +90,9 @@ public class AlignableBlockTests
             int expectedHeight
         )
         {
-            var maxSize = BlockSize.From(13, 17);
-            var content = new BoundedBlock { MaxSize = UnboundedBlockSize.From(5, 7) };
+            var content = new FixedSizeBlock { Width = 5, Height = 7 };
             var block = new AlignableBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
-            var actualSize = block.CalcSize(maxSize);
+            var actualSize = block.CalcSize(BlockSize.From(13, 17));
             actualSize.Should().Be(BlockSize.From(expectedWidth, expectedHeight));
         }
 
@@ -109,10 +103,9 @@ public class AlignableBlockTests
         [InlineData(Sizing.Content, Sizing.Content)]
         public void Should_return_correct_size_with_unbounded_size_content(Sizing hSizing, Sizing vSizing)
         {
-            var maxSize = BlockSize.From(13, 17);
-            var content = new BoundedBlock { MaxSize = UnboundedBlockSize.Unbounded };
+            var content = new FixedSizeBlock { Size = UnboundedBlockSize.Unbounded };
             var block = new AlignableBlock { Content = content, HorizontalSizing = hSizing, VerticalSizing = vSizing };
-            var actualSize = block.CalcSize(maxSize);
+            var actualSize = block.CalcSize(BlockSize.From(13, 17));
             actualSize.Should().Be(BlockSize.From(13, 17));
         }
     }
@@ -128,11 +121,7 @@ public class AlignableBlockTests
             var block = new AlignableBlock
             {
                 Background = null,
-                Content = new BoundedBlock
-                {
-                    Background = Patterns.Fill('¤'),
-                    MaxSize = UnboundedBlockSize.From(2, 2)
-                },
+                Content = new FixedSizeBlock { Background = Patterns.Fill('¤'), Width = 2, Height = 2 },
                 HorizontalContentAlignment = Alignment.Start,
                 VerticalContentAlignment = Alignment.Start,
                 HorizontalSizing = Sizing.Fill,
@@ -161,11 +150,7 @@ public class AlignableBlockTests
             var block = new AlignableBlock
             {
                 Background = null,
-                Content = new BoundedBlock
-                {
-                    Background = Patterns.Fill('¤'),
-                    MaxSize = UnboundedBlockSize.From(2, 2)
-                },
+                Content = new FixedSizeBlock { Background = Patterns.Fill('¤'), Width = 2, Height = 2 },
                 HorizontalContentAlignment = Alignment.End,
                 VerticalContentAlignment = Alignment.Center,
                 HorizontalSizing = Sizing.Fill,
@@ -194,11 +179,7 @@ public class AlignableBlockTests
             var block = new AlignableBlock
             {
                 Background = null,
-                Content = new BoundedBlock
-                {
-                    Background = Patterns.Fill('¤'),
-                    MaxSize = UnboundedBlockSize.From(2, 2)
-                },
+                Content = new FixedSizeBlock { Background = Patterns.Fill('¤'), Width = 2, Height = 2 },
                 HorizontalContentAlignment = Alignment.Center,
                 VerticalContentAlignment = Alignment.End,
                 HorizontalSizing = Sizing.Fill,
