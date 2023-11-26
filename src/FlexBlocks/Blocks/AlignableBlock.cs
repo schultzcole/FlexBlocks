@@ -10,8 +10,7 @@ public enum Sizing { Fill, Content }
 public enum Alignment { Start, Center, End }
 
 /// <summary>
-/// An abstract block that sizes itself and aligns content within itself based on its content.
-/// The exact nature of the content is determined by the subclass.
+/// A block that can size itself according to its content and can align its content within itself.
 /// </summary>
 [PublicAPI]
 public sealed class AlignableBlock : UiBlock
