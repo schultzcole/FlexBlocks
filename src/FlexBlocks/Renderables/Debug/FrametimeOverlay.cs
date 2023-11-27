@@ -18,11 +18,14 @@ public sealed class FrametimeOverlay : IRenderable
         TimeSpan? delta = _prevTimeTicks is not null ? TimeSpan.FromTicks(currentTimeTicks - _prevTimeTicks.Value) : null;
         _prevTimeTicks = currentTimeTicks;
 
-        if (delta is not { } dt) return;
-
-        var str = ShowFps
-            ? $"{dt.TotalMilliseconds:F2}ms ({(int)(1 / dt.TotalSeconds)})"
-            : $"{dt.TotalMilliseconds:F2}ms";
+        string str;
+        if (delta is { } dt) {
+            str = ShowFps
+                ? $"{dt.TotalMilliseconds:F2}ms ({(int)(1 / dt.TotalSeconds)})"
+                : $"{dt.TotalMilliseconds:F2}ms";
+        } else {
+            str = ShowFps ? "0ms (0)" : "0ms";
+        }
 
         if (str.Length > buffer.Width) return;
 
