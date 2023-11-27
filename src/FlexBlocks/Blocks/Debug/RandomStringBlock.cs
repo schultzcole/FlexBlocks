@@ -10,6 +10,9 @@ public sealed class RandomStringBlock : UiBlock
 {
     private const string VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
+    /// <summary>When true, the RandomStringBlock will rerender itself every frame.</summary>
+    public bool Animate { get; set; }
+
     public override BlockBounds GetBounds() => BlockBounds.Unbounded;
 
     public override BlockSize CalcSize(BlockSize maxSize) => maxSize;
@@ -23,5 +26,7 @@ public sealed class RandomStringBlock : UiBlock
                 buffer[row, col] = VALID_CHARS[Random.Shared.Next(VALID_CHARS.Length)];
             }
         }
+
+        if (Animate) RequestRerender(RerenderMode.DesiredSizeChanged);
     }
 }
