@@ -148,9 +148,10 @@ public sealed class FlexBlocksDriver
     internal BlockRenderInfo GetBlockRenderInfo(UiBlock block) => _renderInfoCache.GetBlockRenderInfo(block);
 
     /// <summary>Starts the flex blocks driver.</summary>
+    /// <param name="frameInterval">The minimum time between rendered frames.</param>
     /// <param name="quitToken">Quits the program when canceled.</param>
     /// <returns>A task the completes when the driver has quit.</returns>
-    public async Task Run(CancellationToken quitToken)
+    public async Task Run(TimeSpan frameInterval, CancellationToken quitToken)
     {
         try
         {
@@ -179,7 +180,7 @@ public sealed class FlexBlocksDriver
             HotReloader.OnHotReloaded += () => Render(true, quitTokenSource.Token);
 
             // render loop
-            var timer = new Timer(TimeSpan.FromMilliseconds(10));
+            var timer = new Timer(frameInterval);
             timer.Elapsed += (_, _) =>
             {
                 try
@@ -205,10 +206,19 @@ public sealed class FlexBlocksDriver
         catch (Exception e)
         {
             Shutdown();
-            Console.Clear();
             Console.WriteLine(e);
         }
     }
+
+    /// <summary>Starts the flex blocks driver.</summary>
+    /// <param name="quitToken">Quits the program when canceled.</param>
+    /// <returns>A task the completes when the driver has quit.</returns>
+    public Task Run(CancellationToken quitToken) => Run(TimeSpan.FromMilliseconds(25), quitToken);
+
+    /// <summary>Starts the flex blocks driver.</summary>
+    /// <param name="frameInterval">The minimum time between rendered frames.</param>
+    /// <returns>A task the completes when the driver has quit.</returns>
+    public Task Run(TimeSpan frameInterval) => Run(frameInterval, CancellationToken.None);
 
     /// <summary>Starts the flex blocks driver.</summary>
     /// <returns>A task the completes when the driver has quit.</returns>
@@ -234,6 +244,6 @@ public sealed class FlexBlocksDriver
         // return the console state to something resembling normalcy
         Console.CursorVisible = true;
         Console.SetCursorPosition(0, Height - 1);
-        Console.WriteLine();
+        Console.Clear();
     }
 }
